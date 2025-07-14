@@ -8,10 +8,9 @@ import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.structure.Structure;
-import net.minecraft.world.gen.structure.StructureStart;
+import net.minecraft.structure.StructureStart;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.entry.RegistryEntry;
 
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 
@@ -20,9 +19,14 @@ public final class StructureLocator {
 
     public static void init() {
         ServerChunkEvents.CHUNK_LOAD.register(StructureLocator::onChunkLoad);
+        ServerChunkEvents.CHUNK_GENERATE.register(StructureLocator::onChunkGenerate);
     }
 
     private static void onChunkLoad(ServerWorld world, WorldChunk chunk) {
+        logStructures(world, chunk);
+    }
+
+    private static void onChunkGenerate(ServerWorld world, WorldChunk chunk) {
         logStructures(world, chunk);
     }
 
