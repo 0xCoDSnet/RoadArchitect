@@ -4,11 +4,15 @@
     <facet type="minecraft" name="Minecraft">
       <configuration>
         <autoDetectTypes>
-          <platformType>MIXIN</platformType>
           <platformType>FABRIC</platformType>
+          <platformType>MIXIN</platformType>
+          <platformType>MCP</platformType>
         </autoDetectTypes>
         <projectReimportVersion>1</projectReimportVersion>
       </configuration>
     </facet>
+  </component>
+  <component name="McpModuleSettings">
+    <option name="minecraftVersion" value="1.21.1" />
   </component>
 </module>
