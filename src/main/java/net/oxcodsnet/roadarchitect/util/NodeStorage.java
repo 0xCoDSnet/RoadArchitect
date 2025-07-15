@@ -64,4 +64,11 @@ public class NodeStorage {
         }
         return Set.copyOf(result);
     }
+
+    /**
+     * Returns the stored positions as an array of packed longs.
+     */
+    public long[] asLongArray() {
+        return this.nodes.toLongArray();
+    }
 }

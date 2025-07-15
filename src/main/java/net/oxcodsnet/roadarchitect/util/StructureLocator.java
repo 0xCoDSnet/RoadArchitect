@@ -97,7 +97,7 @@ public final class StructureLocator {
                         );
 
                         BlockPos realPos = new BlockPos(roughPos.getX(), surfaceY, roughPos.getZ());
-                        if (RoadArchitect.NODE_STORAGE.add(realPos)) {
+                        if (NodeStorageState.get(world).getStorage().add(realPos)) {
                             RoadArchitect.LOGGER.info(
                                     "Found structure {} at ({}, {}, {}) in {}",
                                     registry.getId(entry.value()),
