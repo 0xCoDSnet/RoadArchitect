@@ -58,7 +58,8 @@ public final class StructureLocator {
 
     /**
      * Performs a seed-based scan for structures around the given position
-     * without loading chunks. Any found structures are logged once.
+     * without loading chunks. Any found structures are logged once and stored
+     * for pathfinding.
      */
     private static void locateStructures(ServerWorld world, BlockPos originPos) {
         // 1) Создаём калькулятор структур и инициализируем его
@@ -96,11 +97,7 @@ public final class StructureLocator {
                         );
 
                         BlockPos realPos = new BlockPos(roughPos.getX(), surfaceY, roughPos.getZ());
-                        String key = registry.getId(entry.value())
-                                + "@" + realPos.getX()
-                                + "," + realPos.getY()
-                                + "," + realPos.getZ();
-                        if (logged.add(key)) {
+                        if (RoadArchitect.NODE_STORAGE.add(realPos)) {
                             RoadArchitect.LOGGER.info(
                                     "Found structure {} at ({}, {}, {}) in {}",
                                     registry.getId(entry.value()),

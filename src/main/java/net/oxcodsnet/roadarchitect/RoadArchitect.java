@@ -2,13 +2,17 @@ package net.oxcodsnet.roadarchitect;
 
 import net.fabricmc.api.ModInitializer;
 
+import net.oxcodsnet.roadarchitect.util.NodeStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.oxcodsnet.roadarchitect.util.StructureLocator;
 
 public class RoadArchitect implements ModInitializer {
-	public static final String MOD_ID = "roadarchitect";
+    public static final String MOD_ID = "roadarchitect";
+
+    /** Storage for all located structure nodes. */
+    public static final NodeStorage NODE_STORAGE = new NodeStorage();
 
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.
