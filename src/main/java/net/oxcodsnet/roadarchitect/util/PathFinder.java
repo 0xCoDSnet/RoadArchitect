@@ -108,7 +108,9 @@ public final class PathFinder {
                 if (this.world.isChunkLoaded(x >> 4, z >> 4)) {
                     continue; // skip already generated chunks
                 }
-                int y = this.world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z);
+                int y = this.world.getChunkManager().getChunkGenerator()
+                        .getHeightInGround(x, z, Heightmap.Type.WORLD_SURFACE_WG,
+                                this.world, this.world.getChunkManager().getNoiseConfig());
                 result.add(new BlockPos(x, y, z));
             }
             return result;
