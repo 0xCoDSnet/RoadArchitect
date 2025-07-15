@@ -3,6 +3,8 @@ package net.oxcodsnet.roadarchitect.util;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
@@ -35,16 +37,15 @@ import net.minecraft.structure.StructureStart;
  * Utility that logs potential structure locations around a player.
  */
 public final class StructureLocator {
-    /**
-     * List of structure selectors. Each entry can be either a structure ID or a
-     * tag prefixed with '#'.
-     */
-    private static final List<String> SELECTORS = List.of(
-            "#minecraft:village",
-            "minecraft:village_plains"
-    );
-
     private static Set<Identifier> allowedIds;
+
+    /** Executor for asynchronous structure scanning. */
+    private static final ExecutorService EXECUTOR =
+            Executors.newSingleThreadExecutor(r -> {
+                Thread t = new Thread(r, "structure-locator");
+                t.setDaemon(true);
+                return t;
+            });
 
     private StructureLocator() {
     }
@@ -56,19 +57,20 @@ public final class StructureLocator {
     public static void init() {
         ServerPlayConnectionEvents.JOIN.register(StructureLocator::onPlayerJoin);
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(StructureLocator::onPlayerChangeWorld);
-        ServerChunkEvents.CHUNK_LOAD.register(StructureLocator::onChunkLoad);
+        // TODO: Нужно придумать другой способ динамически собирать новые структуры, этот не работает и из-за него не грузит чанки
+        //ServerChunkEvents.CHUNK_LOAD.register(StructureLocator::onChunkLoad);
     }
 
     private static void onPlayerJoin(ServerPlayNetworkHandler handler,  PacketSender sender,  MinecraftServer server) {
         ServerWorld world = handler.getPlayer().getServerWorld();
         if (world.getRegistryKey() == World.OVERWORLD) {
-            locateStructures(world, handler.getPlayer().getBlockPos(), RoadArchitect.CONFIG.playerScanRadius());
+            locateStructuresAsync(world, handler.getPlayer().getBlockPos(), RoadArchitect.CONFIG.playerScanRadius());
         }
     }
 
     private static void onPlayerChangeWorld(ServerPlayerEntity player, ServerWorld origin, ServerWorld destination) {
         if (destination.getRegistryKey() == World.OVERWORLD) {
-            locateStructures(destination, player.getBlockPos(), RoadArchitect.CONFIG.playerScanRadius());
+            locateStructuresAsync(destination, player.getBlockPos(), RoadArchitect.CONFIG.playerScanRadius());
         }
     }
 
@@ -87,12 +89,14 @@ public final class StructureLocator {
             int x = (box.getMinX() + box.getMaxX()) >> 1;
             int z = (box.getMinZ() + box.getMaxZ()) >> 1;
             BlockPos pos = world.getTopPosition(Heightmap.Type.WORLD_SURFACE, new BlockPos(x, 0, z));
-            locateStructures(world, pos, RoadArchitect.CONFIG.chunkLoadScanRadius());
+            locateStructuresAsync(world, pos, RoadArchitect.CONFIG.chunkLoadScanRadius());
         });
     }
 
+
     /**
-     * Returns the set of structure identifiers allowed by {@link #SELECTORS}.
+     * Returns the set of structure identifiers allowed by the configured
+     * structure selectors.
      */
     private static Set<Identifier> getAllowedIds(ServerWorld world) {
         if (allowedIds != null) {
@@ -101,7 +105,7 @@ public final class StructureLocator {
 
         Registry<Structure> registry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
         Set<Identifier> result = new HashSet<>();
-        for (String selector : SELECTORS) {
+        for (String selector : RoadArchitect.CONFIG.structureSelectors()) {
             if (selector.startsWith("#")) {
                 Identifier tagId = Identifier.tryParse(selector.substring(1));
                 if (tagId != null) {
@@ -126,6 +130,87 @@ public final class StructureLocator {
     }
 
     /**
+     * Scans for structures around the given origin without storing the results.
+     */
+    private static Set<NodeStorage.Node> scanStructures(ServerWorld world, BlockPos originPos,
+            int chunkRadius) {
+        StructurePlacementCalculator calculator = world.getChunkManager().getStructurePlacementCalculator();
+        calculator.tryCalculate();
+
+        ChunkGenerator generator = world.getChunkManager().getChunkGenerator();
+        NoiseConfig noiseConfig = calculator.getNoiseConfig();
+
+        Registry<Structure> registry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
+        Set<Identifier> allowed = getAllowedIds(world);
+        ChunkPos originChunk = new ChunkPos(originPos);
+
+        Set<NodeStorage.Node> result = new HashSet<>();
+        for (RegistryEntry<Structure> entry : registry.streamEntries().toList()) {
+            Identifier entryId = registry.getId(entry.value());
+            if (!allowed.contains(entryId)) {
+                continue;
+            }
+
+            List<StructurePlacement> placements = calculator.getPlacements(entry);
+            if (placements.isEmpty()) {
+                continue;
+            }
+
+            for (StructurePlacement placement : placements) {
+                for (int dx = -chunkRadius; dx <= chunkRadius; dx++) {
+                    for (int dz = -chunkRadius; dz <= chunkRadius; dz++) {
+                        int chunkX = originChunk.x + dx;
+                        int chunkZ = originChunk.z + dz;
+                        if (!placement.shouldGenerate(calculator, chunkX, chunkZ)) {
+                            continue;
+                        }
+
+                        BlockPos roughPos = placement.getLocatePos(new ChunkPos(chunkX, chunkZ));
+                        int surfaceY = generator.getHeight(
+                                roughPos.getX(),
+                                roughPos.getZ(),
+                                Heightmap.Type.WORLD_SURFACE_WG,
+                                world,
+                                noiseConfig);
+
+                        BlockPos realPos = new BlockPos(roughPos.getX(), surfaceY, roughPos.getZ());
+                        String id = registry.getId(entry.value()).toString();
+                        result.add(new NodeStorage.Node(realPos, id));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Stores the given nodes and logs them if they were newly added.
+     */
+    private static void storeAndLog(ServerWorld world, Set<NodeStorage.Node> nodes) {
+        NodeStorage storage = NodeStorageState.get(world).getStorage();
+        for (NodeStorage.Node node : nodes) {
+            if (storage.add(node.pos(), node.structure())) {
+                RoadArchitect.LOGGER.info(
+                        "Found structure {} at ({}, {}, {}) in {}",
+                        node.structure(),
+                        node.pos().getX(),
+                        node.pos().getY(),
+                        node.pos().getZ(),
+                        world.getRegistryKey().getValue());
+            }
+        }
+    }
+
+    private static void locateStructuresAsync(ServerWorld world, BlockPos originPos, int chunkRadius) {
+        EXECUTOR.submit(() -> {
+            Set<NodeStorage.Node> nodes = scanStructures(world, originPos, chunkRadius);
+            if (!nodes.isEmpty()) {
+                world.getServer().execute(() -> storeAndLog(world, nodes));
+            }
+        });
+    }
+
+    /**
      * Performs a seed-based scan for structures around the given position
      * without loading chunks. Any found structures are logged once and stored
      * for pathfinding.
@@ -135,58 +220,7 @@ public final class StructureLocator {
      * @param chunkRadius radius in chunks to search around the origin
      */
     private static void locateStructures(ServerWorld world, BlockPos originPos, int chunkRadius) {
-        // 1) Создаём калькулятор структур и инициализируем его
-        StructurePlacementCalculator calculator = world.getChunkManager().getStructurePlacementCalculator();
-        calculator.tryCalculate();
-
-        // 2) Берём генератор чанков и конфигурацию шума из калькулятора
-        ChunkGenerator generator = world.getChunkManager().getChunkGenerator();
-        NoiseConfig noiseConfig = calculator.getNoiseConfig();
-
-        Registry<Structure> registry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
-        Set<Identifier> allowed = getAllowedIds(world);
-        ChunkPos originChunk = new ChunkPos(originPos);
-        Set<String> logged = new HashSet<>();
-
-        for (RegistryEntry<Structure> entry : registry.streamEntries().toList()) {
-            Identifier entryId = registry.getId(entry.value());
-            if (!allowed.contains(entryId)) {
-                continue;
-            }
-            List<StructurePlacement> placements = calculator.getPlacements(entry);
-            if (placements.isEmpty()) continue;
-
-            for (StructurePlacement placement : placements) {
-                for (int dx = -chunkRadius; dx <= chunkRadius; dx++) {
-                    for (int dz = -chunkRadius; dz <= chunkRadius; dz++) {
-                        int chunkX = originChunk.x + dx;
-                        int chunkZ = originChunk.z + dz;
-                        if (!placement.shouldGenerate(calculator, chunkX, chunkZ)) continue;
-
-                        // 3) Получаем предварительную позицию (Y=0)
-                        BlockPos roughPos = placement.getLocatePos(new ChunkPos(chunkX, chunkZ));
-
-                        // 4) Запрашиваем реальную высоту ландшафта через getHeight
-                        int surfaceY = generator.getHeight(
-                                roughPos.getX(), roughPos.getZ(),
-                                Heightmap.Type.WORLD_SURFACE_WG,
-                                world,
-                                noiseConfig
-                        );
-
-                        BlockPos realPos = new BlockPos(roughPos.getX(), surfaceY, roughPos.getZ());
-                        String id = registry.getId(entry.value()).toString();
-                        if (NodeStorageState.get(world).getStorage().add(realPos, id)) {
-                            RoadArchitect.LOGGER.info(
-                                    "Found structure {} at ({}, {}, {}) in {}",
-                                    registry.getId(entry.value()),
-                                    realPos.getX(), realPos.getY(), realPos.getZ(),
-                                    world.getRegistryKey().getValue()
-                            );
-                        }
-                    }
-                }
-            }
-        }
+        Set<NodeStorage.Node> nodes = scanStructures(world, originPos, chunkRadius);
+        storeAndLog(world, nodes);
     }
 }
