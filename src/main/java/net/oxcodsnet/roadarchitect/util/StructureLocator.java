@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
@@ -40,9 +41,17 @@ public final class StructureLocator {
     private static Set<Identifier> allowedIds;
 
     /** Executor for asynchronous structure scanning. */
-    private static final ExecutorService EXECUTOR =
+    private static final ExecutorService SCAN_EXECUTOR =
             Executors.newSingleThreadExecutor(r -> {
                 Thread t = new Thread(r, "structure-locator");
+                t.setDaemon(true);
+                return t;
+            });
+
+    /** Executor handling pathfinding and road planning. */
+    private static final ExecutorService PATH_EXECUTOR =
+            Executors.newFixedThreadPool(2, r -> {
+                Thread t = new Thread(r, "roadarchitect-planner");
                 t.setDaemon(true);
                 return t;
             });
@@ -59,6 +68,10 @@ public final class StructureLocator {
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(StructureLocator::onPlayerChangeWorld);
         // TODO: Нужно придумать другой способ динамически собирать новые структуры, этот не работает и из-за него не грузит чанки
         //ServerChunkEvents.CHUNK_LOAD.register(StructureLocator::onChunkLoad);
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            SCAN_EXECUTOR.shutdownNow();
+            PATH_EXECUTOR.shutdownNow();
+        });
     }
 
     private static void onPlayerJoin(ServerPlayNetworkHandler handler,  PacketSender sender,  MinecraftServer server) {
@@ -211,7 +224,6 @@ public final class StructureLocator {
         }
 
         PathFinder.Environment env = new PathFinder.WorldEnvironment(world);
-        boolean edgesModified = false;
 
         for (NodeStorage.Node start : newNodes) {
             for (NodeStorage.Node target : nodeStorage.asNodeSet()) {
@@ -222,35 +234,36 @@ public final class StructureLocator {
                     continue;
                 }
 
-                List<BlockPos> path = PathFinder.findPath(start.pos(), target.pos(), env);
-                if (path.isEmpty()) {
-                    RoadArchitect.LOGGER.info(
-                            "No path found between {} and {}",
-                            start.pos(),
-                            target.pos());
-                    continue;
-                }
+                PATH_EXECUTOR.submit(() -> {
+                    List<BlockPos> path = PathFinder.findPath(start.pos(), target.pos(), env);
+                    if (path.isEmpty()) {
+                        RoadArchitect.LOGGER.info(
+                                "No path found between {} and {}",
+                                start.pos(),
+                                target.pos());
+                        return;
+                    }
 
-                if (edges.add(start.pos(), target.pos())) {
-                    edgesModified = true;
-                }
-                RoadArchitect.LOGGER.info(
-                        "Planned road of {} blocks between {} and {}",
-                        path.size(),
-                        start.pos(),
-                        target.pos());
-                RoadPlanner.planRoad(world, path);
+                    world.getServer().execute(() -> {
+                        if (edges.add(start.pos(), target.pos())) {
+                            edgeState.markDirty();
+                        }
+                        RoadArchitect.LOGGER.info(
+                                "Planned road of {} blocks between {} and {}",
+                                path.size(),
+                                start.pos(),
+                                target.pos());
+                        RoadPlanner.planRoad(world, path);
+                    });
+                });
             }
         }
 
-        if (edgesModified) {
-            edgeState.markDirty();
-        }
         nodeState.markDirty();
     }
 
     private static void locateStructuresAsync(ServerWorld world, BlockPos originPos, int chunkRadius) {
-        EXECUTOR.submit(() -> {
+        SCAN_EXECUTOR.submit(() -> {
             Set<NodeStorage.Node> nodes = scanStructures(world, originPos, chunkRadius);
             if (!nodes.isEmpty()) {
                 world.getServer().execute(() -> storeAndLog(world, nodes));
