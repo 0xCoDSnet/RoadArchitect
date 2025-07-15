@@ -187,9 +187,15 @@ public final class StructureLocator {
      * Stores the given nodes and logs them if they were newly added.
      */
     private static void storeAndLog(ServerWorld world, Set<NodeStorage.Node> nodes) {
-        NodeStorage storage = NodeStorageState.get(world).getStorage();
+        NodeStorageState nodeState = NodeStorageState.get(world);
+        NodeStorage nodeStorage = nodeState.getStorage();
+        EdgeStorageState edgeState = EdgeStorageState.get(world);
+        EdgeStorage edges = edgeState.getStorage();
+
+        Set<NodeStorage.Node> newNodes = new HashSet<>();
         for (NodeStorage.Node node : nodes) {
-            if (storage.add(node.pos(), node.structure())) {
+            if (nodeStorage.add(node.pos(), node.structure())) {
+                newNodes.add(node);
                 RoadArchitect.LOGGER.info(
                         "Found structure {} at ({}, {}, {}) in {}",
                         node.structure(),
@@ -199,6 +205,48 @@ public final class StructureLocator {
                         world.getRegistryKey().getValue());
             }
         }
+
+        if (newNodes.isEmpty()) {
+            return;
+        }
+
+        PathFinder.Environment env = new PathFinder.WorldEnvironment(world);
+        boolean edgesModified = false;
+
+        for (NodeStorage.Node start : newNodes) {
+            for (NodeStorage.Node target : nodeStorage.asNodeSet()) {
+                if (start.equals(target)) {
+                    continue;
+                }
+                if (edges.contains(start.pos(), target.pos())) {
+                    continue;
+                }
+
+                List<BlockPos> path = PathFinder.findPath(start.pos(), target.pos(), env);
+                if (path.isEmpty()) {
+                    RoadArchitect.LOGGER.info(
+                            "No path found between {} and {}",
+                            start.pos(),
+                            target.pos());
+                    continue;
+                }
+
+                if (edges.add(start.pos(), target.pos())) {
+                    edgesModified = true;
+                }
+                RoadArchitect.LOGGER.info(
+                        "Planned road of {} blocks between {} and {}",
+                        path.size(),
+                        start.pos(),
+                        target.pos());
+                RoadPlanner.planRoad(world, path);
+            }
+        }
+
+        if (edgesModified) {
+            edgeState.markDirty();
+        }
+        nodeState.markDirty();
     }
 
     private static void locateStructuresAsync(ServerWorld world, BlockPos originPos, int chunkRadius) {
