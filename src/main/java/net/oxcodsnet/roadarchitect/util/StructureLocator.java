@@ -28,7 +28,9 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
-
+import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.util.math.BlockBox;
+import net.minecraft.structure.StructureStart;
 /**
  * Utility that logs potential structure locations around a player.
  */
@@ -70,18 +72,18 @@ public final class StructureLocator {
         }
     }
 
-    private static void onChunkLoad(ServerWorld world, net.minecraft.world.chunk.WorldChunk chunk) {
+    private static void onChunkLoad(ServerWorld world,  WorldChunk chunk) {
         if (world.getRegistryKey() != World.OVERWORLD) {
             return;
         }
         chunk.getStructureStarts().forEach((key, start) -> {
-            if (start == null || start.equals(net.minecraft.structure.StructureStart.DEFAULT)) {
+            if (start == null || start.equals(StructureStart.DEFAULT)) {
                 return;
             }
             if (!start.hasChildren()) {
                 return;
             }
-            net.minecraft.util.math.BlockBox box = start.getBoundingBox();
+            BlockBox box = start.getBoundingBox();
             int x = (box.getMinX() + box.getMaxX()) >> 1;
             int z = (box.getMinZ() + box.getMaxZ()) >> 1;
             BlockPos pos = world.getTopPosition(Heightmap.Type.WORLD_SURFACE, new BlockPos(x, 0, z));
