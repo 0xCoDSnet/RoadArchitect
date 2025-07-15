@@ -2,6 +2,8 @@ package net.oxcodsnet.roadarchitect.util;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -38,14 +40,25 @@ public class NodeStorageState extends PersistentState {
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt, WrapperLookup registryLookup) {
-        nbt.putLongArray(NODES_KEY, this.storage.asLongArray());
+        NbtList list = new NbtList();
+        for (NodeStorage.Node node : this.storage.asNodeSet()) {
+            NbtCompound entry = new NbtCompound();
+            entry.putLong("pos", node.pos().asLong());
+            entry.putString("structure", node.structure());
+            list.add(entry);
+        }
+        nbt.put(NODES_KEY, list);
         return nbt;
     }
 
     public static NodeStorageState fromNbt(NbtCompound nbt, WrapperLookup registryLookup) {
         NodeStorage storage = new NodeStorage();
-        for (long packed : nbt.getLongArray(NODES_KEY)) {
-            storage.add(BlockPos.fromLong(packed));
+        NbtList list = nbt.getList(NODES_KEY, NbtElement.COMPOUND_TYPE);
+        for (int i = 0; i < list.size(); i++) {
+            NbtCompound entry = list.getCompound(i);
+            BlockPos pos = BlockPos.fromLong(entry.getLong("pos"));
+            String structure = entry.getString("structure");
+            storage.add(pos, structure);
         }
         return new NodeStorageState(storage);
     }

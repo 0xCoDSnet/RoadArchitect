@@ -13,11 +13,11 @@ public class NodeStorageTest {
     public void testAddAndContains() {
         NodeStorage storage = new NodeStorage();
         BlockPos pos = new BlockPos(1, 64, 2);
-        assertTrue(storage.add(pos));
-        assertTrue(storage.contains(pos));
-        assertFalse(storage.add(pos));
+        assertTrue(storage.add(pos, "village"));
+        assertTrue(storage.contains(pos, "village"));
+        assertFalse(storage.add(pos, "village"));
         assertEquals(1, storage.size());
         storage.clear();
-        assertFalse(storage.contains(pos));
+        assertFalse(storage.contains(pos, "village"));
     }
 }

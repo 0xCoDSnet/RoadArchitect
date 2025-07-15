@@ -1,42 +1,57 @@
 package net.oxcodsnet.roadarchitect.util;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import net.minecraft.util.math.BlockPos;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import net.minecraft.util.math.BlockPos;
 
 /**
- * Efficient container for storing unique {@link BlockPos} nodes for pathfinding.
+ * Efficient container for storing unique nodes consisting of a position and
+ * structure name for pathfinding.
  */
 public class NodeStorage {
-    private final LongOpenHashSet nodes = new LongOpenHashSet();
+    /**
+     * Single node identified by its position and the structure name it belongs
+     * to.
+     *
+     * @param pos       absolute world position
+     * @param structure structure identifier
+     */
+    public record Node(BlockPos pos, String structure) {
+    }
+
+    private final Set<Node> nodes = new HashSet<>();
 
     /**
-     * Adds the given position to the storage if it is not already present.
+     * Adds the given position and structure to the storage if not already
+     * present.
      *
-     * @param pos the block position to add
-     * @return {@code true} if the position was added, {@code false} if it was already present
+     * @param pos       block position to add
+     * @param structure structure identifier
+     * @return {@code true} if the node was added, {@code false} if it already
+     *         existed
      */
-    public boolean add(BlockPos pos) {
-        return this.nodes.add(pos.asLong());
+    public boolean add(BlockPos pos, String structure) {
+        return this.nodes.add(new Node(pos, structure));
     }
 
     /**
-     * Removes the given position from the storage.
+     * Removes the given node from the storage.
      *
-     * @param pos the block position to remove
-     * @return {@code true} if the position was removed, {@code false} if it was not present
+     * @param pos       block position to remove
+     * @param structure structure identifier
+     * @return {@code true} if the node was removed, {@code false} otherwise
      */
-    public boolean remove(BlockPos pos) {
-        return this.nodes.remove(pos.asLong());
+    public boolean remove(BlockPos pos, String structure) {
+        return this.nodes.remove(new Node(pos, structure));
     }
 
     /**
-     * Returns whether the given position is stored.
+     * Returns whether the given node is stored.
      */
-    public boolean contains(BlockPos pos) {
-        return this.nodes.contains(pos.asLong());
+    public boolean contains(BlockPos pos, String structure) {
+        return this.nodes.contains(new Node(pos, structure));
     }
 
     /**
@@ -54,21 +69,17 @@ public class NodeStorage {
     }
 
     /**
-     * Returns the stored positions as an immutable {@link Set}.
+     * Returns all stored nodes as an immutable set.
      */
-    public Set<BlockPos> asBlockPosSet() {
-        Set<BlockPos> result = new HashSet<>(this.nodes.size());
-        LongIterator it = this.nodes.iterator();
-        while (it.hasNext()) {
-            result.add(BlockPos.fromLong(it.nextLong()));
-        }
-        return Set.copyOf(result);
+    public Set<Node> asNodeSet() {
+        return Set.copyOf(this.nodes);
     }
 
     /**
-     * Returns the stored positions as an array of packed longs.
+     * Returns all stored positions as an immutable set, ignoring structure
+     * names.
      */
-    public long[] asLongArray() {
-        return this.nodes.toLongArray();
+    public Set<BlockPos> asBlockPosSet() {
+        return this.nodes.stream().map(Node::pos).collect(Collectors.toUnmodifiableSet());
     }
 }

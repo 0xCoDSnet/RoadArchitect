@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
@@ -29,7 +30,7 @@ import net.oxcodsnet.roadarchitect.RoadArchitect;
  * Utility that logs potential structure locations around a player.
  */
 public final class StructureLocator {
-    private static final int CHUNK_RADIUS = 100;
+    private static final int DEFAULT_CHUNK_RADIUS = 100;
 
     private StructureLocator() {
     }
@@ -41,27 +42,51 @@ public final class StructureLocator {
     public static void init() {
         ServerPlayConnectionEvents.JOIN.register(StructureLocator::onPlayerJoin);
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(StructureLocator::onPlayerChangeWorld);
+        ServerChunkEvents.CHUNK_LOAD.register(StructureLocator::onChunkLoad);
     }
 
     private static void onPlayerJoin(ServerPlayNetworkHandler handler,  PacketSender sender,  MinecraftServer server) {
         ServerWorld world = handler.getPlayer().getServerWorld();
         if (world.getRegistryKey() == World.OVERWORLD) {
-            locateStructures(world, handler.getPlayer().getBlockPos());
+            locateStructures(world, handler.getPlayer().getBlockPos(), DEFAULT_CHUNK_RADIUS);
         }
     }
 
-    private static void onPlayerChangeWorld( ServerPlayerEntity player, ServerWorld origin, ServerWorld destination) {
+    private static void onPlayerChangeWorld(ServerPlayerEntity player, ServerWorld origin, ServerWorld destination) {
         if (destination.getRegistryKey() == World.OVERWORLD) {
-            locateStructures(destination, player.getBlockPos());
+            locateStructures(destination, player.getBlockPos(), DEFAULT_CHUNK_RADIUS);
         }
+    }
+
+    private static void onChunkLoad(ServerWorld world, net.minecraft.world.chunk.WorldChunk chunk) {
+        if (world.getRegistryKey() != World.OVERWORLD) {
+            return;
+        }
+        chunk.getStructureStarts().forEach((key, start) -> {
+            if (start == null || start.equals(net.minecraft.structure.StructureStart.DEFAULT)) {
+                return;
+            }
+            if (!start.hasChildren()) {
+                return;
+            }
+            net.minecraft.util.math.BlockBox box = start.getBoundingBox();
+            int x = (box.getMinX() + box.getMaxX()) >> 1;
+            int z = (box.getMinZ() + box.getMaxZ()) >> 1;
+            BlockPos pos = world.getTopPosition(Heightmap.Type.WORLD_SURFACE, new BlockPos(x, 0, z));
+            locateStructures(world, pos, 50);
+        });
     }
 
     /**
      * Performs a seed-based scan for structures around the given position
      * without loading chunks. Any found structures are logged once and stored
      * for pathfinding.
+     *
+     * @param world       the world to scan
+     * @param originPos   center position of the scan
+     * @param chunkRadius radius in chunks to search around the origin
      */
-    private static void locateStructures(ServerWorld world, BlockPos originPos) {
+    private static void locateStructures(ServerWorld world, BlockPos originPos, int chunkRadius) {
         // 1) Создаём калькулятор структур и инициализируем его
         StructurePlacementCalculator calculator = world.getChunkManager().getStructurePlacementCalculator();
         calculator.tryCalculate();
@@ -79,8 +104,8 @@ public final class StructureLocator {
             if (placements.isEmpty()) continue;
 
             for (StructurePlacement placement : placements) {
-                for (int dx = -CHUNK_RADIUS; dx <= CHUNK_RADIUS; dx++) {
-                    for (int dz = -CHUNK_RADIUS; dz <= CHUNK_RADIUS; dz++) {
+                for (int dx = -chunkRadius; dx <= chunkRadius; dx++) {
+                    for (int dz = -chunkRadius; dz <= chunkRadius; dz++) {
                         int chunkX = originChunk.x + dx;
                         int chunkZ = originChunk.z + dz;
                         if (!placement.shouldGenerate(calculator, chunkX, chunkZ)) continue;
@@ -97,7 +122,8 @@ public final class StructureLocator {
                         );
 
                         BlockPos realPos = new BlockPos(roughPos.getX(), surfaceY, roughPos.getZ());
-                        if (NodeStorageState.get(world).getStorage().add(realPos)) {
+                        String id = registry.getId(entry.value()).toString();
+                        if (NodeStorageState.get(world).getStorage().add(realPos, id)) {
                             RoadArchitect.LOGGER.info(
                                     "Found structure {} at ({}, {}, {}) in {}",
                                     registry.getId(entry.value()),
