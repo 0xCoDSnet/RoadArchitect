@@ -2,7 +2,9 @@ package net.oxcodsnet.roadarchitect;
 
 import net.fabricmc.api.ModInitializer;
 
+import net.oxcodsnet.roadarchitect.util.EdgeStorageState;
 import net.oxcodsnet.roadarchitect.util.NodeStorageState;
+import net.oxcodsnet.roadarchitect.util.RoadPlanner;
 import net.oxcodsnet.roadarchitect.util.StructureLocator;
 import net.oxcodsnet.roadarchitect.config.RoadArchitectConfig;
 import org.slf4j.Logger;
@@ -26,7 +28,9 @@ public class RoadArchitect implements ModInitializer {
         // Proceed with mild caution.
 
         NodeStorageState.init();
+        EdgeStorageState.init();
         StructureLocator.init();
+        RoadPlanner.init();
         LOGGER.info("Hello Fabric world!");
     }
 }

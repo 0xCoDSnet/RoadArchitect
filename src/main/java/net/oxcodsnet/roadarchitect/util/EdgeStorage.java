@@ -99,4 +99,41 @@ public class EdgeStorage {
         }
         return count / 2;
     }
+
+
+    /**
+     * Returns how many edges are connected to the given node.
+     */
+    public int degree(BlockPos pos) {
+        LongOpenHashSet set = this.adjacency.get(pos.asLong());
+        return set == null ? 0 : set.size();
+    }
+
+    /**
+     * Single undirected edge between two positions.
+     *
+     * @param a first node position
+     * @param b second node position
+     */
+    public record Edge(BlockPos a, BlockPos b) {
+    }
+
+    /**
+     * Returns all stored edges as an immutable set.
+     */
+    public Set<Edge> asEdgeSet() {
+        Set<Edge> result = new HashSet<>();
+        for (long packedA : this.adjacency.keySet()) {
+            LongOpenHashSet neighbors = this.adjacency.get(packedA);
+            if (neighbors == null) {
+                continue;
+            }
+            for (long packedB : neighbors) {
+                if (packedA < packedB) { // avoid duplicates
+                    result.add(new Edge(BlockPos.fromLong(packedA), BlockPos.fromLong(packedB)));
+                }
+            }
+        }
+        return Set.copyOf(result);
+    }
 }
