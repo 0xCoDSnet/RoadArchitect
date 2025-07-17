@@ -20,12 +20,13 @@ public class NodeStorage {
      * Создает новый узел по указанной позиции и добавляет его в хранилище.
      * <p>Creates a new node at the given position and adds it to this storage.</p>
      *
-     * @param pos координаты узла / node coordinates
+     * @param pos  координаты узла / node coordinates
+     * @param type идентификатор структуры / structure id
      * @return созданный узел / created node
      */
-    public Node add(BlockPos pos) {
+    public Node add(BlockPos pos, String type) {
         String id = UUID.randomUUID().toString();
-        Node node = new Node(id, pos);
+        Node node = new Node(id, pos, type);
         nodes.put(id, node);
         return node;
     }
@@ -69,6 +70,7 @@ public class NodeStorage {
             NbtCompound tag = new NbtCompound();
             tag.putString("id", node.id());
             tag.putLong("pos", node.pos().asLong());
+            tag.putString("type", node.type());
             list.add(tag);
         }
         return list;
@@ -84,7 +86,8 @@ public class NodeStorage {
             NbtCompound tag = list.getCompound(i);
             String id = tag.getString("id");
             BlockPos pos = BlockPos.fromLong(tag.getLong("pos"));
-            storage.nodes.put(id, new Node(id, pos));
+            String type = tag.getString("type");
+            storage.nodes.put(id, new Node(id, pos, type));
         }
         return storage;
     }

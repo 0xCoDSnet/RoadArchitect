@@ -66,9 +66,9 @@ public class RoadGraphState extends PersistentState {
      * @param pos позиция для нового узла
      * @return созданный узел
      */
-    public Node addNodeWithEdges(BlockPos pos) {
+    public Node addNodeWithEdges(BlockPos pos, String type) {
         // 1) создаём и сохраняем новую ноду
-        Node newNode = this.nodeStorage.add(pos);
+        Node newNode = this.nodeStorage.add(pos, type);
         // 2) для каждого уже существующего узла пытаемся добавить ребро
         for (Node other : this.nodeStorage.all().values()) {
             // skip self

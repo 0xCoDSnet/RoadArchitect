@@ -18,8 +18,8 @@ class EdgeStorageSerializationTest {
     @Test
     void roundTrip() {
         EdgeStorage storage = new EdgeStorage(5.0);
-        Node a = new Node("a", BlockPos.ORIGIN);
-        Node b = new Node("b", new BlockPos(9, 64, 0));
+        Node a = new Node("a", BlockPos.ORIGIN, "test");
+        Node b = new Node("b", new BlockPos(9, 64, 0), "test");
         storage.add(a, b);
 
         NbtCompound tag = storage.toNbt();

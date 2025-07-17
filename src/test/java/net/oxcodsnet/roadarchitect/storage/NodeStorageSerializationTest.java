@@ -18,8 +18,8 @@ class NodeStorageSerializationTest {
     @Test
     void roundTrip() {
         NodeStorage storage = new NodeStorage();
-        Node a = storage.add(BlockPos.ORIGIN);
-        Node b = storage.add(new BlockPos(5, 64, 5));
+        Node a = storage.add(BlockPos.ORIGIN, "test");
+        Node b = storage.add(new BlockPos(5, 64, 5), "test");
 
         NbtList tag = storage.toNbt();
         NodeStorage loaded = NodeStorage.fromNbt(tag);

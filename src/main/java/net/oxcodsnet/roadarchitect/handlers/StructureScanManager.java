@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import com.mojang.datafixers.util.Pair;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -66,7 +67,7 @@ public class StructureScanManager {
         LOGGER.info("[{}] Запуск сканирования: overallRadius={}, scanRadius={}, selectors={}",
                 approach, overallRadius, scanRadius, selectors);
 
-        List<BlockPos> found = StructureLocator.scanGrid(
+        List<Pair<BlockPos, String>> found = StructureLocator.scanGrid(
                 world, center, overallRadius, scanRadius, selectors
         );
 

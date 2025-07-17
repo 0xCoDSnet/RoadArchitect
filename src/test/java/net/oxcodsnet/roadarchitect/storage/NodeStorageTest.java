@@ -19,7 +19,7 @@ class NodeStorageTest {
     @Test
     void addAndAll() {
         NodeStorage storage = new NodeStorage();
-        Node node = storage.add(new BlockPos(1, 64, 1));
+        Node node = storage.add(new BlockPos(1, 64, 1), "test");
 
         Map<String, Node> all = storage.all();
         assertEquals(1, all.size());
@@ -34,7 +34,7 @@ class NodeStorageTest {
     @Test
     void remove() {
         NodeStorage storage = new NodeStorage();
-        Node node = storage.add(BlockPos.ORIGIN);
+        Node node = storage.add(BlockPos.ORIGIN, "test");
         assertTrue(storage.remove(node.id()));
         assertTrue(storage.all().isEmpty());
     }
@@ -46,8 +46,8 @@ class NodeStorageTest {
     @Test
     void clear() {
         NodeStorage storage = new NodeStorage();
-        storage.add(BlockPos.ORIGIN);
-        storage.add(new BlockPos(5, 64, 5));
+        storage.add(BlockPos.ORIGIN, "test");
+        storage.add(new BlockPos(5, 64, 5), "test");
         storage.clear();
         assertTrue(storage.all().isEmpty());
     }
@@ -59,7 +59,7 @@ class NodeStorageTest {
     @Test
     void allIsUnmodifiable() {
         NodeStorage storage = new NodeStorage();
-        storage.add(BlockPos.ORIGIN);
+        storage.add(BlockPos.ORIGIN, "test");
         Map<String, Node> view = storage.all();
         assertThrows(UnsupportedOperationException.class, () -> view.clear());
     }

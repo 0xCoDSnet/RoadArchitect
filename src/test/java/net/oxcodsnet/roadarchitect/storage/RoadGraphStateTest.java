@@ -19,8 +19,8 @@ class RoadGraphStateTest {
     @Test
     void roundTrip() {
         RoadGraphState state = new RoadGraphState(5.0);
-        Node a = state.nodes().add(BlockPos.ORIGIN);
-        Node b = state.nodes().add(new BlockPos(9, 64, 0));
+        Node a = state.nodes().add(BlockPos.ORIGIN, "test");
+        Node b = state.nodes().add(new BlockPos(9, 64, 0), "test");
         state.edges().add(a, b);
 
         NbtCompound tag = state.writeNbt(new NbtCompound(), null);
@@ -36,10 +36,10 @@ class RoadGraphStateTest {
         // подготовка: создаём фиктивный серверный мир и RoadGraphState
         RoadGraphState state = new RoadGraphState(10.0);
         // заранее добавим одну ноду
-        Node a = state.addNodeWithEdges(new BlockPos(0, 64, 0));
+        Node a = state.addNodeWithEdges(new BlockPos(0, 64, 0), "test");
         assertTrue(state.edges().all().isEmpty());
         // добавляем вторую в пределах радиуса 10
-        Node b = state.addNodeWithEdges(new BlockPos(5, 64, 5));
+        Node b = state.addNodeWithEdges(new BlockPos(5, 64, 5), "test");
         // теперь между a и b должно появиться ребро
         assertTrue(state.edges().neighbors(a.id()).contains(b.id()));
         assertTrue(state.edges().neighbors(b.id()).contains(a.id()));

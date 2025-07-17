@@ -20,8 +20,8 @@ class EdgeStorageTest {
     @Test
     void addAndNeighbors() {
         EdgeStorage storage = new EdgeStorage(5.0);
-        Node a = new Node("a", BlockPos.ORIGIN);
-        Node b = new Node("b", new BlockPos(9, 64, 0));
+        Node a = new Node("a", BlockPos.ORIGIN, "test");
+        Node b = new Node("b", new BlockPos(9, 64, 0), "test");
 
         assertTrue(storage.add(a, b));
         assertEquals(Set.of("b"), storage.neighbors("a"));
@@ -35,8 +35,8 @@ class EdgeStorageTest {
     @Test
     void addInvalidDistance() {
         EdgeStorage storage = new EdgeStorage(5.0);
-        Node a = new Node("a", BlockPos.ORIGIN);
-        Node c = new Node("c", new BlockPos(20, 64, 0));
+        Node a = new Node("a", BlockPos.ORIGIN, "test");
+        Node c = new Node("c", new BlockPos(20, 64, 0), "test");
 
         assertFalse(storage.add(a, c));
         assertTrue(storage.all().isEmpty());
@@ -49,8 +49,8 @@ class EdgeStorageTest {
     @Test
     void removeEdge() {
         EdgeStorage storage = new EdgeStorage(5.0);
-        Node a = new Node("a", BlockPos.ORIGIN);
-        Node b = new Node("b", new BlockPos(9, 64, 0));
+        Node a = new Node("a", BlockPos.ORIGIN, "test");
+        Node b = new Node("b", new BlockPos(9, 64, 0), "test");
         storage.add(a, b);
 
         assertTrue(storage.remove("a", "b"));
@@ -64,8 +64,8 @@ class EdgeStorageTest {
     @Test
     void clear() {
         EdgeStorage storage = new EdgeStorage(5.0);
-        Node a = new Node("a", BlockPos.ORIGIN);
-        Node b = new Node("b", new BlockPos(9, 64, 0));
+        Node a = new Node("a", BlockPos.ORIGIN, "test");
+        Node b = new Node("b", new BlockPos(9, 64, 0), "test");
         storage.add(a, b);
 
         storage.clear();
@@ -79,8 +79,8 @@ class EdgeStorageTest {
     @Test
     void allIsUnmodifiable() {
         EdgeStorage storage = new EdgeStorage(5.0);
-        Node a = new Node("a", BlockPos.ORIGIN);
-        Node b = new Node("b", new BlockPos(9, 64, 0));
+        Node a = new Node("a", BlockPos.ORIGIN, "test");
+        Node b = new Node("b", new BlockPos(9, 64, 0), "test");
         storage.add(a, b);
 
         Map<String, Set<String>> view = storage.all();

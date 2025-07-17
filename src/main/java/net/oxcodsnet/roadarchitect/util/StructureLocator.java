@@ -49,11 +49,11 @@ public class StructureLocator {
      * @param structureSelectors список селекторов ("minecraft:village" или "#minecraft:village") / list of selectors ("minecraft:village" or "#minecraft:village")
      * @return список найденных позиций структур / list of found structure positions
      */
-    public static List<BlockPos> findStructures(ServerWorld world,
+    public static List<Pair<BlockPos, String>> findStructures(ServerWorld world,
                                                 BlockPos origin,
                                                 int radius,
                                                 List<String> structureSelectors) {
-        List<BlockPos> foundPositions = new ArrayList<>();
+        List<Pair<BlockPos, String>> foundPositions = new ArrayList<>();
         Registry<Structure> structureRegistry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
 
         for (String selector : structureSelectors) {
@@ -73,9 +73,10 @@ public class StructureLocator {
 
                 if (located != null) {
                     BlockPos pos = located.getFirst();
+                    String id = structureRegistry.getId(located.getSecond().value()).toString();
                     LOGGER.debug("Найдена структура '{}' на позиции {}", selector, pos);
                     LOGGER.debug("Found structure '{}' at {}", selector, pos);
-                    foundPositions.add(pos);
+                    foundPositions.add(Pair.of(pos, id));
                 } else {
                     LOGGER.warn("Структура '{}' не найдена в радиусе {} чанков вокруг {}", selector, radius, origin);
                     LOGGER.warn("No structure '{}' found within radius {} around {}", selector, radius, origin);
@@ -116,12 +117,12 @@ public class StructureLocator {
      * @param structureSelectors список селекторов структур / list of structure selectors
      * @return список уникальных найденных позиций структур / unique list of found structure positions
      */
-    public static List<BlockPos> scanGrid(ServerWorld world,
+    public static List<Pair<BlockPos, String>> scanGrid(ServerWorld world,
                                           BlockPos origin,
                                           int overallRadius,
                                           int scanRadius,
                                           List<String> structureSelectors) {
-        List<BlockPos> allFound = new ArrayList<>();
+        List<Pair<BlockPos, String>> allFound = new ArrayList<>();
         Set<BlockPos> seen = new HashSet<>();
 
 
@@ -136,10 +137,11 @@ public class StructureLocator {
                 int chunkZ = originChunkZ + dz;
                 BlockPos scanOrigin = new BlockPos((chunkX << 4) + 8, origin.getY(), (chunkZ << 4) + 8);
 
-                List<BlockPos> found = findStructures(world, scanOrigin, scanRadius, structureSelectors);
-                for (BlockPos pos : found) {
+                List<Pair<BlockPos, String>> found = findStructures(world, scanOrigin, scanRadius, structureSelectors);
+                for (Pair<BlockPos, String> pair : found) {
+                    BlockPos pos = pair.getFirst();
                     if (seen.add(pos)) {
-                        allFound.add(pos);
+                        allFound.add(pair);
                         LOGGER.debug("Grid scan нашёл новую структуру на {}", pos);
                         LOGGER.debug("Grid scan found new structure at {}", pos);
                     }
@@ -149,8 +151,8 @@ public class StructureLocator {
         // Сохранение узлов
         RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
 
-        for (BlockPos pos : allFound) {
-            Node node = state.addNodeWithEdges(pos);
+        for (Pair<BlockPos, String> pair : allFound) {
+            Node node = state.addNodeWithEdges(pair.getFirst(), pair.getSecond());
             LOGGER.info("Добавлен узел {} на {}", node.id(), node.pos());
         }
         state.markDirty();
