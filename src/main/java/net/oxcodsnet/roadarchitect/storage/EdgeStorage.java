@@ -1,5 +1,9 @@
 package net.oxcodsnet.roadarchitect.storage;
 
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Collections;
@@ -23,6 +27,10 @@ public class EdgeStorage {
      */
     public EdgeStorage(double radius) {
         this.radius = radius;
+    }
+
+    public double radius() {
+        return radius;
     }
 
     /**
@@ -99,6 +107,30 @@ public class EdgeStorage {
      */
     public void clear() {
         edges.clear();
+    }
+
+    public NbtCompound toNbt() {
+        NbtCompound tag = new NbtCompound();
+        for (Map.Entry<String, Set<String>> entry : edges.entrySet()) {
+            NbtList list = new NbtList();
+            for (String id : entry.getValue()) {
+                list.add(NbtString.of(id));
+            }
+            tag.put(entry.getKey(), list);
+        }
+        return tag;
+    }
+
+    public static EdgeStorage fromNbt(NbtCompound tag, double radius) {
+        EdgeStorage storage = new EdgeStorage(radius);
+        for (String key : tag.getKeys()) {
+            NbtList list = tag.getList(key, NbtElement.STRING_TYPE);
+            Set<String> set = storage.edges.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet());
+            for (int i = 0; i < list.size(); i++) {
+                set.add(list.getString(i));
+            }
+        }
+        return storage;
     }
 
     private boolean intersects(BlockPos a, BlockPos b) {

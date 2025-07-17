@@ -9,8 +9,9 @@ import java.util.List;
 @Modmenu(modId = RoadArchitect.MOD_ID)
 @Config(name = "roadarchitect", wrapperName = "RoadArchitectConfig")
 public class RoadArchitectConfigModel {
-    public int playerScanRadius = 50;
+    public int playerScanRadius = 100;
     public int chunkLoadScanRadius = 50;
+    public int maxConnectionDistance = 2048;
     public List<String> structureSelectors = List.of(
             "#minecraft:village",
             "minecraft:village_plains"

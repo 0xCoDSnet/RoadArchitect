@@ -1,0 +1,23 @@
+package net.oxcodsnet.roadarchitect.storage;
+
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.BlockPos;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class EdgeStorageSerializationTest {
+    @Test
+    void roundTrip() {
+        EdgeStorage storage = new EdgeStorage(5.0);
+        Node a = new Node("a", BlockPos.ORIGIN);
+        Node b = new Node("b", new BlockPos(9, 64, 0));
+        storage.add(a, b);
+
+        NbtCompound tag = storage.toNbt();
+        EdgeStorage loaded = EdgeStorage.fromNbt(tag, 5.0);
+
+        assertEquals(storage.all(), loaded.all());
+        assertEquals(storage.radius(), loaded.radius());
+    }
+}

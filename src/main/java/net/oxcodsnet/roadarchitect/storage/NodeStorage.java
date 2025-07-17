@@ -1,5 +1,7 @@
 package net.oxcodsnet.roadarchitect.storage;
 
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Collections;
@@ -50,5 +52,27 @@ public class NodeStorage {
      */
     public void clear() {
         nodes.clear();
+    }
+
+    public NbtList toNbt() {
+        NbtList list = new NbtList();
+        for (Node node : nodes.values()) {
+            NbtCompound tag = new NbtCompound();
+            tag.putString("id", node.id());
+            tag.putLong("pos", node.pos().asLong());
+            list.add(tag);
+        }
+        return list;
+    }
+
+    public static NodeStorage fromNbt(NbtList list) {
+        NodeStorage storage = new NodeStorage();
+        for (int i = 0; i < list.size(); i++) {
+            NbtCompound tag = list.getCompound(i);
+            String id = tag.getString("id");
+            BlockPos pos = BlockPos.fromLong(tag.getLong("pos"));
+            storage.nodes.put(id, new Node(id, pos));
+        }
+        return storage;
     }
 }

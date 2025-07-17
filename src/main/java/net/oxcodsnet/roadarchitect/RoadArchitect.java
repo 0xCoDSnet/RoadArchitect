@@ -4,6 +4,8 @@ import net.fabricmc.api.ModInitializer;
 
 import net.oxcodsnet.roadarchitect.config.RoadArchitectConfig;
 import net.oxcodsnet.roadarchitect.handlers.StructureScanManager;
+import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +30,7 @@ public class RoadArchitect implements ModInitializer {
         LOGGER.info("Hello Fabric world!");
 
         StructureScanManager.register();
+        ServerWorldEvents.LOAD.register((server, world) -> RoadGraphState.get(world, CONFIG.maxConnectionDistance()));
     }
 }
 
