@@ -150,7 +150,7 @@ public class StructureLocator {
         RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
 
         for (BlockPos pos : allFound) {
-            Node node = state.nodes().add(pos);
+            Node node = state.addNodeWithEdges(pos);
             LOGGER.info("Добавлен узел {} на {}", node.id(), node.pos());
         }
         state.markDirty();

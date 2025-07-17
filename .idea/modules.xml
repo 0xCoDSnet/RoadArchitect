@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect.client.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect.client.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect.main.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect.test.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect.test.iml" />
     </modules>
   </component>
 </project>

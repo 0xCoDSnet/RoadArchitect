@@ -42,15 +42,12 @@ public class StructureScanManager {
     private static void onChunkGenerated(ServerWorld world, Chunk chunk) {
         if (world.isClient) return;
         if (!world.getRegistryKey().equals(World.OVERWORLD)) return;
-        if (chunkScanDone.add(world.getRegistryKey())){
+        int spawnChunkX = world.getSpawnPos().getX() >> 4;
+        int spawnChunkZ = world.getSpawnPos().getZ() >> 4;
 
-            int spawnChunkX = world.getSpawnPos().getX() >> 4;
-            int spawnChunkZ = world.getSpawnPos().getZ() >> 4;
-
-            if (chunk.getPos().x == spawnChunkX && chunk.getPos().z == spawnChunkZ) {
-                    performScan(world, "ChunkGenerated");
-                }
-            }
+        if (chunk.getPos().x == spawnChunkX && chunk.getPos().z == spawnChunkZ) {
+            performScan(world, "ChunkGenerated");
+        }
     }
 
 

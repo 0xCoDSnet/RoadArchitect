@@ -4,6 +4,7 @@ import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
@@ -58,6 +59,26 @@ public class RoadGraphState extends PersistentState {
      */
     public EdgeStorage edges() {
         return edgeStorage;
+    }
+
+    /**
+     * Добавляет новый узел и сразу строит с ним все допустимые рёбра
+     * @param pos позиция для нового узла
+     * @return созданный узел
+     */
+    public Node addNodeWithEdges(BlockPos pos) {
+        // 1) создаём и сохраняем новую ноду
+        Node newNode = this.nodeStorage.add(pos);
+        // 2) для каждого уже существующего узла пытаемся добавить ребро
+        for (Node other : this.nodeStorage.all().values()) {
+            // skip self
+            if (!other.id().equals(newNode.id())) {
+                this.edgeStorage.add(newNode, other);
+            }
+        }
+        // 3) помечаем состояние как изменённое для сохранения
+        this.markDirty();
+        return newNode;
     }
 
     @Override
