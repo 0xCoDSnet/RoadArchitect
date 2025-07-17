@@ -8,7 +8,15 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Тесты для {@link EdgeStorage}.
+ * <p>Tests for {@link EdgeStorage}.</p>
+ */
 class EdgeStorageTest {
+    /**
+     * Проверяет добавление рёбер и соседей.
+     * <p>Tests adding edges and retrieving neighbors.</p>
+     */
     @Test
     void addAndNeighbors() {
         EdgeStorage storage = new EdgeStorage(5.0);
@@ -20,6 +28,10 @@ class EdgeStorageTest {
         assertEquals(Set.of("a"), storage.neighbors("b"));
     }
 
+    /**
+     * Проверяет отказ добавления при большом расстоянии.
+     * <p>Tests that edges beyond range are not added.</p>
+     */
     @Test
     void addInvalidDistance() {
         EdgeStorage storage = new EdgeStorage(5.0);
@@ -30,6 +42,10 @@ class EdgeStorageTest {
         assertTrue(storage.all().isEmpty());
     }
 
+    /**
+     * Проверяет удаление рёбер.
+     * <p>Tests edge removal.</p>
+     */
     @Test
     void removeEdge() {
         EdgeStorage storage = new EdgeStorage(5.0);
@@ -41,6 +57,10 @@ class EdgeStorageTest {
         assertTrue(storage.all().isEmpty());
     }
 
+    /**
+     * Проверяет очистку хранилища.
+     * <p>Tests clearing the storage.</p>
+     */
     @Test
     void clear() {
         EdgeStorage storage = new EdgeStorage(5.0);
@@ -52,6 +72,10 @@ class EdgeStorageTest {
         assertTrue(storage.all().isEmpty());
     }
 
+    /**
+     * Убеждается, что представление неизменяемо.
+     * <p>Ensures the returned map is unmodifiable.</p>
+     */
     @Test
     void allIsUnmodifiable() {
         EdgeStorage storage = new EdgeStorage(5.0);

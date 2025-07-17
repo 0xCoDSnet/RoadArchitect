@@ -6,7 +6,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Тест сериализации {@link NodeStorage}.
+ * <p>Tests serialization of {@link NodeStorage}.</p>
+ */
 class NodeStorageSerializationTest {
+    /**
+     * Проверяет сохранение и загрузку узлов.
+     * <p>Tests saving and loading nodes.</p>
+     */
     @Test
     void roundTrip() {
         NodeStorage storage = new NodeStorage();

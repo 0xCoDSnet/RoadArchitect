@@ -11,15 +11,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Хранилище всех узлов в мире.
+ * <p>Storage for all nodes in the world.</p>
  */
 public class NodeStorage {
     private final Map<String, Node> nodes = new ConcurrentHashMap<>();
 
     /**
      * Создает новый узел по указанной позиции и добавляет его в хранилище.
+     * <p>Creates a new node at the given position and adds it to this storage.</p>
      *
-     * @param pos координаты узла
-     * @return созданный узел
+     * @param pos координаты узла / node coordinates
+     * @return созданный узел / created node
      */
     public Node add(BlockPos pos) {
         String id = UUID.randomUUID().toString();
@@ -30,9 +32,10 @@ public class NodeStorage {
 
     /**
      * Удаляет узел по его идентификатору.
+     * <p>Removes the node with the given identifier.</p>
      *
-     * @param id идентификатор узла
-     * @return {@code true}, если узел был удален
+     * @param id идентификатор узла / node identifier
+     * @return {@code true} если узел был удален / {@code true} if the node was removed
      */
     public boolean remove(String id) {
         return nodes.remove(id) != null;
@@ -40,8 +43,9 @@ public class NodeStorage {
 
     /**
      * Возвращает неизменяемое представление всех узлов.
+     * <p>Returns an unmodifiable view of all stored nodes.</p>
      *
-     * @return неизменяемая карта узлов
+     * @return неизменяемая карта узлов / unmodifiable map of nodes
      */
     public Map<String, Node> all() {
         return Collections.unmodifiableMap(nodes);
@@ -49,11 +53,16 @@ public class NodeStorage {
 
     /**
      * Очищает все сохраненные узлы.
+     * <p>Clears all stored nodes.</p>
      */
     public void clear() {
         nodes.clear();
     }
 
+    /**
+     * Сериализует все узлы в список NBT.
+     * <p>Serializes all nodes into an NBT list.</p>
+     */
     public NbtList toNbt() {
         NbtList list = new NbtList();
         for (Node node : nodes.values()) {
@@ -65,6 +74,10 @@ public class NodeStorage {
         return list;
     }
 
+    /**
+     * Загружает хранилище узлов из списка NBT.
+     * <p>Loads node storage from the given NBT list.</p>
+     */
     public static NodeStorage fromNbt(NbtList list) {
         NodeStorage storage = new NodeStorage();
         for (int i = 0; i < list.size(); i++) {

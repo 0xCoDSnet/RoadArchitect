@@ -14,6 +14,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.structure.Structure;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
+import net.oxcodsnet.roadarchitect.storage.Node;
+import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,6 +124,8 @@ public class StructureLocator {
         List<BlockPos> allFound = new ArrayList<>();
         Set<BlockPos> seen = new HashSet<>();
 
+
+
         int step = scanRadius * 2 + 1;
         int originChunkX = origin.getX() >> 4;
         int originChunkZ = origin.getZ() >> 4;
@@ -142,6 +146,16 @@ public class StructureLocator {
                 }
             }
         }
+        // Сохранение узлов
+        RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+
+        for (BlockPos pos : allFound) {
+            Node node = state.nodes().add(pos);
+            LOGGER.info("Добавлен узел {} на {}", node.id(), node.pos());
+        }
+        state.markDirty();
+        LOGGER.info("Все узлы сохранены в персистентном состоянии.");
+
         return allFound;
     }
 }

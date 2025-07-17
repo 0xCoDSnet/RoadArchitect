@@ -6,7 +6,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Тест сериализации {@link EdgeStorage}.
+ * <p>Tests serialization of {@link EdgeStorage}.</p>
+ */
 class EdgeStorageSerializationTest {
+    /**
+     * Проверяет сохранение и загрузку.
+     * <p>Tests saving and loading the storage.</p>
+     */
     @Test
     void roundTrip() {
         EdgeStorage storage = new EdgeStorage(5.0);

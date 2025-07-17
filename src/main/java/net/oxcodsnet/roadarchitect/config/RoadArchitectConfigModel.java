@@ -8,6 +8,10 @@ import java.util.List;
 
 @Modmenu(modId = RoadArchitect.MOD_ID)
 @Config(name = "roadarchitect", wrapperName = "RoadArchitectConfig")
+/**
+ * Настройки мода Road Architect.
+ * <p>Configuration model for the Road Architect mod.</p>
+ */
 public class RoadArchitectConfigModel {
     public int playerScanRadius = 100;
     public int chunkLoadScanRadius = 50;

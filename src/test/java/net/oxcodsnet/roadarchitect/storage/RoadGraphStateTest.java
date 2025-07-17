@@ -6,7 +6,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Тесты для {@link RoadGraphState}.
+ * <p>Tests for {@link RoadGraphState}.</p>
+ */
 class RoadGraphStateTest {
+    /**
+     * Проверяет сериализацию и десериализацию состояния.
+     * <p>Tests serialization and deserialization of the state.</p>
+     */
     @Test
     void roundTrip() {
         RoadGraphState state = new RoadGraphState(5.0);

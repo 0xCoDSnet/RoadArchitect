@@ -16,7 +16,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Менеджер запуска сканирования структур
+ * Менеджер запуска сканирования структур.
+ * <p>Manager responsible for initiating structure scans.</p>
  */
 public class StructureScanManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
@@ -25,7 +26,8 @@ public class StructureScanManager {
 
     /**
      * Регистрирует все необходимые слушатели.
-     * Вызывать в RoadArchitect.onInitialize().
+     * <p>Registers required event listeners. Call from
+     * {@link net.oxcodsnet.roadarchitect.RoadArchitect#onInitialize()}.</p>
      */
     public static void register() {
         // После генерации спавн чанка
@@ -35,6 +37,7 @@ public class StructureScanManager {
 
     /**
      * Событие генерации чанка. Запускаем сканирование, когда сгенерирован спавн-чанк.
+     * <p>Triggered on chunk generation to start scanning once the spawn chunk is ready.</p>
      */
     private static void onChunkGenerated(ServerWorld world, Chunk chunk) {
         if (world.isClient) return;
@@ -54,7 +57,8 @@ public class StructureScanManager {
 
 
     /**
-     * Выполняет сканирование через StructureLocator.scanGrid и логирует результат.
+     * Выполняет сканирование через {@link StructureLocator#scanGrid} и логирует результат.
+     * <p>Performs a scan using {@link StructureLocator#scanGrid} and logs the outcome.</p>
      */
     private static void performScan(ServerWorld world, String approach) {
         int overallRadius = RoadArchitect.CONFIG.playerScanRadius();

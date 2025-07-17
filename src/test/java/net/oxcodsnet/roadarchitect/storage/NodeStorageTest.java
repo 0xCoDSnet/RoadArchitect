@@ -7,7 +7,15 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Тесты для {@link NodeStorage}.
+ * <p>Tests for {@link NodeStorage}.</p>
+ */
 class NodeStorageTest {
+    /**
+     * Проверяет добавление и получение всех узлов.
+     * <p>Tests adding nodes and retrieving them.</p>
+     */
     @Test
     void addAndAll() {
         NodeStorage storage = new NodeStorage();
@@ -19,6 +27,10 @@ class NodeStorageTest {
         assertEquals(new BlockPos(1, 64, 1), all.get(node.id()).pos());
     }
 
+    /**
+     * Проверяет удаление узла.
+     * <p>Tests node removal.</p>
+     */
     @Test
     void remove() {
         NodeStorage storage = new NodeStorage();
@@ -27,6 +39,10 @@ class NodeStorageTest {
         assertTrue(storage.all().isEmpty());
     }
 
+    /**
+     * Проверяет очистку хранилища.
+     * <p>Tests clearing the storage.</p>
+     */
     @Test
     void clear() {
         NodeStorage storage = new NodeStorage();
@@ -36,6 +52,10 @@ class NodeStorageTest {
         assertTrue(storage.all().isEmpty());
     }
 
+    /**
+     * Убеждается в неизменяемости представления.
+     * <p>Ensures the returned map is unmodifiable.</p>
+     */
     @Test
     void allIsUnmodifiable() {
         NodeStorage storage = new NodeStorage();

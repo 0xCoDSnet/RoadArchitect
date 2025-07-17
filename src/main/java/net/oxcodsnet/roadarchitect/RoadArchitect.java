@@ -9,6 +9,10 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Главный класс мода Road Architect.
+ * <p>Main class of the Road Architect mod.</p>
+ */
 public class RoadArchitect implements ModInitializer {
     public static final String MOD_ID = "roadarchitect";
 
@@ -20,6 +24,10 @@ public class RoadArchitect implements ModInitializer {
     // That way, it's clear which mod wrote info, warnings, and errors.
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+    /**
+     * Точка входа Fabric. Выполняет инициализацию сервера.
+     * <p>Fabric entry point used to initialise the mod.</p>
+     */
     @Override
     public void onInitialize() {
 
