@@ -9,13 +9,8 @@ import java.util.List;
 @Modmenu(modId = RoadArchitect.MOD_ID)
 @Config(name = "roadarchitect", wrapperName = "RoadArchitectConfig")
 public class RoadArchitectConfigModel {
-    public int playerScanRadius = 10;
-    public int chunkLoadScanRadius = 10;
-    /**
-     * Structure selectors used by {@code StructureLocator} to limit what
-     * structures are discovered. Entries may either be a structure ID or a tag
-     * prefixed with {@code '#'}.
-     */
+    public int playerScanRadius = 50;
+    public int chunkLoadScanRadius = 50;
     public List<String> structureSelectors = List.of(
             "#minecraft:village",
             "minecraft:village_plains"
