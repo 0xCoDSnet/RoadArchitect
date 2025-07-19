@@ -7,9 +7,11 @@ import net.minecraft.server.world.ServerWorld;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.PathStorage;
+import net.oxcodsnet.roadarchitect.storage.RoadBuilderStorage;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import net.oxcodsnet.roadarchitect.util.PathFinder;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +45,7 @@ public class PathFinderManager {
     private static void computePaths(ServerWorld world) {
         RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
         PathStorage storage = PathStorage.get(world);
+        RoadBuilderStorage tasks = RoadBuilderStorage.get(world);
         PathFinder finder = new PathFinder(graph.nodes(), graph.edges(), new PathFinder.WorldSurfaceProvider(world));
 
         for (Map.Entry<String, Map<String, EdgeStorage.Status>> entry : graph.edges().allWithStatus().entrySet()) {
@@ -52,6 +55,20 @@ public class PathFinderManager {
                     List<BlockPos> path = finder.findPath(from, edge.getKey());
                     storage.putPath(from, edge.getKey(), path);
                     graph.edges().setStatus(from, edge.getKey(), EdgeStorage.Status.PROCESSED);
+
+                    if (!path.isEmpty()) {
+                        String key = RoadBuilderStorage.makeKey(from, edge.getKey());
+                        int i = 0;
+                        while (i < path.size()) {
+                            ChunkPos chunk = new ChunkPos(path.get(i));
+                            int start = i;
+                            do {
+                                i++;
+                            } while (i < path.size() && new ChunkPos(path.get(i)).equals(chunk));
+                            tasks.addSegment(chunk, key, start, i);
+                        }
+                        LOGGER.info("Queued road construction {} -> {} ({} steps)", from, edge.getKey(), path.size());
+                    }
                 }
             }
         }
