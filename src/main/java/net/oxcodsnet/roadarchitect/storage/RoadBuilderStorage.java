@@ -9,7 +9,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,7 +60,7 @@ public class RoadBuilderStorage extends PersistentState {
             String path = entry.getString(PATH_KEY);
             int start = entry.getInt(START_KEY);
             int end = entry.getInt(END_KEY);
-            storage.segments.computeIfAbsent(chunk, c -> new ArrayList<>())
+            storage.segments.computeIfAbsent(chunk, c -> new CopyOnWriteArrayList<>())
                     .add(new SegmentEntry(path, start, end));
         }
         return storage;
@@ -93,7 +93,7 @@ public class RoadBuilderStorage extends PersistentState {
      * <p>Adds a new segment to be built within the given chunk.</p>
      */
     public void addSegment(ChunkPos chunk, String key, int start, int end) {
-        segments.computeIfAbsent(chunk, c -> new ArrayList<>())
+        segments.computeIfAbsent(chunk, c -> new CopyOnWriteArrayList<>())
                 .add(new SegmentEntry(key, start, end));
         markDirty();
     }

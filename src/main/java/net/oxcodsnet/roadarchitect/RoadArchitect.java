@@ -6,6 +6,7 @@ import net.oxcodsnet.roadarchitect.handlers.RoadBuilderManager;
 import net.oxcodsnet.roadarchitect.handlers.RoadGraphStateManager;
 import net.oxcodsnet.roadarchitect.handlers.StructureScanManager;
 import net.oxcodsnet.roadarchitect.handlers.PathFinderManager;
+import net.oxcodsnet.roadarchitect.worldgen.RoadFeatureRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,8 @@ public class RoadArchitect implements ModInitializer {
         StructureScanManager.register();
         RoadGraphStateManager.register();
         PathFinderManager.register();
-//        RoadBuilderManager.register();
+        RoadFeatureRegistry.register();
+        RoadBuilderManager.register();
 
         LOGGER.info("Road Architect initialization complete!");
     }

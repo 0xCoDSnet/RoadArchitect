@@ -3,15 +3,15 @@
 	"id": "roadarchitect",
 	"version": "${version}",
 	"name": "RoadArchitect",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Travel around the world without barriers: RoadArchitect automatically scans your world, finds villages, and other structures, and then lays a network of roads between them.",
 	"authors": [
-		"Me!"
+		"0xCoDSnet"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "",
+		"sources": ""
 	},
-	"license": "CC0-1.0",
+	"license": "GPL-3.0-or-later",
 	"icon": "assets/roadarchitect/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -36,9 +36,10 @@
 		"fabricloader": ">=0.16.14",
 		"minecraft": "~1.21.1",
 		"java": ">=21",
-		"fabric-api": "*"
+		"fabric-api": "*",
+		"owo-lib": "0.12.15.4+1.21"
 	},
 	"suggests": {
-		"another-mod": "*"
+		"modmenu": "11.0.3"
 	}
 }
