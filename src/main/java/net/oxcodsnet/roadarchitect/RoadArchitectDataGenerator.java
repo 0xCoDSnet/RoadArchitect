@@ -16,7 +16,9 @@ public class RoadArchitectDataGenerator implements DataGeneratorEntrypoint {
 
         @Override
         public void buildRegistry(RegistryBuilder registryBuilder) {
-            registryBuilder.addRegistry(RegistryKeys.FEATURE, RoadFeatureRegistry::bootstrap);
+            registryBuilder.addRegistry(RegistryKeys.FEATURE, RoadFeatureRegistry::bootstrapFeature);
+            registryBuilder.addRegistry(RegistryKeys.CONFIGURED_FEATURE, RoadFeatureRegistry::bootstrapConfigured);
+            registryBuilder.addRegistry(RegistryKeys.PLACED_FEATURE, RoadFeatureRegistry::bootstrapPlaced);
         }
 
         @Override

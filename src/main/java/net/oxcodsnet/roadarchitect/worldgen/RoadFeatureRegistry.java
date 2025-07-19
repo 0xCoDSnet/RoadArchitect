@@ -23,7 +23,7 @@ import java.util.List;
  * <p>
  * <b>Why it is split into two methods</b>
  * <ul>
- *     <li>{@link #bootstrap(Registerable)} – called <em>only</em> by the built‑in Fabric data‑generator (via
+ *     <li>{@link #bootstrapFeature(Registerable)} – called <em>only</em> by the built‑in Fabric data‑generator (via
  *     {@code RegistryBuilder.addRegistry}) and therefore receives a {@link Registerable} that is still mutable.</li>
  *     <li>{@link #register()} – called from {@code RoadArchitect.onInitialize()} when the game starts normally.
  *     It uses the static {@link Registry} helpers because registries have not been frozen yet in that phase.</li>
@@ -62,8 +62,27 @@ public final class RoadFeatureRegistry {
      * Called by Fabric's data‑generator. Uses the {@link Registerable} parameter instead of the global
      * {@link Registry} so we write to a fresh, still‑mutable registry snapshot.
      */
-    public static void bootstrap(Registerable<Feature<?>> context) {
+    public static void bootstrapFeature(Registerable<Feature<?>> context) {
         context.register(ROAD_KEY, ROAD_FEATURE);
+    }
+
+    /**
+     * Bootstraps the configured features used during datagen.
+     */
+    public static void bootstrapConfigured(Registerable<ConfiguredFeature<?, ?>> context) {
+        context.register(GLASS_ROAD, new ConfiguredFeature<>(ROAD_FEATURE, new RoadFeatureConfig(3)));
+        context.register(WOOD_ROAD, new ConfiguredFeature<>(new RoadFeature(Blocks.OAK_PLANKS.getDefaultState()), new RoadFeatureConfig(3)));
+        context.register(STONE_ROAD, new ConfiguredFeature<>(new RoadFeature(Blocks.STONE.getDefaultState()), new RoadFeatureConfig(3)));
+    }
+
+    /**
+     * Bootstraps the placed features used during datagen.
+     */
+    public static void bootstrapPlaced(Registerable<PlacedFeature> context) {
+        var lookup = context.getRegistryLookup(RegistryKeys.CONFIGURED_FEATURE);
+        context.register(GLASS_ROAD_PLACED, new PlacedFeature(lookup.getOrThrow(GLASS_ROAD), List.of(SquarePlacementModifier.of())));
+        context.register(WOOD_ROAD_PLACED, new PlacedFeature(lookup.getOrThrow(WOOD_ROAD), List.of(SquarePlacementModifier.of())));
+        context.register(STONE_ROAD_PLACED, new PlacedFeature(lookup.getOrThrow(STONE_ROAD), List.of(SquarePlacementModifier.of())));
     }
 
     /* ------------------------------------------------------------------------- */
