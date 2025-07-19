@@ -1,9 +1,36 @@
 plugins {
+    id "pl.allegro.tech.build.axion-release" version "1.19.0"
     id 'fabric-loom' version "${loom_version}"
     id 'maven-publish'
 }
 
-version = project.mod_version
+//scmVersion {
+//    tag {
+//        // префикс берётся из ваших свойств
+//        prefix.set("${project.minecraft_version}_${project.mod_version}")
+//    }
+//
+//    // задаём поведение «сколько и как инкрементить»
+//    versionIncrementer("incrementPatch")
+//
+//    // настраиваем «метку» следующей версии
+//    nextVersion {
+//        // разделитель между номером версии и суффиксом
+//        separator.set("-")
+//        // суффикс, обозначающий «начало работы над следующей версией»
+//        suffix.set("SNAPSHOT")
+//
+//        // свой сериализатор: берём bump-нутый патч и прямо формируем строку с вашим префиксом
+//        serializer({ cfg, versionObj ->
+//            // versionObj – это Version API
+//            def bumped = versionObj.incrementPatchVersion()
+//            // собираем: "<mc>_<mod>-<MAJOR.MINOR.(PATCH+1)>"
+//            return "${project.minecraft_version}_${project.mod_version}${cfg.separator}${bumped.asString()}"
+//        })
+//    }
+//}
+
+version = project.version
 group = project.maven_group
 
 base {

@@ -111,34 +111,12 @@ public class GraphComponent extends BaseComponent {
                 if (pos != null && distance(pos.x, pos.y, mouseX, mouseY) <= RADIUS) {
                     var client = MinecraftClient.getInstance();
                     if (client.player != null) {
-                        client.player.requestTeleport(node.pos().getX() + 0.5, node.pos().getY(),
-                                node.pos().getZ() + 0.5);
+                        client.player.setPosition(node.pos().getX() + 0.5, node.pos().getY(), node.pos().getZ() + 0.5);
                     }
                     return true;
                 }
             }
-        } else if (button == 1) {
-            dragging = true;
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onMouseUp(double mouseX, double mouseY, int button) {
-        if (button == 1) {
-            dragging = false;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onMouseDrag(double mouseX, double mouseY, double deltaX, double deltaY, int button) {
-        if (dragging && button == 1) {
-            offsetX += deltaX;
-            offsetY += deltaY;
-            return true;
-        }
+        } else return button == 1;
         return false;
     }
 
