@@ -7,16 +7,20 @@ import io.wispforest.owo.ui.core.Sizing;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
+import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class GraphComponent extends BaseComponent {
 
     private final List<Node> nodes;
-    private final Map<String, Set<String>> edges;
+    private final Map<String, Map<String, EdgeStorage.Status>> edges;
+    private final Map<EdgeStorage.Status, Color> statusColors = Map.of(
+            EdgeStorage.Status.NEW, Color.ofRgb(0xF2C94C),
+            EdgeStorage.Status.PROCESSED, Color.ofRgb(0x27AE60)
+    );
     private final Map<String, ScreenPos> screenPositions = new HashMap<>();
     private final Map<String, Color> typeColors = new HashMap<>();
 
@@ -33,8 +37,9 @@ public class GraphComponent extends BaseComponent {
     private static final int RADIUS = 4;
     private static final int PADDING = 20;
     private static final int GRID_SPACING = 100;
+    private boolean firstLayout = true;
 
-    public GraphComponent(List<Node> nodes, Map<String, Set<String>> edges) {
+    public GraphComponent(List<Node> nodes, Map<String, Map<String, EdgeStorage.Status>> edges) {
         this.nodes = nodes;
         this.edges = edges;
         this.horizontalSizing(Sizing.fill());
@@ -73,13 +78,14 @@ public class GraphComponent extends BaseComponent {
         drawGrid(context);
 
         // draw edges
-        for (Map.Entry<String, Set<String>> entry : edges.entrySet()) {
+        for (Map.Entry<String, Map<String, EdgeStorage.Status>> entry : edges.entrySet()) {
             ScreenPos from = screenPositions.get(entry.getKey());
             if (from == null) continue;
-            for (String id : entry.getValue()) {
-                ScreenPos to = screenPositions.get(id);
+            for (Map.Entry<String, EdgeStorage.Status> edge : entry.getValue().entrySet()) {
+                ScreenPos to = screenPositions.get(edge.getKey());
                 if (to != null) {
-                    context.drawLine(from.x, from.y, to.x, to.y, 1, Color.WHITE);
+                    Color color = statusColors.getOrDefault(edge.getValue(), Color.WHITE);
+                    context.drawLine(from.x, from.y, to.x, to.y, 1, color);
                 }
             }
         }
@@ -116,7 +122,28 @@ public class GraphComponent extends BaseComponent {
                     return true;
                 }
             }
-        } else return button == 1;
+        } else if (button == 1) {
+            dragging = true;
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onMouseUp(double mouseX, double mouseY, int button) {
+        if (button == 1) {
+            dragging = false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onMouseDrag(double mouseX, double mouseY, double deltaX, double deltaY, int button) {
+        if (button == 1 && dragging) {
+            offsetX += deltaX;
+            offsetY += deltaY;
+            return true;
+        }
         return false;
     }
 
@@ -142,6 +169,14 @@ public class GraphComponent extends BaseComponent {
         double scaleZ = (double) h / Math.max(1, maxZ - minZ);
         baseScale = Math.min(scaleX, scaleZ);
 
+        if (firstLayout) {
+            double graphW = (maxX - minX) * baseScale * zoom;
+            double graphH = (maxZ - minZ) * baseScale * zoom;
+            offsetX = (w - graphW) / 2;
+            offsetY = (h - graphH) / 2;
+            firstLayout = false;
+        }
+
         for (Node node : nodes) {
             double x = (node.pos().getX() - minX) * baseScale * zoom + offsetX;
             double y = (node.pos().getZ() - minZ) * baseScale * zoom + offsetY;
@@ -165,13 +200,13 @@ public class GraphComponent extends BaseComponent {
 
         for (int x = startX; x <= maxX; x += GRID_SPACING) {
             int sx = PADDING + (int) ((x - minX) * baseScale * zoom + offsetX);
-            context.drawLine(sx, PADDING, sx, PADDING + h, 1, Color.ofRgb(0x444444));
+            context.drawLine(sx, PADDING, sx, PADDING + h, 1, Color.ofArgb(0x80444444));
             context.drawText(Text.literal(Integer.toString(x)), sx + 2, PADDING + 2, 0.6f, 0xFFFFFF);
         }
 
         for (int z = startZ; z <= maxZ; z += GRID_SPACING) {
             int sz = PADDING + (int) ((z - minZ) * baseScale * zoom + offsetY);
-            context.drawLine(PADDING, sz, PADDING + w, sz, 1, Color.ofRgb(0x444444));
+            context.drawLine(PADDING, sz, PADDING + w, sz, 1, Color.ofArgb(0x80444444));
             context.drawText(Text.literal(Integer.toString(z)), PADDING + 2, sz + 2, 0.6f, 0xFFFFFF);
         }
     }

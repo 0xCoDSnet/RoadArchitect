@@ -39,7 +39,7 @@ public class RoadArchitectClient implements ClientModInitializer {
                     if (world != null) {
                         RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
                         List<Node> nodes = new ArrayList<>(state.nodes().all().values());
-                        client.setScreen(new RoadGraphDebugScreen(nodes, state.edges().all()));
+                        client.setScreen(new RoadGraphDebugScreen(nodes, state.edges().allWithStatus()));
                     }
                 }
             }

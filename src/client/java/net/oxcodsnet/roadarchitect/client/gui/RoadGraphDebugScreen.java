@@ -11,14 +11,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 
 public class RoadGraphDebugScreen extends BaseOwoScreen<FlowLayout> {
 
     private final List<Node> nodes;
-    private final Map<String, Set<String>> edges;
+    private final Map<String, Map<String, EdgeStorage.Status>> edges;
 
-    public RoadGraphDebugScreen(List<Node> nodes, Map<String, Set<String>> edges) {
+    public RoadGraphDebugScreen(List<Node> nodes, Map<String, Map<String, EdgeStorage.Status>> edges) {
         super(Text.literal("Road Graph Debug"));
         this.nodes = nodes;
         this.edges = edges;

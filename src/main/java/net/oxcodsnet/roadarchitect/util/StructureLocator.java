@@ -145,10 +145,10 @@ public class StructureLocator {
 
         for (Pair<BlockPos, String> pair : allFound) {
             Node node = state.addNodeWithEdges(pair.getFirst(), pair.getSecond());
-            LOGGER.info("Добавлен узел {} на {}", node.id(), node.pos());
+            LOGGER.info("Added node {} on {} ", node.id(), node.pos());
         }
         state.markDirty();
-        LOGGER.info("Все узлы сохранены в персистентном состоянии.");
+        LOGGER.info("All nodes are preserved in a persistent state.");
 
         return allFound;
     }

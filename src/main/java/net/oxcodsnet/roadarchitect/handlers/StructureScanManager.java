@@ -78,13 +78,13 @@ public class StructureScanManager {
         int scanRadius = 1;
         List<String> selectors = RoadArchitect.CONFIG.structureSelectors();
 
-        LOGGER.info("[{}] Запуск сканирования: overallRadius={}, scanRadius={}, selectors={}",
+        LOGGER.info("[{}] Scan launch: overallRadius={}, scanRadius={}, selectors={}",
                 approach, overallRadius, scanRadius, selectors);
 
         List<Pair<BlockPos, String>> found = StructureLocator.scanGrid(
                 world, center, overallRadius, scanRadius, selectors
         );
 
-        LOGGER.info("[{}] Сканирование завершено. Найдено структур: {}", approach, found.size());
+        LOGGER.info("[{}] Scanning is completed. Found structures: {}", approach, found.size());
     }
 }
