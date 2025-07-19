@@ -9,6 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.datafixer.DataFixTypes;
+import net.oxcodsnet.roadarchitect.RoadArchitect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Stores computed paths between nodes as a {@link PersistentState}.</p>
  */
 public class PathStorage extends PersistentState {
-    private static final Logger LOGGER = LoggerFactory.getLogger("PathStorage");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID +"/PathStorage");
     private static final String KEY = "road_paths";
     private static final String PATHS_KEY = "paths";
     private static final String FROM_KEY = "from";

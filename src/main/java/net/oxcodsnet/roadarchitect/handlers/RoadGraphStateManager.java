@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * <p>Handles loading and saving of the road graph state on Fabric events.</p>
  */
 public class RoadGraphStateManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID+"/RoadGraphStateManager");
 
     /**
      * Регистрирует слушатели для автоматической загрузки и сохранения {@link RoadGraphState}.

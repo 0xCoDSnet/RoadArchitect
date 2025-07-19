@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
  * <p>Handles path calculation between nodes on various server events.</p>
  */
 public class PathFinderManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID+"/PathFinderManager");
     private static ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
     /**

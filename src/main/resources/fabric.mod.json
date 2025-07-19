@@ -12,7 +12,7 @@
 		"sources": ""
 	},
 	"license": "GPL-3.0-or-later",
-	"icon": "assets/roadarchitect/icon.png",
+	"icon": "assets/roadarchitect/icon3.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [

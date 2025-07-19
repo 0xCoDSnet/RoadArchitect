@@ -22,7 +22,7 @@ import java.util.List;
  * Feature that places road segments stored in {@link RoadBuilderStorage}.
  */
 public class RoadFeature extends Feature<RoadFeatureConfig> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID+"/RoadFeature");
     private final BlockState block;
 
     public RoadFeature(BlockState block) {

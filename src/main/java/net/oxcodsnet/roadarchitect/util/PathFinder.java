@@ -3,6 +3,7 @@ package net.oxcodsnet.roadarchitect.util;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
+import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
 import net.oxcodsnet.roadarchitect.storage.NodeStorage;
@@ -16,7 +17,7 @@ import java.util.*;
  * <p>Finds a path using pre-computed edges.</p>
  */
 public class PathFinder {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PathFinder.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID+"/PathFinder");
 
     private final NodeStorage nodes;
     private final EdgeStorage edges;

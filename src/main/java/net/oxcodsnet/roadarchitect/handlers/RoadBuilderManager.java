@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * <p>Road segments are generated via {@link net.oxcodsnet.roadarchitect.worldgen.RoadFeature}.</p>
  */
 public class RoadBuilderManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID+"/RoadBuilderManager");
 
     /**
      * Регистрирует обработчики событий инициализации и генерации чанков.

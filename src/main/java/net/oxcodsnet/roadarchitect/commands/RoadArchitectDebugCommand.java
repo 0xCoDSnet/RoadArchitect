@@ -23,7 +23,7 @@ import java.util.List;
  * Registers a simple debug command to manually invoke the road feature.
  */
 public class RoadArchitectDebugCommand {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID+"/DebugCommand");
 
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registry, env) -> register(dispatcher));
