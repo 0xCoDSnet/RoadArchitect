@@ -71,15 +71,20 @@ public class RoadBuilderManager {
             if (builder == null) {
                 String[] ids = key.split("\\|");
                 List<BlockPos> path = paths.getPath(ids[0], ids[1]);
-                builder = new RoadBuilder(world, path, entry.getValue());
+                builder = new RoadBuilder(world, path);
                 builders.put(key, builder);
             }
-            if (builder.tick()) {
+
+            int start = entry.getValue();
+            int end = Math.min(start + 1, builder.length());
+            builder.buildSegment(start, end);
+
+            if (end >= builder.length()) {
                 builders.remove(key);
                 tasks.removeTask(key);
                 LOGGER.info("Road construction completed between {}", key);
             } else {
-                tasks.updateProgress(key, builder.index());
+                tasks.updateProgress(key, end);
             }
         }
     }

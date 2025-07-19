@@ -18,29 +18,31 @@ public class RoadBuilder {
 
     private final ServerWorld world;
     private final List<BlockPos> path;
-    private int index;
 
-    public RoadBuilder(ServerWorld world, List<BlockPos> path, int startIndex) {
+    public RoadBuilder(ServerWorld world, List<BlockPos> path) {
         this.world = world;
         this.path = path;
-        this.index = startIndex;
     }
 
     /**
-     * Places the next block in the path.
+     * Places blocks for the specified segment of the path.
      *
-     * @return {@code true} when finished
+     * @param startIndex start index in the path, inclusive
+     * @param endIndex   end index in the path, exclusive
      */
-    public boolean tick() {
-        if (index >= path.size()) {
-            return true;
+    public void buildSegment(int startIndex, int endIndex) {
+        if (startIndex >= path.size()) {
+            return;
         }
-        BlockPos pos = path.get(index++);
-        world.setBlockState(pos, ROAD_BLOCK, 3);
-        return index >= path.size();
+        int to = Math.min(endIndex, path.size());
+        for (int i = startIndex; i < to; i++) {
+            BlockPos pos = path.get(i);
+            world.setBlockState(pos, ROAD_BLOCK, 3);
+        }
+        LOGGER.debug("Built path segment {}..{}", startIndex, to);
     }
 
-    public int index() {
-        return index;
+    public int length() {
+        return path.size();
     }
 }
