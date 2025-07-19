@@ -10,12 +10,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Менеджер загрузки и сохранения состояния графа дорог при событиях Fabric.
+ * <p>Handles loading and saving of the road graph state on Fabric events.</p>
  */
 public class RoadGraphStateManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
 
     /**
-     * Регистрирует слушатели для автоматической загрузки и сохранения RoadGraphState.
+     * Регистрирует слушатели для автоматической загрузки и сохранения {@link RoadGraphState}.
+     * <p>Registers listeners to automatically load and save {@link RoadGraphState}.</p>
      */
     public static void register() {
         // Предзагрузка состояния при загрузке мира

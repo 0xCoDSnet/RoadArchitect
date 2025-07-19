@@ -68,6 +68,10 @@ public class PathFinder {
         return path;
     }
 
+    /**
+     * Выполняет поиск в ширину между двумя узлами графа.
+     * <p>Performs a breadth-first search between two graph nodes.</p>
+     */
     private List<String> bfs(String fromId, String toId) {
         if (!nodes.all().containsKey(fromId) || !nodes.all().containsKey(toId)) {
             return List.of();
@@ -110,6 +114,10 @@ public class PathFinder {
         return result;
     }
 
+    /**
+     * Добавляет линейный сегмент пути между двумя точками.
+     * <p>Adds a straight path segment between two points.</p>
+     */
     private void addSegment(List<BlockPos> out, BlockPos start, BlockPos end) {
         int x1 = start.getX();
         int z1 = start.getZ();

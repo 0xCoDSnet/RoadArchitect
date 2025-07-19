@@ -35,7 +35,7 @@ public class StructureScanManager {
 
     /**
      * Событие захода игрока в мир. Запускаем сканирование, когда игрок заходит в Overworld.
-     * <p>The player's entry event in the world. Launch scanning when the player enters Overworld</p>
+     * <p>The player's entry event in the world. Launch scanning when the player enters Overworld.</p>
      */
     private static void onPlayerJoinInOverworld(ServerPlayerEntity playerEntity) {
         ServerWorld world = playerEntity.getServerWorld();
@@ -44,9 +44,11 @@ public class StructureScanManager {
     }
 
     /**
-     * Проверка, что это Overworld
-     * @param world ServerWold
-     * @return true или false
+     * Проверяет, является ли мир не Overworld.
+     * <p>Checks whether the given world is not the Overworld.</p>
+     *
+     * @param world серверный мир / server world
+     * @return {@code true} если мир не Overworld / {@code true} if not Overworld
      */
     private static boolean isNotOverWorld(ServerWorld world) {
         if (world.isClient) return true;

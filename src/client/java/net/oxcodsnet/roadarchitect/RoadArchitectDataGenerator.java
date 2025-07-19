@@ -9,6 +9,10 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
  */
 public class RoadArchitectDataGenerator implements DataGeneratorEntrypoint {
         @Override
+        /**
+         * Точка входа генератора данных.
+         * <p>Entry point for Fabric data generation.</p>
+         */
         public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
 
         }

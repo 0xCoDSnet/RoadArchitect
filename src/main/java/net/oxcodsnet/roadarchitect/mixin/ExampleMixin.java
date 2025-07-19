@@ -12,6 +12,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(MinecraftServer.class)
 public class ExampleMixin {
+    /**
+     * Пример внедрения в начало метода {@code loadWorld}.
+     * <p>Example injection at the start of {@code loadWorld}.</p>
+     */
     @Inject(at = @At("HEAD"), method = "loadWorld")
     private void init(CallbackInfo info) {
         // This code is injected into the start of MinecraftServer.loadWorld()V

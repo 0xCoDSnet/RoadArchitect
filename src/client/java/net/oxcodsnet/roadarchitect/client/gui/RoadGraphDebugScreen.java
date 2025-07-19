@@ -13,11 +13,19 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Экран отладки, отображающий граф дорог.
+ * <p>Debug screen displaying the road graph.</p>
+ */
 public class RoadGraphDebugScreen extends BaseOwoScreen<FlowLayout> {
 
     private final List<Node> nodes;
     private final Map<String, Map<String, EdgeStorage.Status>> edges;
 
+    /**
+     * Создает новый экран отладки графа.
+     * <p>Creates a new road graph debug screen.</p>
+     */
     public RoadGraphDebugScreen(List<Node> nodes, Map<String, Map<String, EdgeStorage.Status>> edges) {
         super(Text.literal("Road Graph Debug"));
         this.nodes = nodes;
@@ -25,16 +33,28 @@ public class RoadGraphDebugScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     @Override
+    /**
+     * Создает UI-адаптер для корневого контейнера.
+     * <p>Creates the UI adapter for the root container.</p>
+     */
     protected @NotNull OwoUIAdapter<FlowLayout> createAdapter() {
         return OwoUIAdapter.create(this, (w, h) -> Containers.verticalFlow(Sizing.fill(), Sizing.fill()));
     }
 
     @Override
+    /**
+     * Собирает содержимое экрана.
+     * <p>Builds the screen contents.</p>
+     */
     protected void build(FlowLayout root) {
         root.child(new GraphComponent(nodes, edges));
     }
 
     @Override
+    /**
+     * Позволяет закрывать экран клавишей ESC.
+     * <p>Allows closing the screen with the ESC key.</p>
+     */
     public boolean shouldCloseOnEsc() {
         return true;
     }

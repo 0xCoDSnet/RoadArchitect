@@ -22,6 +22,10 @@ public class RoadArchitectClient implements ClientModInitializer {
     private static KeyBinding debugKey;
 
     @Override
+    /**
+     * Точка входа на клиенте. Регистрирует клавишу отладки и обработчик тиков.
+     * <p>Client entry point that registers a debug key and tick handler.</p>
+     */
     public void onInitializeClient() {
         debugKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.roadarchitect.debug",

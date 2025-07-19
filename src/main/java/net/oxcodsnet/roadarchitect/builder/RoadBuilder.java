@@ -10,7 +10,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Builds a road along a precomputed path by placing glass blocks.
+ * Строит дорогу по заранее рассчитанному пути, размещая блоки стекла.
+ * <p>Builds a road along a precomputed path by placing glass blocks.</p>
  */
 public class RoadBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger("RoadBuilder");
@@ -19,6 +20,13 @@ public class RoadBuilder {
     private final ServerWorld world;
     private final List<BlockPos> path;
 
+    /**
+     * Создает новый объект RoadBuilder для указанного мира и пути.
+     * <p>Creates a new {@code RoadBuilder} for the given world and path.</p>
+     *
+     * @param world мир, в котором следует строить дорогу / the world to build in
+     * @param path  список точек пути / list of path points
+     */
     public RoadBuilder(ServerWorld world, List<BlockPos> path) {
         this.world = world;
         this.path = path;
@@ -42,6 +50,10 @@ public class RoadBuilder {
         LOGGER.debug("Built path segment {}..{}", startIndex, to);
     }
 
+    /**
+     * Возвращает количество точек пути.
+     * <p>Returns the number of path points.</p>
+     */
     public int length() {
         return path.size();
     }

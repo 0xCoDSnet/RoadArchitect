@@ -21,12 +21,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Управляет поиском путей при различных событиях сервера.
+ * Управляет вычислением путей между узлами при различных событиях сервера.
+ * <p>Handles path calculation between nodes on various server events.</p>
  */
 public class PathFinderManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
     private static ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
+    /**
+     * Регистрирует слушателей событий для запуска поиска путей.
+     * <p>Registers all event listeners that trigger path finding.</p>
+     */
     public static void register() {
         ServerWorldEvents.LOAD.register((server, world) -> onWorldEvent(world));
         ServerPlayerEvents.JOIN.register(player -> onWorldEvent(player.getServerWorld()));
@@ -34,6 +39,10 @@ public class PathFinderManager {
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> EXECUTOR.shutdownNow());
     }
 
+    /**
+     * Обработчик загрузки мира или входа игрока.
+     * <p>Handles world load or player join events.</p>
+     */
     private static void onWorldEvent(ServerWorld world) {
         if (world.isClient()) return;
         if (EXECUTOR.isShutdown()) {
@@ -42,6 +51,10 @@ public class PathFinderManager {
         EXECUTOR.submit(() -> computePaths(world));
     }
 
+    /**
+     * Выполняет расчёт всех путей и формирует задачи на строительство.
+     * <p>Computes all paths and schedules road building tasks.</p>
+     */
     private static void computePaths(ServerWorld world) {
         RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
         PathStorage storage = PathStorage.get(world);

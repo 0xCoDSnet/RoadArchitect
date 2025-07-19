@@ -13,6 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Компонент UI для отображения графа дорог на экране отладки.
+ * <p>UI component used to render the road graph in the debug screen.</p>
+ */
 public class GraphComponent extends BaseComponent {
 
     private final List<Node> nodes;
@@ -39,11 +43,16 @@ public class GraphComponent extends BaseComponent {
     private static final int GRID_SPACING = 100;
     private boolean firstLayout = true;
 
+    /**
+     * Создает компонент для отрисовки графа.
+     * <p>Creates a component for rendering the graph.</p>
+     */
     public GraphComponent(List<Node> nodes, Map<String, Map<String, EdgeStorage.Status>> edges) {
         this.nodes = nodes;
         this.edges = edges;
         this.horizontalSizing(Sizing.fill());
         this.verticalSizing(Sizing.fill());
+
         if (!nodes.isEmpty()) {
             minX = nodes.stream().mapToInt(n -> n.pos().getX()).min().orElse(0);
             maxX = nodes.stream().mapToInt(n -> n.pos().getX()).max().orElse(0);
@@ -68,16 +77,28 @@ public class GraphComponent extends BaseComponent {
     @Override public void onFocusLost() {}                     // тоже пусто
 
     @Override
+    /**
+     * Возвращает базовый размер по горизонтали для расчёта размещения.
+     * <p>Returns the base horizontal size used for layout.</p>
+     */
     protected int determineHorizontalContentSize(Sizing sizing) {
         return 100;
     }
 
     @Override
+    /**
+     * Возвращает базовый размер по вертикали для расчёта размещения.
+     * <p>Returns the base vertical size used for layout.</p>
+     */
     protected int determineVerticalContentSize(Sizing sizing) {
         return 100;
     }
 
     @Override
+    /**
+     * Отрисовывает граф, сетку и легенду.
+     * <p>Renders the graph, grid and legend.</p>
+     */
     public void draw(OwoUIDrawContext context, int mouseX, int mouseY, float delta, float tickDelta) {
         computeLayout();
 
@@ -119,6 +140,10 @@ public class GraphComponent extends BaseComponent {
     }
 
     @Override
+    /**
+     * Обработчик нажатий мыши.
+     * <p>Handles mouse button presses.</p>
+     */
     public boolean onMouseDown(double mouseX, double mouseY, int button) {
         if (button != 0) return false;
 
@@ -164,6 +189,10 @@ public class GraphComponent extends BaseComponent {
     }
 
     @Override
+    /**
+     * Обработчик прокрутки колёсика мыши для масштабирования.
+     * <p>Handles mouse wheel scrolling to zoom the view.</p>
+     */
     public boolean onMouseScroll(double mouseX, double mouseY, double amount) {
         double oldZoom = zoom;
         if (amount > 0) {
@@ -176,6 +205,10 @@ public class GraphComponent extends BaseComponent {
         return true;
     }
 
+    /**
+     * Пересчитывает расположение узлов и масштаб отображения.
+     * <p>Recomputes node positions and scaling factors.</p>
+     */
     private void computeLayout() {
         if (nodes.isEmpty()) return;
         int w = Math.max(1, this.width() - PADDING * 2);
@@ -202,12 +235,20 @@ public class GraphComponent extends BaseComponent {
         }
     }
 
+    /**
+     * Вычисляет расстояние между двумя точками.
+     * <p>Calculates the distance between two points.</p>
+     */
     private static double distance(double x1, double y1, double x2, double y2) {
         double dx = x1 - x2;
         double dy = y1 - y2;
         return Math.sqrt(dx * dx + dy * dy);
     }
 
+    /**
+     * Рисует сетку координат на фоне графа.
+     * <p>Draws the coordinate grid behind the graph.</p>
+     */
     private void drawGrid(OwoUIDrawContext context) {
         int w = this.width() - PADDING * 2;
         int h = this.height() - PADDING * 2;
@@ -227,6 +268,10 @@ public class GraphComponent extends BaseComponent {
         }
     }
 
+    /**
+     * Рисует линейку масштаба в правом нижнем углу.
+     * <p>Draws the scale ruler in the bottom-right corner.</p>
+     */
     private void drawScale(OwoUIDrawContext context) {
         int length = (int) (GRID_SPACING * baseScale * zoom);
         int x = this.width() - PADDING - length - 10;
@@ -237,6 +282,10 @@ public class GraphComponent extends BaseComponent {
         context.drawText(Text.literal(GRID_SPACING + "m"), x, y - 10, 0.7f, 0xFFFFFF);
     }
 
+    /**
+     * Рисует легенду типов структур.
+     * <p>Renders the legend of structure types.</p>
+     */
     private void drawLegend(OwoUIDrawContext context) {
         int x = PADDING;
         int y = this.height() - PADDING - typeColors.size() * 12;
@@ -248,5 +297,9 @@ public class GraphComponent extends BaseComponent {
         }
     }
 
+    /**
+     * Экранные координаты узла.
+     * <p>Screen coordinates of a node.</p>
+     */
     private record ScreenPos(int x, int y) {}
 }

@@ -17,13 +17,18 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Manages {@link RoadBuilder} instances and starts construction when paths are ready.
+ * Отвечает за создание {@link RoadBuilder} и запуск строительства дорог, когда пути готовы.
+ * <p>Manages {@link RoadBuilder} instances and starts construction when paths are ready.</p>
  */
 public class RoadBuilderManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
 
     private static final Map<ServerWorld, Map<String, RoadBuilder>> RUNNING = new ConcurrentHashMap<>();
 
+    /**
+     * Регистрирует обработчики событий инициализации и генерации чанков.
+     * <p>Registers event handlers for world loading and chunk generation.</p>
+     */
     public static void register() {
         ServerWorldEvents.LOAD.register((server, world) -> onWorldLoad(world));
         ServerWorldEvents.UNLOAD.register((server, world) -> RUNNING.remove(world));
@@ -31,11 +36,19 @@ public class RoadBuilderManager {
         ServerChunkEvents.CHUNK_GENERATE.register(RoadBuilderManager::onChunkGenerated);
     }
 
+    /**
+     * Создает карту строителей для загруженного мира.
+     * <p>Initializes builder tracking for the loaded world.</p>
+     */
     private static void onWorldLoad(ServerWorld world) {
         if (world.isClient()) return;
         RUNNING.put(world, new ConcurrentHashMap<>());
     }
 
+    /**
+     * При генерации чанка запускает строительство всех отложенных сегментов.
+     * <p>When a chunk generates, builds all queued segments within it.</p>
+     */
     private static void onChunkGenerated(ServerWorld world, net.minecraft.world.chunk.Chunk chunk) {
         if (world.isClient()) return;
 

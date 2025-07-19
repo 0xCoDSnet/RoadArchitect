@@ -15,7 +15,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Stores pending road building segments per chunk.
+ * Хранит очереди сегментов дорог для каждого чанка.
+ * <p>Stores pending road-building segments per chunk.</p>
  */
 public class RoadBuilderStorage extends PersistentState {
     private static final String KEY = "road_builder_tasks";
@@ -29,18 +30,27 @@ public class RoadBuilderStorage extends PersistentState {
             RoadBuilderStorage::fromNbt, DataFixTypes.SAVED_DATA_SCOREBOARD);
 
     /**
-     * Single segment of a path that lies within a chunk.
+     * Один сегмент пути, находящийся внутри чанка.
+     * <p>A single path segment contained within a chunk.</p>
      */
     public record SegmentEntry(String pathKey, int start, int end) {
     }
 
     private final Map<ChunkPos, List<SegmentEntry>> segments = new ConcurrentHashMap<>();
 
+    /**
+     * Получает хранилище задач для указанного мира.
+     * <p>Retrieves the storage of building tasks for the given world.</p>
+     */
     public static RoadBuilderStorage get(ServerWorld world) {
         PersistentStateManager manager = world.getPersistentStateManager();
         return manager.getOrCreate(TYPE, KEY);
     }
 
+    /**
+     * Загружает хранилище из NBT.
+     * <p>Loads the storage from NBT.</p>
+     */
     public static RoadBuilderStorage fromNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         RoadBuilderStorage storage = new RoadBuilderStorage();
         NbtList list = tag.getList(SEGMENTS_KEY, NbtElement.COMPOUND_TYPE);
@@ -56,6 +66,10 @@ public class RoadBuilderStorage extends PersistentState {
         return storage;
     }
 
+    /**
+     * Сохраняет все сегменты в NBT.
+     * <p>Serializes all segments into an NBT compound.</p>
+     */
     @Override
     public NbtCompound writeNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         NbtList list = new NbtList();
@@ -74,19 +88,28 @@ public class RoadBuilderStorage extends PersistentState {
         return tag;
     }
 
-    /** Adds a new segment to be built within the given chunk. */
+    /**
+     * Добавляет новый сегмент для строительства в указанном чанке.
+     * <p>Adds a new segment to be built within the given chunk.</p>
+     */
     public void addSegment(ChunkPos chunk, String key, int start, int end) {
         segments.computeIfAbsent(chunk, c -> new ArrayList<>())
                 .add(new SegmentEntry(key, start, end));
         markDirty();
     }
 
-    /** Returns the list of segments queued for the chunk. */
+    /**
+     * Возвращает список сегментов, ожидающих постройки в чанке.
+     * <p>Returns the list of queued segments for the chunk.</p>
+     */
     public List<SegmentEntry> getSegments(ChunkPos chunk) {
         return segments.getOrDefault(chunk, List.of());
     }
 
-    /** Removes the specified segment from the chunk list. */
+    /**
+     * Удаляет указанный сегмент из очереди чанка.
+     * <p>Removes the given segment from the chunk queue.</p>
+     */
     public void removeSegment(ChunkPos chunk, SegmentEntry entry) {
         List<SegmentEntry> list = segments.get(chunk);
         if (list != null && list.remove(entry)) {
@@ -97,7 +120,10 @@ public class RoadBuilderStorage extends PersistentState {
         }
     }
 
-    /** Utility to build deterministic keys from node ids. */
+    /**
+     * Утилита для построения детерминированного ключа из идентификаторов узлов.
+     * <p>Utility to build deterministic keys from node ids.</p>
+     */
     public static String makeKey(String a, String b) {
         return a.compareTo(b) <= 0 ? a + "|" + b : b + "|" + a;
     }

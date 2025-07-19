@@ -34,11 +34,22 @@ public class PathStorage extends PersistentState {
     private final Map<String, List<BlockPos>> paths = new ConcurrentHashMap<>();
 
 
+    /**
+     * Возвращает экземпляр хранилища путей для указанного мира.
+     * <p>Gets the {@code PathStorage} instance for the given world.</p>
+     *
+     * @param world серверный мир / server world
+     * @return хранилище путей / path storage instance
+     */
     public static PathStorage get(ServerWorld world) {
         PersistentStateManager manager = world.getPersistentStateManager();
         return manager.getOrCreate(TYPE, KEY);
     }
 
+    /**
+     * Восстанавливает хранилище из NBT.
+     * <p>Recreates the storage from an NBT compound.</p>
+     */
     public static PathStorage fromNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         PathStorage storage = new PathStorage();
         NbtList list = tag.getList(PATHS_KEY, NbtElement.COMPOUND_TYPE);
@@ -57,6 +68,10 @@ public class PathStorage extends PersistentState {
         return storage;
     }
 
+    /**
+     * Сохраняет все пути в NBT.
+     * <p>Serializes all paths into an NBT compound.</p>
+     */
     @Override
     public NbtCompound writeNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         NbtList list = new NbtList();
@@ -77,15 +92,27 @@ public class PathStorage extends PersistentState {
         return tag;
     }
 
+    /**
+     * Сохраняет путь между двумя узлами.
+     * <p>Stores a path connecting two nodes.</p>
+     */
     public void putPath(String from, String to, List<BlockPos> path) {
         paths.put(makeKey(from, to), List.copyOf(path));
         markDirty();
     }
 
+    /**
+     * Возвращает сохраненный путь между узлами.
+     * <p>Returns the stored path between the two nodes.</p>
+     */
     public List<BlockPos> getPath(String from, String to) {
         return paths.getOrDefault(makeKey(from, to), List.of());
     }
 
+    /**
+     * Создает уникальный ключ для пары узлов.
+     * <p>Creates a deterministic key for a pair of nodes.</p>
+     */
     private static String makeKey(String a, String b) {
         return a.compareTo(b) <= 0 ? a + "|" + b : b + "|" + a;
     }
