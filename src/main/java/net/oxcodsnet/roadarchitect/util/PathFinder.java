@@ -59,7 +59,7 @@ public class PathFinder {
             addSegment(path, a.pos(), b.pos());
         }
         if (path.isEmpty()) {
-            Node single = nodes.all().get(nodeIds.get(0));
+            Node single = nodes.all().get(nodeIds.getFirst());
             if (single != null) {
                 int y = surface.getSurfaceY(single.pos().getX(), single.pos().getZ());
                 path.add(new BlockPos(single.pos().getX(), y, single.pos().getZ()));
@@ -127,7 +127,7 @@ public class PathFinder {
         while (true) {
             int y = surface.getSurfaceY(x, z);
             BlockPos pos = new BlockPos(x, y, z);
-            if (out.isEmpty() || !out.get(out.size() - 1).equals(pos)) {
+            if (out.isEmpty() || !out.getLast().equals(pos)) {
                 out.add(pos);
             }
             if (x == x2 && z == z2) {

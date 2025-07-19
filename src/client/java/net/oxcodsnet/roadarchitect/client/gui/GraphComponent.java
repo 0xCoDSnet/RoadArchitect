@@ -5,14 +5,12 @@ import io.wispforest.owo.ui.core.Color;
 import io.wispforest.owo.ui.core.OwoUIDrawContext;
 import io.wispforest.owo.ui.core.Sizing;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.text.Text;
 import net.oxcodsnet.roadarchitect.storage.Node;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Set;
 
 public class GraphComponent extends BaseComponent {
@@ -96,7 +94,7 @@ public class GraphComponent extends BaseComponent {
             context.drawText(Text.literal(node.type()), pos.x + RADIUS + 2, pos.y - 4, 0.7f, 0xFFFFFF);
 
             if (distance(pos.x, pos.y, mouseX, mouseY) <= RADIUS) {
-                Text tip = Text.literal(node.pos().toShortString() + " \u2022 " + node.type());
+                Text tip = Text.literal(node.pos().toShortString() + " • " + node.type());
                 context.drawTooltip(MinecraftClient.getInstance().textRenderer, tip, mouseX, mouseY);
             }
         }
