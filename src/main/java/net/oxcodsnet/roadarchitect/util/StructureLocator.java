@@ -11,6 +11,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.structure.Structure;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
@@ -69,17 +70,14 @@ public class StructureLocator {
 
                 if (located != null) {
                     BlockPos pos = located.getFirst();
-                    String id = structureRegistry.getId(located.getSecond().value()).toString();
-                    LOGGER.debug("Найдена структура '{}' на позиции {}", selector, pos);
+                    Identifier id = structureRegistry.getId(located.getSecond().value());
                     LOGGER.debug("Found structure '{}' at {}", selector, pos);
-                    foundPositions.add(Pair.of(pos, id));
+                    foundPositions.add(Pair.of(pos, String.valueOf(id)));
                 } else {
-                    LOGGER.warn("Структура '{}' не найдена в радиусе {} чанков вокруг {}", selector, radius, origin);
-                    LOGGER.warn("No structure '{}' found within radius {} around {}", selector, radius, origin);
+                    LOGGER.debug("No structure '{}' found within radius {} around {}", selector, radius, origin);
                 }
 
             } catch (CommandSyntaxException e) {
-                LOGGER.error("Ошибка парсинга или поиска для селектора '{}': {}", selector, e.getMessage());
                 LOGGER.error("Failed to parse or locate structure selector '{}': {}", selector, e.getMessage());
             }
         }
@@ -137,7 +135,6 @@ public class StructureLocator {
                     BlockPos pos = pair.getFirst();
                     if (seen.add(pos)) {
                         allFound.add(pair);
-                        LOGGER.debug("Grid scan нашёл новую структуру на {}", pos);
                         LOGGER.debug("Grid scan found new structure at {}", pos);
                     }
                 }
