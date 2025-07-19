@@ -89,8 +89,21 @@ public class PathFinder {
             if (current.equals(toId)) {
                 break;
             }
+
+            Node currentNode = nodes.all().get(current);
+            if (currentNode == null) {
+                continue;
+            }
+
             for (String neighbor : edges.neighbors(current)) {
-                if (!visited.contains(neighbor)) {
+                if (visited.contains(neighbor)) {
+                    continue;
+                }
+                Node neighborNode = nodes.all().get(neighbor);
+                if (neighborNode == null) {
+                    continue;
+                }
+                if (canTraverse(currentNode, neighborNode)) {
                     visited.add(neighbor);
                     parent.put(neighbor, current);
                     queue.add(neighbor);
@@ -112,6 +125,16 @@ public class PathFinder {
         }
         Collections.reverse(result);
         return result;
+    }
+
+    /**
+     * Determines whether the edge between two nodes can be traversed based on
+     * terrain height differences.
+     */
+    private boolean canTraverse(Node a, Node b) {
+        int y1 = surface.getSurfaceY(a.pos().getX(), a.pos().getZ());
+        int y2 = surface.getSurfaceY(b.pos().getX(), b.pos().getZ());
+        return Math.abs(y1 - y2) <= 16;
     }
 
     /**
