@@ -42,7 +42,7 @@ public class GraphComponent extends BaseComponent {
     private static final int PADDING = 20;
     private static final int GRID_SPACING = 100;
     private boolean firstLayout = true;
-
+    private static final int TARGET_GRID_PX = 80;
     /**
      * Создает компонент для отрисовки графа.
      * <p>Creates a component for rendering the graph.</p>
@@ -73,8 +73,13 @@ public class GraphComponent extends BaseComponent {
         return source == FocusSource.MOUSE_CLICK;
     }
 
-    @Override public void onFocusGained(FocusSource src) {}   // ничего особого
-    @Override public void onFocusLost() {}                     // тоже пусто
+    @Override
+    public void onFocusGained(FocusSource src) {
+    }   // ничего особого
+
+    @Override
+    public void onFocusLost() {
+    }                     // тоже пусто
 
     @Override
     /**
@@ -102,7 +107,7 @@ public class GraphComponent extends BaseComponent {
     public void draw(OwoUIDrawContext context, int mouseX, int mouseY, float delta, float tickDelta) {
         computeLayout();
 
-        context.drawPanel(this.x(), this.y(), this.width(), this.height(), false);
+        context.drawPanel(this.x(), this.y(), this.width(), this.height(), true);
         context.drawRectOutline(this.x(), this.y(), this.width(), this.height(), 0xFFFFFFFF);
 
         drawGrid(context);
@@ -127,7 +132,7 @@ public class GraphComponent extends BaseComponent {
             Color color = typeColors.getOrDefault(node.type(), Color.WHITE);
             context.drawCircle(pos.x, pos.y, 16, RADIUS, color);
             context.drawCircle(pos.x, pos.y, 16, RADIUS - 1, Color.BLACK);
-            context.drawText(Text.literal(node.type()), pos.x + RADIUS + 2, pos.y - 4, 0.7f, 0xFFFFFF);
+//            context.drawText(Text.literal(node.type()), pos.x + RADIUS + 2, pos.y - 4, 0.7f, 0xFFFFFF);
 
             if (distance(pos.x, pos.y, mouseX, mouseY) <= RADIUS) {
                 Text tip = Text.literal(node.pos().toShortString() + " • " + node.type());
@@ -178,7 +183,7 @@ public class GraphComponent extends BaseComponent {
         for (Node node : nodes) {
             ScreenPos pos = screenPositions.get(node.id());
             if (pos != null && distance(pos.x, pos.y, mouseX, mouseY) <= RADIUS) {
-                var client = MinecraftClient.getInstance();
+                MinecraftClient client = MinecraftClient.getInstance();
                 if (client.player != null) {
                     client.player.setPosition(node.pos().getX() + 0.5, node.pos().getY(), node.pos().getZ() + 0.5);
                 }
@@ -250,36 +255,44 @@ public class GraphComponent extends BaseComponent {
      * <p>Draws the coordinate grid behind the graph.</p>
      */
     private void drawGrid(OwoUIDrawContext context) {
-        int w = this.width() - PADDING * 2;
-        int h = this.height() - PADDING * 2;
-        int startX = (int) (Math.floor(minX / (double) GRID_SPACING) * GRID_SPACING);
-        int startZ = (int) (Math.floor(minZ / (double) GRID_SPACING) * GRID_SPACING);
+        int w = width() - PADDING * 2;
+        int h = height() - PADDING * 2;
 
-        for (int x = startX; x <= maxX; x += GRID_SPACING) {
-            int sx = PADDING + (int) ((x - minX) * baseScale * zoom + offsetX);
-            context.drawLine(sx, PADDING, sx, PADDING + h, 1, Color.ofArgb(0x80444444));
-            context.drawText(Text.literal(Integer.toString(x)), sx + 2, PADDING + 2, 0.6f, 0xFFFFFF);
+        double worldX0 = minX + (-offsetX) / (baseScale * zoom);
+        double worldZ0 = minZ + (-offsetY) / (baseScale * zoom);
+        double worldX1 = minX + (w - offsetX) / (baseScale * zoom);
+        double worldZ1 = minZ + (h - offsetY) / (baseScale * zoom);
+
+        int spacing = computeGridSpacing();
+
+        int startWX = (int) (Math.floor(worldX0 / spacing) * spacing);
+        int startWZ = (int) (Math.floor(worldZ0 / spacing) * spacing);
+
+        for (int x = startWX; x <= worldX1; x += spacing) {
+            int sx = PADDING + (int) ((x - worldX0) * baseScale * zoom);
+            context.drawLine(sx, PADDING, sx, PADDING + h, 1, Color.ofArgb(0x60444444));
+            context.drawText(Text.literal(Integer.toString(x)), sx + 2, PADDING + 2, .6f, 0xFFFFFF);
+        }
+        for (int z = startWZ; z <= worldZ1; z += spacing) {
+            int sz = PADDING + (int) ((z - worldZ0) * baseScale * zoom);
+            context.drawLine(PADDING, sz, PADDING + w, sz, 1, Color.ofArgb(0x60444444));
+            context.drawText(Text.literal(Integer.toString(z)), PADDING + 2, sz + 2, .6f, 0xFFFFFF);
         }
 
-        for (int z = startZ; z <= maxZ; z += GRID_SPACING) {
-            int sz = PADDING + (int) ((z - minZ) * baseScale * zoom + offsetY);
-            context.drawLine(PADDING, sz, PADDING + w, sz, 1, Color.ofArgb(0x80444444));
-            context.drawText(Text.literal(Integer.toString(z)), PADDING + 2, sz + 2, 0.6f, 0xFFFFFF);
-        }
     }
-
     /**
      * Рисует линейку масштаба в правом нижнем углу.
      * <p>Draws the scale ruler in the bottom-right corner.</p>
      */
-    private void drawScale(OwoUIDrawContext context) {
-        int length = (int) (GRID_SPACING * baseScale * zoom);
-        int x = this.width() - PADDING - length - 10;
-        int y = this.height() - PADDING - 8;
-        context.drawLine(x, y, x + length, y, 2, Color.WHITE);
-        context.drawLine(x, y - 3, x, y + 3, 2, Color.WHITE);
-        context.drawLine(x + length, y - 3, x + length, y + 3, 2, Color.WHITE);
-        context.drawText(Text.literal(GRID_SPACING + "m"), x, y - 10, 0.7f, 0xFFFFFF);
+    private void drawScale(OwoUIDrawContext ctx) {
+        int spacing = computeGridSpacing();
+        int lengthPx = (int) (spacing * baseScale * zoom);
+        int x = width() - PADDING - lengthPx - 10;
+        int y = height() - PADDING - 8;
+        ctx.drawLine(x, y, x + lengthPx, y, 2, Color.WHITE);
+        ctx.drawLine(x, y - 3, x, y + 3, 2, Color.WHITE);
+        ctx.drawLine(x + lengthPx, y - 3, x + lengthPx, y + 3, 2, Color.WHITE);
+        ctx.drawText(Text.literal(spacing + "m"), x, y - 10, .7f, 0xFFFFFF);
     }
 
     /**
@@ -301,5 +314,18 @@ public class GraphComponent extends BaseComponent {
      * Экранные координаты узла.
      * <p>Screen coordinates of a node.</p>
      */
-    private record ScreenPos(int x, int y) {}
+    private record ScreenPos(int x, int y) {
+    }
+
+    /** Возвращает «красивый» шаг сетки в мировых координатах */
+    private int computeGridSpacing() {
+        double unitsPerPixel = 1.0 / (baseScale * zoom);
+        double raw = TARGET_GRID_PX * unitsPerPixel;          // желаемый шаг в блоках
+        double pow10 = Math.pow(10, Math.floor(Math.log10(raw)));
+        for (int n : new int[]{1, 2, 5}) {
+            double candidate = n * pow10;
+            if (candidate >= raw) return (int) candidate;
+        }
+        return (int) (10 * pow10); // fallback = 10*10^k
+    }
 }

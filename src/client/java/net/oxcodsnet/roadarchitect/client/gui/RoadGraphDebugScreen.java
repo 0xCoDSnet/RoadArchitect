@@ -5,6 +5,7 @@ import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.OwoUIAdapter;
 import io.wispforest.owo.ui.core.Sizing;
+import io.wispforest.owo.ui.core.Surface;
 import net.minecraft.text.Text;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
@@ -41,11 +42,12 @@ public class RoadGraphDebugScreen extends BaseOwoScreen<FlowLayout> {
         return OwoUIAdapter.create(this, (w, h) -> Containers.verticalFlow(Sizing.fill(), Sizing.fill()));
     }
 
-    @Override
+
     /**
      * Собирает содержимое экрана.
      * <p>Builds the screen contents.</p>
      */
+    @Override
     protected void build(FlowLayout root) {
         root.child(new GraphComponent(nodes, edges));
     }
