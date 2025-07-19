@@ -7,6 +7,7 @@ import io.wispforest.owo.ui.core.Sizing;
 import io.wispforest.owo.ui.container.Containers;
 import net.minecraft.text.Text;
 import net.oxcodsnet.roadarchitect.storage.Node;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class RoadGraphDebugScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     @Override
-    protected OwoUIAdapter<FlowLayout> createAdapter() {
+    protected @NotNull OwoUIAdapter<FlowLayout> createAdapter() {
         return OwoUIAdapter.create(this, (w, h) -> Containers.verticalFlow(Sizing.fill(), Sizing.fill()));
     }
 
