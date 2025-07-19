@@ -17,6 +17,22 @@ public class NodeStorage {
     private final Map<String, Node> nodes = new ConcurrentHashMap<>();
 
     /**
+     * Загружает хранилище узлов из списка NBT.
+     * <p>Loads node storage from the given NBT list.</p>
+     */
+    public static NodeStorage fromNbt(NbtList list) {
+        NodeStorage storage = new NodeStorage();
+        for (int i = 0; i < list.size(); i++) {
+            NbtCompound tag = list.getCompound(i);
+            String id = tag.getString("id");
+            BlockPos pos = BlockPos.fromLong(tag.getLong("pos"));
+            String type = tag.getString("type");
+            storage.nodes.put(id, new Node(id, pos, type));
+        }
+        return storage;
+    }
+
+    /**
      * Создает новый узел по указанной позиции и добавляет его в хранилище.
      * <p>Creates a new node at the given position and adds it to this storage.</p>
      *
@@ -74,21 +90,5 @@ public class NodeStorage {
             list.add(tag);
         }
         return list;
-    }
-
-    /**
-     * Загружает хранилище узлов из списка NBT.
-     * <p>Loads node storage from the given NBT list.</p>
-     */
-    public static NodeStorage fromNbt(NbtList list) {
-        NodeStorage storage = new NodeStorage();
-        for (int i = 0; i < list.size(); i++) {
-            NbtCompound tag = list.getCompound(i);
-            String id = tag.getString("id");
-            BlockPos pos = BlockPos.fromLong(tag.getLong("pos"));
-            String type = tag.getString("type");
-            storage.nodes.put(id, new Node(id, pos, type));
-        }
-        return storage;
     }
 }

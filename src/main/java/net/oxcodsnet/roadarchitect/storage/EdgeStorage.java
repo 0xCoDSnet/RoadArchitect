@@ -33,6 +33,22 @@ public class EdgeStorage {
     }
 
     /**
+     * Загружает хранилище рёбер из объекта NBT.
+     * <p>Loads edge storage from the given NBT compound.</p>
+     */
+    public static EdgeStorage fromNbt(NbtCompound tag, double radius) {
+        EdgeStorage storage = new EdgeStorage(radius);
+        for (String key : tag.getKeys()) {
+            NbtList list = tag.getList(key, NbtElement.STRING_TYPE);
+            Set<String> set = storage.edges.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet());
+            for (int i = 0; i < list.size(); i++) {
+                set.add(list.getString(i));
+            }
+        }
+        return storage;
+    }
+
+    /**
      * Возвращает используемый радиус проверки соединений.
      * <p>Returns the radius used to validate connections.</p>
      */
@@ -135,22 +151,6 @@ public class EdgeStorage {
             tag.put(entry.getKey(), list);
         }
         return tag;
-    }
-
-    /**
-     * Загружает хранилище рёбер из объекта NBT.
-     * <p>Loads edge storage from the given NBT compound.</p>
-     */
-    public static EdgeStorage fromNbt(NbtCompound tag, double radius) {
-        EdgeStorage storage = new EdgeStorage(radius);
-        for (String key : tag.getKeys()) {
-            NbtList list = tag.getList(key, NbtElement.STRING_TYPE);
-            Set<String> set = storage.edges.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet());
-            for (int i = 0; i < list.size(); i++) {
-                set.add(list.getString(i));
-            }
-        }
-        return storage;
     }
 
     /**

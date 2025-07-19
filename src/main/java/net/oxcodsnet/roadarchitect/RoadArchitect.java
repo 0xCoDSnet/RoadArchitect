@@ -1,14 +1,9 @@
 package net.oxcodsnet.roadarchitect;
 
 import net.fabricmc.api.ModInitializer;
-
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.minecraft.server.world.ServerWorld;
 import net.oxcodsnet.roadarchitect.config.RoadArchitectConfig;
 import net.oxcodsnet.roadarchitect.handlers.RoadGraphStateManager;
 import net.oxcodsnet.roadarchitect.handlers.StructureScanManager;
-import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

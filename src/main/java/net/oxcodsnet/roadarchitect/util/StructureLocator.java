@@ -19,11 +19,7 @@ import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * Утилитарный класс для поиска структур по тегам/ID внутри заданного радиуса чанков.
@@ -50,9 +46,9 @@ public class StructureLocator {
      * @return список найденных позиций структур / list of found structure positions
      */
     public static List<Pair<BlockPos, String>> findStructures(ServerWorld world,
-                                                BlockPos origin,
-                                                int radius,
-                                                List<String> structureSelectors) {
+                                                              BlockPos origin,
+                                                              int radius,
+                                                              List<String> structureSelectors) {
         List<Pair<BlockPos, String>> foundPositions = new ArrayList<>();
         Registry<Structure> structureRegistry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
 
@@ -118,13 +114,12 @@ public class StructureLocator {
      * @return список уникальных найденных позиций структур / unique list of found structure positions
      */
     public static List<Pair<BlockPos, String>> scanGrid(ServerWorld world,
-                                          BlockPos origin,
-                                          int overallRadius,
-                                          int scanRadius,
-                                          List<String> structureSelectors) {
+                                                        BlockPos origin,
+                                                        int overallRadius,
+                                                        int scanRadius,
+                                                        List<String> structureSelectors) {
         List<Pair<BlockPos, String>> allFound = new ArrayList<>();
         Set<BlockPos> seen = new HashSet<>();
-
 
 
         int step = scanRadius * 2 + 1;

@@ -1,20 +1,19 @@
 package net.oxcodsnet.roadarchitect.handlers;
 
+import com.mojang.datafixers.util.Pair;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.oxcodsnet.roadarchitect.RoadArchitect;
-import net.oxcodsnet.roadarchitect.util.StructureLocator;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.oxcodsnet.roadarchitect.RoadArchitect;
+import net.oxcodsnet.roadarchitect.util.StructureLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import com.mojang.datafixers.util.Pair;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Менеджер запуска сканирования структур.
@@ -22,8 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class StructureScanManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
-    // Флаги, чтобы сканирования выполнились только один раз per world
-    private static final Set<RegistryKey<World>> chunkScanDone = ConcurrentHashMap.newKeySet();
 
     /**
      * Регистрирует все необходимые слушатели.
@@ -33,6 +30,27 @@ public class StructureScanManager {
     public static void register() {
         // После генерации спавн чанка
         ServerChunkEvents.CHUNK_GENERATE.register(StructureScanManager::onChunkGenerated);
+        ServerPlayerEvents.JOIN.register(StructureScanManager::onPlayerJoinInOverworld);
+    }
+
+    /**
+     * Событие захода игрока в мир. Запускаем сканирование, когда игрок заходит в Overworld.
+     * <p>The player's entry event in the world. Launch scanning when the player enters Overworld</p>
+     */
+    private static void onPlayerJoinInOverworld(ServerPlayerEntity serverPlayerEntity) {
+        ServerWorld world = serverPlayerEntity.getServerWorld();
+        if (isNotOverWorld(world)) return;
+        performScan(world, "PlayerJoinInOverworld");
+    }
+
+    /**
+     * Проверка, что это Overworld
+     * @param world ServerWold
+     * @return true или false
+     */
+    private static boolean isNotOverWorld(ServerWorld world) {
+        if (world.isClient) return true;
+        return !world.getRegistryKey().equals(World.OVERWORLD);
     }
 
 
@@ -41,8 +59,7 @@ public class StructureScanManager {
      * <p>Triggered on chunk generation to start scanning once the spawn chunk is ready.</p>
      */
     private static void onChunkGenerated(ServerWorld world, Chunk chunk) {
-        if (world.isClient) return;
-        if (!world.getRegistryKey().equals(World.OVERWORLD)) return;
+        if (isNotOverWorld(world)) return;
         int spawnChunkX = world.getSpawnPos().getX() >> 4;
         int spawnChunkZ = world.getSpawnPos().getZ() >> 4;
 
@@ -50,8 +67,6 @@ public class StructureScanManager {
             performScan(world, "ChunkGenerated");
         }
     }
-
-
 
 
     /**

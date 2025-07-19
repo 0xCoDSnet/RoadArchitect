@@ -46,6 +46,26 @@ public class RoadGraphState extends PersistentState {
     }
 
     /**
+     * Восстанавливает состояние графа из NBT.
+     * <p>Restores the road graph state from NBT.</p>
+     */
+    public static RoadGraphState fromNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
+        double radius = tag.getDouble(RADIUS_KEY);
+        NodeStorage nodes = NodeStorage.fromNbt(tag.getList(NODES_KEY, NbtElement.COMPOUND_TYPE));
+        EdgeStorage edges = EdgeStorage.fromNbt(tag.getCompound(EDGES_KEY), radius);
+        return new RoadGraphState(nodes, edges);
+    }
+
+    /**
+     * Получает или создает состояние графа для мира.
+     * <p>Gets or creates the road graph state for the given world.</p>
+     */
+    public static RoadGraphState get(ServerWorld world, double radius) {
+        PersistentStateManager manager = world.getPersistentStateManager();
+        return manager.getOrCreate(TYPE, KEY);
+    }
+
+    /**
      * Возвращает хранилище узлов.
      * <p>Returns the node storage.</p>
      */
@@ -63,6 +83,7 @@ public class RoadGraphState extends PersistentState {
 
     /**
      * Добавляет новый узел и сразу строит с ним все допустимые рёбра
+     *
      * @param pos позиция для нового узла
      * @return созданный узел
      */
@@ -81,35 +102,15 @@ public class RoadGraphState extends PersistentState {
         return newNode;
     }
 
-    @Override
     /**
      * Сохраняет состояние в NBT.
      * <p>Writes this state into an NBT compound.</p>
      */
+    @Override
     public NbtCompound writeNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         tag.putDouble(RADIUS_KEY, edgeStorage.radius());
         tag.put(NODES_KEY, nodeStorage.toNbt());
         tag.put(EDGES_KEY, edgeStorage.toNbt());
         return tag;
-    }
-
-    /**
-     * Восстанавливает состояние графа из NBT.
-     * <p>Restores the road graph state from NBT.</p>
-     */
-    public static RoadGraphState fromNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
-        double radius = tag.getDouble(RADIUS_KEY);
-        NodeStorage nodes = NodeStorage.fromNbt(tag.getList(NODES_KEY, NbtElement.COMPOUND_TYPE));
-        EdgeStorage edges = EdgeStorage.fromNbt(tag.getCompound(EDGES_KEY), radius);
-        return new RoadGraphState(nodes, edges);
-    }
-
-    /**
-     * Получает или создает состояние графа для мира.
-     * <p>Gets or creates the road graph state for the given world.</p>
-     */
-    public static RoadGraphState get(ServerWorld world, double radius) {
-        PersistentStateManager manager = world.getPersistentStateManager();
-        return manager.getOrCreate(TYPE, KEY);
     }
 }

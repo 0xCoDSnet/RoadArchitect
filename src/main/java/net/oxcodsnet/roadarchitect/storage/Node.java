@@ -10,4 +10,5 @@ import net.minecraft.util.math.BlockPos;
  * @param pos  позиция узла в мире / node position in the world
  * @param type идентификатор структуры / structure identifier
  */
-public record Node(String id, BlockPos pos, String type) {}
+public record Node(String id, BlockPos pos, String type) {
+}

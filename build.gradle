@@ -27,7 +27,7 @@ loom {
     splitEnvironmentSourceSets()
 
     mods {
-        "roadarchitect" {
+        roadarchitect {
             sourceSet(sourceSets.main)
             sourceSet(sourceSets.client)
         }
