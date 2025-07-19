@@ -33,6 +33,7 @@ public class PathStorage extends PersistentState {
 
     private final Map<String, List<BlockPos>> paths = new ConcurrentHashMap<>();
 
+
     public static PathStorage get(ServerWorld world) {
         PersistentStateManager manager = world.getPersistentStateManager();
         return manager.getOrCreate(TYPE, KEY);
@@ -48,8 +49,8 @@ public class PathStorage extends PersistentState {
             String key = makeKey(from, to);
             NbtList posList = entry.getList(POS_KEY, NbtElement.LONG_TYPE);
             List<BlockPos> positions = new ArrayList<>();
-            for (int j = 0; j < posList.size(); j++) {
-                positions.add(BlockPos.fromLong(((NbtLong) posList.get(j)).longValue()));
+            for (NbtElement nbtElement : posList) {
+                positions.add(BlockPos.fromLong(((NbtLong) nbtElement).longValue()));
             }
             storage.paths.put(key, positions);
         }

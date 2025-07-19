@@ -129,23 +129,23 @@ public class GraphComponent extends BaseComponent {
         return false;
     }
 
-    @Override
-    public boolean onMouseUp(double mouseX, double mouseY, int button) {
-        if (button == 1) {
-            dragging = false;
-        }
-        return true;
-    }
-
-    @Override
-    public boolean onMouseDrag(double mouseX, double mouseY, double deltaX, double deltaY, int button) {
-        if (button == 1 && dragging) {
-            offsetX += deltaX;
-            offsetY += deltaY;
-            return true;
-        }
-        return false;
-    }
+//    @Override
+//    public boolean onMouseUp(double mouseX, double mouseY, int button) {
+//        if (button == 1) {
+//            dragging = false;
+//        }
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onMouseDrag(double mouseX, double mouseY, double deltaX, double deltaY, int button) {
+//        if (button == 1 && dragging) {
+//            offsetX += deltaX;
+//            offsetY += deltaY;
+//            return true;
+//        }
+//        return false;
+//    }
 
     @Override
     public boolean onMouseScroll(double mouseX, double mouseY, double amount) {
