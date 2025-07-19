@@ -2,6 +2,7 @@ package net.oxcodsnet.roadarchitect;
 
 import net.fabricmc.api.ModInitializer;
 import net.oxcodsnet.roadarchitect.config.RoadArchitectConfig;
+import net.oxcodsnet.roadarchitect.handlers.RoadBuilderManager;
 import net.oxcodsnet.roadarchitect.handlers.RoadGraphStateManager;
 import net.oxcodsnet.roadarchitect.handlers.StructureScanManager;
 import net.oxcodsnet.roadarchitect.handlers.PathFinderManager;
@@ -34,12 +35,13 @@ public class RoadArchitect implements ModInitializer {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
         // Proceed with mild caution.
-        LOGGER.info("Road Architect initialization");
+        LOGGER.info("Hello Fabric world!");
 
         // Регистрация сканирования структур и загрузки состояния
         StructureScanManager.register();
         RoadGraphStateManager.register();
         PathFinderManager.register();
+        RoadBuilderManager.register();
 
         LOGGER.info("Road Architect initialization complete!");
     }
