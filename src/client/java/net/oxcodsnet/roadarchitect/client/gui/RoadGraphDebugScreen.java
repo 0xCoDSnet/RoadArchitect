@@ -6,7 +6,7 @@ import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.Sizing;
 import io.wispforest.owo.ui.container.Containers;
 import net.minecraft.text.Text;
-import net.oxcodsnet.roadarchitect.storage.Node;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

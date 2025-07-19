@@ -3,6 +3,7 @@ package net.oxcodsnet.roadarchitect.storage;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 
 import java.util.Collections;
 import java.util.Map;

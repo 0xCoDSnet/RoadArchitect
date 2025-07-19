@@ -8,6 +8,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 
 /**
  * Сохраняет узлы и рёбра дорог как {@link PersistentState}.

@@ -1,4 +1,4 @@
-package net.oxcodsnet.roadarchitect.storage;
+package net.oxcodsnet.roadarchitect.storage.components;
 
 import net.minecraft.util.math.BlockPos;
 

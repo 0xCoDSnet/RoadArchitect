@@ -2,6 +2,7 @@ package net.oxcodsnet.roadarchitect.storage;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Тест сериализации {@link EdgeStorage}.
  * <p>Tests serialization of {@link EdgeStorage}.</p>
  */
+
 class EdgeStorageSerializationTest {
     /**
      * Проверяет сохранение и загрузку.
@@ -25,7 +27,7 @@ class EdgeStorageSerializationTest {
         NbtCompound tag = storage.toNbt();
         EdgeStorage loaded = EdgeStorage.fromNbt(tag, 5.0);
 
-        assertEquals(storage.all(), loaded.all());
+        assertEquals(storage.allWithStatus(), loaded.allWithStatus());
         assertEquals(storage.radius(), loaded.radius());
     }
 }

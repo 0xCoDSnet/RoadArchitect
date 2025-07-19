@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.oxcodsnet.roadarchitect.config.RoadArchitectConfig;
 import net.oxcodsnet.roadarchitect.handlers.RoadGraphStateManager;
 import net.oxcodsnet.roadarchitect.handlers.StructureScanManager;
+import net.oxcodsnet.roadarchitect.handlers.PathFinderManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,6 @@ public class RoadArchitect implements ModInitializer {
         // Регистрация сканирования структур и загрузки состояния
         StructureScanManager.register();
         RoadGraphStateManager.register();
+        PathFinderManager.register();
     }
 }
-

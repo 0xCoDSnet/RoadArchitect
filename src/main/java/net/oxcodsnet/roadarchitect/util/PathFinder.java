@@ -4,7 +4,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
-import net.oxcodsnet.roadarchitect.storage.Node;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 import net.oxcodsnet.roadarchitect.storage.NodeStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

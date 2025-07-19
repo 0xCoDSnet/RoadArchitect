@@ -3,8 +3,8 @@ package net.oxcodsnet.roadarchitect.storage;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.util.math.BlockPos;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,8 +19,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * around the nodes intersect.</p>
  */
 public class EdgeStorage {
+    /**
+     * Состояние ребра для расчёта пути.
+     * <p>Edge state used to track path calculation progress.</p>
+     */
+    public enum Status {
+        NEW,
+        PROCESSED
+    }
+
     private final double radius;
-    private final Map<String, Set<String>> edges = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, Status>> edges = new ConcurrentHashMap<>();
 
     /**
      * Создает хранилище рёбер с указанным радиусом проверки.
@@ -39,10 +48,13 @@ public class EdgeStorage {
     public static EdgeStorage fromNbt(NbtCompound tag, double radius) {
         EdgeStorage storage = new EdgeStorage(radius);
         for (String key : tag.getKeys()) {
-            NbtList list = tag.getList(key, NbtElement.STRING_TYPE);
-            Set<String> set = storage.edges.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet());
+            NbtList list = tag.getList(key, NbtElement.COMPOUND_TYPE);
+            Map<String, Status> map = storage.edges.computeIfAbsent(key, k -> new ConcurrentHashMap<>());
             for (int i = 0; i < list.size(); i++) {
-                set.add(list.getString(i));
+                NbtCompound entry = list.getCompound(i);
+                String id = entry.getString("id");
+                Status status = Status.valueOf(entry.getString("status"));
+                map.put(id, status);
             }
         }
         return storage;
@@ -71,8 +83,8 @@ public class EdgeStorage {
         if (!intersects(a.pos(), b.pos())) {
             return false;
         }
-        edges.computeIfAbsent(a.id(), k -> ConcurrentHashMap.newKeySet()).add(b.id());
-        edges.computeIfAbsent(b.id(), k -> ConcurrentHashMap.newKeySet()).add(a.id());
+        edges.computeIfAbsent(a.id(), k -> new ConcurrentHashMap<>()).put(b.id(), Status.NEW);
+        edges.computeIfAbsent(b.id(), k -> new ConcurrentHashMap<>()).put(a.id(), Status.NEW);
         return true;
     }
 
@@ -86,16 +98,16 @@ public class EdgeStorage {
      */
     public boolean remove(String id1, String id2) {
         boolean removed = false;
-        Set<String> a = edges.get(id1);
+        Map<String, Status> a = edges.get(id1);
         if (a != null) {
-            removed |= a.remove(id2);
+            removed |= a.remove(id2) != null;
             if (a.isEmpty()) {
                 edges.remove(id1);
             }
         }
-        Set<String> b = edges.get(id2);
+        Map<String, Status> b = edges.get(id2);
         if (b != null) {
-            removed |= b.remove(id1);
+            removed |= b.remove(id1) != null;
             if (b.isEmpty()) {
                 edges.remove(id2);
             }
@@ -111,8 +123,8 @@ public class EdgeStorage {
      */
     public Map<String, Set<String>> all() {
         Map<String, Set<String>> copy = new HashMap<>();
-        for (var entry : edges.entrySet()) {
-            copy.put(entry.getKey(), Set.copyOf(entry.getValue()));
+        for (Map.Entry<String, Map<String, Status>> entry : edges.entrySet()) {
+            copy.put(entry.getKey(), Set.copyOf(entry.getValue().keySet()));
         }
         return Collections.unmodifiableMap(copy);
     }
@@ -125,8 +137,42 @@ public class EdgeStorage {
      * @return множество id соседей / set of neighbor ids
      */
     public Set<String> neighbors(String id) {
-        Set<String> set = edges.get(id);
-        return set == null ? Set.of() : Collections.unmodifiableSet(set);
+        Map<String, Status> set = edges.get(id);
+        return set == null ? Set.of() : Collections.unmodifiableSet(set.keySet());
+    }
+
+    /**
+     * Возвращает полную карту рёбер со статусами.
+     */
+    public Map<String, Map<String, Status>> allWithStatus() {
+        Map<String, Map<String, Status>> copy = new HashMap<>();
+        for (Map.Entry<String, Map<String, Status>> entry : edges.entrySet()) {
+            copy.put(entry.getKey(), Map.copyOf(entry.getValue()));
+        }
+        return Collections.unmodifiableMap(copy);
+    }
+
+    /**
+     * Возвращает соседей вместе со статусами.
+     * <p>Returns neighbors with their statuses.</p>
+     */
+    public Map<String, Status> neighborsWithStatus(String id) {
+        Map<String, Status> map = edges.get(id);
+        return map == null ? Map.of() : Collections.unmodifiableMap(new HashMap<>(map));
+    }
+
+    /**
+     * Устанавливает статус ребра между узлами.
+     */
+    public void setStatus(String id1, String id2, Status status) {
+        Map<String, Status> a = edges.get(id1);
+        Map<String, Status> b = edges.get(id2);
+        if (a != null && a.containsKey(id2)) {
+            a.put(id2, status);
+        }
+        if (b != null && b.containsKey(id1)) {
+            b.put(id1, status);
+        }
     }
 
     /**
@@ -143,10 +189,13 @@ public class EdgeStorage {
      */
     public NbtCompound toNbt() {
         NbtCompound tag = new NbtCompound();
-        for (Map.Entry<String, Set<String>> entry : edges.entrySet()) {
+        for (Map.Entry<String, Map<String, Status>> entry : edges.entrySet()) {
             NbtList list = new NbtList();
-            for (String id : entry.getValue()) {
-                list.add(NbtString.of(id));
+            for (Map.Entry<String, Status> e : entry.getValue().entrySet()) {
+                NbtCompound element = new NbtCompound();
+                element.putString("id", e.getKey());
+                element.putString("status", e.getValue().name());
+                list.add(element);
             }
             tag.put(entry.getKey(), list);
         }

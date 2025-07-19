@@ -9,7 +9,7 @@ import org.lwjgl.glfw.GLFW;
 import net.oxcodsnet.roadarchitect.client.gui.RoadGraphDebugScreen;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import net.minecraft.server.world.ServerWorld;
-import net.oxcodsnet.roadarchitect.storage.Node;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 import java.util.ArrayList;
 import java.util.List;
 

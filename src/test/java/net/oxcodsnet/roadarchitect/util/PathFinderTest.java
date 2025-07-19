@@ -2,7 +2,7 @@ package net.oxcodsnet.roadarchitect.util;
 
 import net.minecraft.util.math.BlockPos;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
-import net.oxcodsnet.roadarchitect.storage.Node;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 import net.oxcodsnet.roadarchitect.storage.NodeStorage;
 import org.junit.jupiter.api.Test;
 

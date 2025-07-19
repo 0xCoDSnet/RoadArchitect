@@ -14,7 +14,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.structure.Structure;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
-import net.oxcodsnet.roadarchitect.storage.Node;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

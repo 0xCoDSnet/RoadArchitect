@@ -6,7 +6,7 @@ import io.wispforest.owo.ui.core.OwoUIDrawContext;
 import io.wispforest.owo.ui.core.Sizing;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-import net.oxcodsnet.roadarchitect.storage.Node;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 
 import java.util.HashMap;
 import java.util.List;
