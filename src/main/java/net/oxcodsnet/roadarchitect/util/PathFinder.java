@@ -155,7 +155,11 @@ public class PathFinder {
 
     /**
      * Реализация {@link SurfaceProvider}, использующая данные мира.
-     * <p>Surface provider that delegates to a {@link ServerWorld}.</p>
+     * Значения высоты вычисляются через генератор чанков, поэтому
+     * доступны даже для ещё не сгенерированных участков.
+     * <p>Surface provider that delegates to a {@link ServerWorld}. Heights are
+     * computed via the world's {@link net.minecraft.world.gen.chunk.ChunkGenerator}
+     * and therefore available for ungenerated chunks.</p>
      */
     public static class WorldSurfaceProvider implements SurfaceProvider {
         private final ServerWorld world;
@@ -166,7 +170,9 @@ public class PathFinder {
 
         @Override
         public int getSurfaceY(int x, int z) {
-            return world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z);
+            return world.getChunkManager().getChunkGenerator()
+                    .getHeight(x, z, Heightmap.Type.WORLD_SURFACE, world,
+                            world.getChunkManager().getNoiseConfig());
         }
     }
 }
