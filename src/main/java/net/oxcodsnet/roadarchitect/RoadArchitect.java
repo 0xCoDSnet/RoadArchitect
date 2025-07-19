@@ -41,7 +41,7 @@ public class RoadArchitect implements ModInitializer {
         StructureScanManager.register();
         RoadGraphStateManager.register();
         PathFinderManager.register();
-        RoadBuilderManager.register();
+//        RoadBuilderManager.register();
 
         LOGGER.info("Road Architect initialization complete!");
     }

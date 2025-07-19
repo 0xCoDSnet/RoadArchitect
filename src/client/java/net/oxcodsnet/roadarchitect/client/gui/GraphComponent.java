@@ -44,7 +44,6 @@ public class GraphComponent extends BaseComponent {
         this.edges = edges;
         this.horizontalSizing(Sizing.fill());
         this.verticalSizing(Sizing.fill());
-
         if (!nodes.isEmpty()) {
             minX = nodes.stream().mapToInt(n -> n.pos().getX()).min().orElse(0);
             maxX = nodes.stream().mapToInt(n -> n.pos().getX()).max().orElse(0);
@@ -57,6 +56,16 @@ public class GraphComponent extends BaseComponent {
                     Color.ofHsv(Math.abs(t.hashCode() % 360) / 360f, 0.6f, 0.9f));
         }
     }
+
+    @Override
+    public boolean canFocus(FocusSource source) {
+        // Разрешаем фокус только по клику мышью,
+        // чтобы Tab‑навигация не «заезжала» на граф
+        return source == FocusSource.MOUSE_CLICK;
+    }
+
+    @Override public void onFocusGained(FocusSource src) {}   // ничего особого
+    @Override public void onFocusLost() {}                     // тоже пусто
 
     @Override
     protected int determineHorizontalContentSize(Sizing sizing) {
@@ -111,41 +120,48 @@ public class GraphComponent extends BaseComponent {
 
     @Override
     public boolean onMouseDown(double mouseX, double mouseY, int button) {
-        if (button == 0) {
-            for (Node node : nodes) {
-                ScreenPos pos = screenPositions.get(node.id());
-                if (pos != null && distance(pos.x, pos.y, mouseX, mouseY) <= RADIUS) {
-                    var client = MinecraftClient.getInstance();
-                    if (client.player != null) {
-                        client.player.setPosition(node.pos().getX() + 0.5, node.pos().getY(), node.pos().getZ() + 0.5);
-                    }
-                    return true;
-                }
-            }
-        } else if (button == 1) {
-            dragging = true;
+        if (button != 0) return false;
+
+        if (clickOnNode(mouseX, mouseY))
+            return true;
+
+        dragging = true;
+        return true;
+    }
+
+    @Override
+    public boolean onMouseDrag(double mouseX, double mouseY, double deltaX, double deltaY, int button) {
+        if (dragging && button == 0) {
+            offsetX += deltaX;
+            offsetY += deltaY;
             return true;
         }
         return false;
     }
 
-//    @Override
-//    public boolean onMouseUp(double mouseX, double mouseY, int button) {
-//        if (button == 1) {
-//            dragging = false;
-//        }
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onMouseDrag(double mouseX, double mouseY, double deltaX, double deltaY, int button) {
-//        if (button == 1 && dragging) {
-//            offsetX += deltaX;
-//            offsetY += deltaY;
-//            return true;
-//        }
-//        return false;
-//    }
+    @Override
+    public boolean onMouseUp(double mouseX, double mouseY, int button) {
+        if (button == 0 && dragging) {
+            dragging = false;
+            return true;
+        }
+        return false;
+    }
+
+
+    private boolean clickOnNode(double mouseX, double mouseY) {
+        for (Node node : nodes) {
+            ScreenPos pos = screenPositions.get(node.id());
+            if (pos != null && distance(pos.x, pos.y, mouseX, mouseY) <= RADIUS) {
+                var client = MinecraftClient.getInstance();
+                if (client.player != null) {
+                    client.player.setPosition(node.pos().getX() + 0.5, node.pos().getY(), node.pos().getZ() + 0.5);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public boolean onMouseScroll(double mouseX, double mouseY, double amount) {
