@@ -46,9 +46,14 @@ public class RoadFeature extends Feature<RoadFeatureConfig> {
             String[] ids = segment.pathKey().split("\\|");
             List<BlockPos> path = paths.getPath(ids[0], ids[1]);
             int end = Math.min(segment.end(), path.size());
+            int half = Math.max(0, context.getConfig().width() / 2);
             for (int i = segment.start(); i < end; i++) {
                 BlockPos pos = path.get(i);
-                world.setBlockState(pos, block, Block.NOTIFY_ALL);
+                for (int dx = -half; dx <= half; dx++) {
+                    for (int dz = -half; dz <= half; dz++) {
+                        world.setBlockState(pos.add(dx, 0, dz), block, Block.NOTIFY_ALL);
+                    }
+                }
             }
             tasks.removeSegment(chunkPos, segment);
             LOGGER.info("Road segment {} built in chunk {}", segment.pathKey(), chunkPos);
