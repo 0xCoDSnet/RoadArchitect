@@ -37,10 +37,10 @@ public class StructureScanManager {
      * Событие захода игрока в мир. Запускаем сканирование, когда игрок заходит в Overworld.
      * <p>The player's entry event in the world. Launch scanning when the player enters Overworld</p>
      */
-    private static void onPlayerJoinInOverworld(ServerPlayerEntity serverPlayerEntity) {
-        ServerWorld world = serverPlayerEntity.getServerWorld();
+    private static void onPlayerJoinInOverworld(ServerPlayerEntity playerEntity) {
+        ServerWorld world = playerEntity.getServerWorld();
         if (isNotOverWorld(world)) return;
-        performScan(world, "PlayerJoinInOverworld");
+        performScan(world, "PlayerJoinInOverworld", playerEntity.getBlockPos());
     }
 
     /**
@@ -64,7 +64,7 @@ public class StructureScanManager {
         int spawnChunkZ = world.getSpawnPos().getZ() >> 4;
 
         if (chunk.getPos().x == spawnChunkX && chunk.getPos().z == spawnChunkZ) {
-            performScan(world, "ChunkGenerated");
+            performScan(world, "ChunkGenerated", world.getSpawnPos());
         }
     }
 
@@ -73,11 +73,10 @@ public class StructureScanManager {
      * Выполняет сканирование через {@link StructureLocator#scanGrid} и логирует результат.
      * <p>Performs a scan using {@link StructureLocator#scanGrid} and logs the outcome.</p>
      */
-    private static void performScan(ServerWorld world, String approach) {
+    private static void performScan(ServerWorld world, String approach, BlockPos center) {
         int overallRadius = RoadArchitect.CONFIG.playerScanRadius();
         int scanRadius = 1;
         List<String> selectors = RoadArchitect.CONFIG.structureSelectors();
-        BlockPos center = world.getSpawnPos();
 
         LOGGER.info("[{}] Запуск сканирования: overallRadius={}, scanRadius={}, selectors={}",
                 approach, overallRadius, scanRadius, selectors);
