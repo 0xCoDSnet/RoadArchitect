@@ -6,8 +6,8 @@ import io.wispforest.owo.ui.core.OwoUIDrawContext;
 import io.wispforest.owo.ui.core.Sizing;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-import net.oxcodsnet.roadarchitect.storage.components.Node;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +19,10 @@ import java.util.Map;
  */
 public class GraphComponent extends BaseComponent {
 
+    private static final int RADIUS = 4;
+    private static final int PADDING = 20;
+    private static final int GRID_SPACING = 100;
+    private static final int TARGET_GRID_PX = 80;
     private final List<Node> nodes;
     private final Map<String, Map<String, EdgeStorage.Status>> edges;
     private final Map<EdgeStorage.Status, Color> statusColors = Map.of(
@@ -27,7 +31,6 @@ public class GraphComponent extends BaseComponent {
     );
     private final Map<String, ScreenPos> screenPositions = new HashMap<>();
     private final Map<String, Color> typeColors = new HashMap<>();
-
     private int minX;
     private int maxX;
     private int minZ;
@@ -37,12 +40,8 @@ public class GraphComponent extends BaseComponent {
     private double offsetY;
     private double zoom = 1.0;
     private boolean dragging;
-
-    private static final int RADIUS = 4;
-    private static final int PADDING = 20;
-    private static final int GRID_SPACING = 100;
     private boolean firstLayout = true;
-    private static final int TARGET_GRID_PX = 80;
+
     /**
      * Создает компонент для отрисовки графа.
      * <p>Creates a component for rendering the graph.</p>
@@ -64,6 +63,16 @@ public class GraphComponent extends BaseComponent {
             typeColors.computeIfAbsent(node.type(), t ->
                     Color.ofHsv(Math.abs(t.hashCode() % 360) / 360f, 0.6f, 0.9f));
         }
+    }
+
+    /**
+     * Вычисляет расстояние между двумя точками.
+     * <p>Calculates the distance between two points.</p>
+     */
+    private static double distance(double x1, double y1, double x2, double y2) {
+        double dx = x1 - x2;
+        double dy = y1 - y2;
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     @Override
@@ -178,7 +187,6 @@ public class GraphComponent extends BaseComponent {
         return false;
     }
 
-
     private boolean clickOnNode(double mouseX, double mouseY) {
         for (Node node : nodes) {
             ScreenPos pos = screenPositions.get(node.id());
@@ -241,16 +249,6 @@ public class GraphComponent extends BaseComponent {
     }
 
     /**
-     * Вычисляет расстояние между двумя точками.
-     * <p>Calculates the distance between two points.</p>
-     */
-    private static double distance(double x1, double y1, double x2, double y2) {
-        double dx = x1 - x2;
-        double dy = y1 - y2;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    /**
      * Рисует сетку координат на фоне графа.
      * <p>Draws the coordinate grid behind the graph.</p>
      */
@@ -280,6 +278,7 @@ public class GraphComponent extends BaseComponent {
         }
 
     }
+
     /**
      * Рисует линейку масштаба в правом нижнем углу.
      * <p>Draws the scale ruler in the bottom-right corner.</p>
@@ -311,13 +310,8 @@ public class GraphComponent extends BaseComponent {
     }
 
     /**
-     * Экранные координаты узла.
-     * <p>Screen coordinates of a node.</p>
+     * Возвращает «красивый» шаг сетки в мировых координатах
      */
-    private record ScreenPos(int x, int y) {
-    }
-
-    /** Возвращает «красивый» шаг сетки в мировых координатах */
     private int computeGridSpacing() {
         double unitsPerPixel = 1.0 / (baseScale * zoom);
         double raw = TARGET_GRID_PX * unitsPerPixel;          // желаемый шаг в блоках
@@ -327,5 +321,12 @@ public class GraphComponent extends BaseComponent {
             if (candidate >= raw) return (int) candidate;
         }
         return (int) (10 * pow10); // fallback = 10*10^k
+    }
+
+    /**
+     * Экранные координаты узла.
+     * <p>Screen coordinates of a node.</p>
+     */
+    private record ScreenPos(int x, int y) {
     }
 }

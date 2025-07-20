@@ -19,18 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * around the nodes intersect.</p>
  */
 public class EdgeStorage {
-    /**
-     * Состояние ребра для расчёта пути.
-     * <p>Edge state used to track path calculation progress.</p>
-     */
-    public enum Status {
-        NEW,
-        PROCESSED
-    }
-
     private final double radius;
     private final Map<String, Map<String, Status>> edges = new ConcurrentHashMap<>();
-
     /**
      * Создает хранилище рёбер с указанным радиусом проверки.
      * <p>Creates storage for edges using the specified radius.</p>
@@ -212,5 +202,14 @@ public class EdgeStorage {
         double distanceSquared = dx * dx + dz * dz;
         double diameter = radius * 2.0;
         return distanceSquared <= diameter * diameter;
+    }
+
+    /**
+     * Состояние ребра для расчёта пути.
+     * <p>Edge state used to track path calculation progress.</p>
+     */
+    public enum Status {
+        NEW,
+        PROCESSED
     }
 }

@@ -2,18 +2,9 @@ package net.oxcodsnet.roadarchitect.worldgen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
-import net.minecraft.block.Blocks;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.gen.feature.ConfiguredFeature;
-import net.minecraft.world.gen.feature.PlacedFeature;
-import net.minecraft.world.gen.placementmodifier.SquarePlacementModifier;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.oxcodsnet.roadarchitect.RoadArchitect;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**

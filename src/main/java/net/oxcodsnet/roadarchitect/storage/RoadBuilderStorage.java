@@ -9,10 +9,10 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Хранит очереди сегментов дорог для каждого чанка.
@@ -28,14 +28,6 @@ public class RoadBuilderStorage extends PersistentState {
 
     public static final Type<RoadBuilderStorage> TYPE = new Type<>(RoadBuilderStorage::new,
             RoadBuilderStorage::fromNbt, DataFixTypes.SAVED_DATA_SCOREBOARD);
-
-    /**
-     * Один сегмент пути, находящийся внутри чанка.
-     * <p>A single path segment contained within a chunk.</p>
-     */
-    public record SegmentEntry(String pathKey, int start, int end) {
-    }
-
     private final Map<ChunkPos, List<SegmentEntry>> segments = new ConcurrentHashMap<>();
 
     /**
@@ -64,6 +56,14 @@ public class RoadBuilderStorage extends PersistentState {
                     .add(new SegmentEntry(path, start, end));
         }
         return storage;
+    }
+
+    /**
+     * Утилита для построения детерминированного ключа из идентификаторов узлов.
+     * <p>Utility to build deterministic keys from node ids.</p>
+     */
+    public static String makeKey(String a, String b) {
+        return a.compareTo(b) <= 0 ? a + "|" + b : b + "|" + a;
     }
 
     /**
@@ -121,10 +121,9 @@ public class RoadBuilderStorage extends PersistentState {
     }
 
     /**
-     * Утилита для построения детерминированного ключа из идентификаторов узлов.
-     * <p>Utility to build deterministic keys from node ids.</p>
+     * Один сегмент пути, находящийся внутри чанка.
+     * <p>A single path segment contained within a chunk.</p>
      */
-    public static String makeKey(String a, String b) {
-        return a.compareTo(b) <= 0 ? a + "|" + b : b + "|" + a;
+    public record SegmentEntry(String pathKey, int start, int end) {
     }
 }

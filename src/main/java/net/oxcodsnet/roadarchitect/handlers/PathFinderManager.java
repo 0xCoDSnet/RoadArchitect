@@ -2,12 +2,11 @@ package net.oxcodsnet.roadarchitect.handlers;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.PathStorage;
-import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import net.oxcodsnet.roadarchitect.storage.RoadBuilderStorage;
+import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import net.oxcodsnet.roadarchitect.util.PathFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,7 @@ import java.util.Map;
  * <p>Handles path calculation between nodes on various server events.</p>
  */
 public class PathFinderManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID+"/PathFinderManager");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinderManager");
 
     /**
      * Выполняет расчёт всех путей и возвращает найденные маршруты.

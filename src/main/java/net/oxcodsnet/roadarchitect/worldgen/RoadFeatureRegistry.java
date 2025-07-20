@@ -3,7 +3,6 @@ package net.oxcodsnet.roadarchitect.worldgen;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.registry.*;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
@@ -11,8 +10,6 @@ import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.PlacedFeature;
 import net.minecraft.world.gen.placementmodifier.SquarePlacementModifier;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
-
-import java.util.List;
 
 /**
  * Holds registry keys and bootstrap logic for road worldgen features.
@@ -40,6 +37,10 @@ public final class RoadFeatureRegistry {
      */
     public static final RegistryKey<PlacedFeature> ROAD_PLACED_FEATURE_KEY = RegistryKey.of(
             RegistryKeys.PLACED_FEATURE, Identifier.of(RoadArchitect.MOD_ID, "road"));
+
+    private RoadFeatureRegistry() {
+    }
+
     /**
      * Registers the road feature.
      */
@@ -69,8 +70,5 @@ public final class RoadFeatureRegistry {
         ctx.register(ROAD_PLACED_FEATURE_KEY,
                 new PlacedFeature(lookup.getOrThrow(ROAD_CONFIGURED_FEATURE_KEY),
                         java.util.List.of(SquarePlacementModifier.of())));
-    }
-
-    private RoadFeatureRegistry() {
     }
 }

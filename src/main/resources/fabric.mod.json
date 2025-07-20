@@ -1,45 +1,45 @@
 {
-	"schemaVersion": 1,
-	"id": "roadarchitect",
-	"version": "${version}",
-	"name": "RoadArchitect",
-	"description": "Travel around the world without barriers: RoadArchitect automatically scans your world, finds villages, and other structures, and then lays a network of roads between them.",
-	"authors": [
-		"0xCoDSnet"
-	],
-	"contact": {
-		"homepage": "",
-		"sources": ""
-	},
-	"license": "GPL-3.0-or-later",
-	"icon": "assets/roadarchitect/icon3.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"net.oxcodsnet.roadarchitect.RoadArchitect"
-		],
-		"client": [
-			"net.oxcodsnet.roadarchitect.RoadArchitectClient"
-		],
-		"fabric-datagen": [
-			"net.oxcodsnet.roadarchitect.RoadArchitectDataGenerator"
-		]
-	},
-	"mixins": [
-		"roadarchitect.mixins.json",
-		{
-			"config": "roadarchitect.client.mixins.json",
-			"environment": "client"
-		}
-	],
-	"depends": {
-		"fabricloader": ">=0.16.14",
-		"minecraft": "~1.21.1",
-		"java": ">=21",
-		"fabric-api": "*",
-		"owo-lib": "0.12.15.4+1.21"
-	},
-	"suggests": {
-		"modmenu": "11.0.3"
-	}
+  "schemaVersion": 1,
+  "id": "roadarchitect",
+  "version": "${version}",
+  "name": "RoadArchitect",
+  "description": "Travel around the world without barriers: RoadArchitect automatically scans your world, finds villages, and other structures, and then lays a network of roads between them.",
+  "authors": [
+    "0xCoDSnet"
+  ],
+  "contact": {
+    "homepage": "",
+    "sources": ""
+  },
+  "license": "GPL-3.0-or-later",
+  "icon": "assets/roadarchitect/icon3.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.oxcodsnet.roadarchitect.RoadArchitect"
+    ],
+    "client": [
+      "net.oxcodsnet.roadarchitect.RoadArchitectClient"
+    ],
+    "fabric-datagen": [
+      "net.oxcodsnet.roadarchitect.RoadArchitectDataGenerator"
+    ]
+  },
+  "mixins": [
+    "roadarchitect.mixins.json",
+    {
+      "config": "roadarchitect.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "owo-lib": "0.12.15.4+1.21"
+  },
+  "suggests": {
+    "modmenu": "11.0.3"
+  }
 }

@@ -15,8 +15,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.structure.Structure;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
-import net.oxcodsnet.roadarchitect.storage.components.Node;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
+import net.oxcodsnet.roadarchitect.storage.components.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ import java.util.*;
  */
 public class StructureLocator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID+"/StructureLocator");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/StructureLocator");
     private static final DynamicCommandExceptionType INVALID_STRUCTURE_EXCEPTION = new DynamicCommandExceptionType(
             id -> Text.translatable("commands.locate.structure.invalid", id)
     );

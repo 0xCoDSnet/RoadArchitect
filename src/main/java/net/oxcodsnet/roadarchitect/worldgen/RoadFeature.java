@@ -8,7 +8,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.util.FeatureContext;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
@@ -24,7 +23,7 @@ import java.util.List;
  * Feature that places road segments stored in {@link RoadBuilderStorage}.
  */
 public class RoadFeature extends Feature<RoadFeatureConfig> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID+"/RoadFeature");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadFeature");
 
     public RoadFeature(Codec<RoadFeatureConfig> codec) {
         super(codec);
