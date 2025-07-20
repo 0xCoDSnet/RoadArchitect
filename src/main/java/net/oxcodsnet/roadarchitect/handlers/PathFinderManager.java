@@ -26,30 +26,6 @@ import java.util.concurrent.Executors;
  */
 public class PathFinderManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID+"/PathFinderManager");
-    private static ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
-
-    /**
-     * Регистрирует слушателей событий для запуска поиска путей.
-     * <p>Registers all event listeners that trigger path finding.</p>
-     */
-    public static void register() {
-        ServerWorldEvents.LOAD.register((server, world) -> onWorldEvent(world));
-        ServerPlayerEvents.JOIN.register(player -> onWorldEvent(player.getServerWorld()));
-        ServerWorldEvents.UNLOAD.register((server, world) -> EXECUTOR.shutdownNow());
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> EXECUTOR.shutdownNow());
-    }
-
-    /**
-     * Обработчик загрузки мира или входа игрока.
-     * <p>Handles world load or player join events.</p>
-     */
-    private static void onWorldEvent(ServerWorld world) {
-        if (world.isClient()) return;
-        if (EXECUTOR.isShutdown()) {
-            EXECUTOR = Executors.newSingleThreadExecutor();
-        }
-        EXECUTOR.submit(() -> computePaths(world));
-    }
 
     /**
      * Выполняет расчёт всех путей и формирует задачи на строительство.
