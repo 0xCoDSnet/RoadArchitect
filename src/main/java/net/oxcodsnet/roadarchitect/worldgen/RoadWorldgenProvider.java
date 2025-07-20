@@ -25,13 +25,7 @@ public class RoadWorldgenProvider extends FabricDynamicRegistryProvider {
 
     @Override
     protected void configure(RegistryWrapper.WrapperLookup registries, Entries entries) {
-        entries.add(RoadFeatureRegistry.GLASS_ROAD, new ConfiguredFeature<>(RoadFeatureRegistry.ROAD_FEATURE, new RoadFeatureConfig(3)));
-        entries.add(RoadFeatureRegistry.WOOD_ROAD, new ConfiguredFeature<>(new RoadFeature(Blocks.OAK_PLANKS.getDefaultState()), new RoadFeatureConfig(3)));
-        entries.add(RoadFeatureRegistry.STONE_ROAD, new ConfiguredFeature<>(new RoadFeature(Blocks.STONE.getDefaultState()), new RoadFeatureConfig(3)));
-
-        entries.add(RoadFeatureRegistry.GLASS_ROAD_PLACED, new PlacedFeature(entries.ref(RoadFeatureRegistry.GLASS_ROAD), List.of(SquarePlacementModifier.of())));
-        entries.add(RoadFeatureRegistry.WOOD_ROAD_PLACED, new PlacedFeature(entries.ref(RoadFeatureRegistry.WOOD_ROAD), List.of(SquarePlacementModifier.of())));
-        entries.add(RoadFeatureRegistry.STONE_ROAD_PLACED, new PlacedFeature(entries.ref(RoadFeatureRegistry.STONE_ROAD), List.of(SquarePlacementModifier.of())));
+        //...
     }
 
     @Override

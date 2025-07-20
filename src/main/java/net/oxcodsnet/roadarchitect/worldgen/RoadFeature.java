@@ -1,5 +1,6 @@
 package net.oxcodsnet.roadarchitect.worldgen;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -23,41 +24,13 @@ import java.util.List;
  */
 public class RoadFeature extends Feature<RoadFeatureConfig> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID+"/RoadFeature");
-    private final BlockState block;
 
-    public RoadFeature(BlockState block) {
-        super(RoadFeatureConfig.CODEC);
-        this.block = block;
+    public RoadFeature(Codec<RoadFeatureConfig> configCodec) {
+        super(configCodec);
     }
 
     @Override
     public boolean generate(FeatureContext<RoadFeatureConfig> context) {
-        if (!(context.getWorld() instanceof StructureWorldAccess world)) {
-            return false;
-        }
-        ServerWorld serverWorld = world.toServerWorld();
-        ChunkGenerator generator = context.getGenerator();
-        ChunkPos chunkPos = new ChunkPos(context.getOrigin());
-
-        RoadBuilderStorage tasks = RoadBuilderStorage.get(serverWorld);
-        PathStorage paths = PathStorage.get(serverWorld);
-        List<RoadBuilderStorage.SegmentEntry> segments = List.copyOf(tasks.getSegments(chunkPos));
-        for (RoadBuilderStorage.SegmentEntry segment : segments) {
-            String[] ids = segment.pathKey().split("\\|");
-            List<BlockPos> path = paths.getPath(ids[0], ids[1]);
-            int end = Math.min(segment.end(), path.size());
-            int half = Math.max(0, context.getConfig().width() / 2);
-            for (int i = segment.start(); i < end; i++) {
-                BlockPos pos = path.get(i);
-                for (int dx = -half; dx <= half; dx++) {
-                    for (int dz = -half; dz <= half; dz++) {
-                        world.setBlockState(pos.add(dx, 0, dz), block, Block.NOTIFY_ALL);
-                    }
-                }
-            }
-            tasks.removeSegment(chunkPos, segment);
-            LOGGER.info("Road segment {} built in chunk {}", segment.pathKey(), chunkPos);
-        }
-        return !segments.isEmpty();
+        return false;
     }
 }
