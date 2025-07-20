@@ -15,7 +15,8 @@ public class RoadArchitectDataGenerator implements DataGeneratorEntrypoint {
 
     @Override
     public void buildRegistry(RegistryBuilder registryBuilder) {
-        //...
+        registryBuilder.addRegistry(RegistryKeys.CONFIGURED_FEATURE, RoadFeatureRegistry::bootstrapConfigured);
+        registryBuilder.addRegistry(RegistryKeys.PLACED_FEATURE, RoadFeatureRegistry::bootstrapPlaced);
     }
 
     @Override
@@ -24,6 +25,7 @@ public class RoadArchitectDataGenerator implements DataGeneratorEntrypoint {
      * <p>Entry point for Fabric data generation.</p>
      */
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
-        // ...
+        FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
+        pack.addProvider(RoadWorldgenProvider::new);
     }
 }

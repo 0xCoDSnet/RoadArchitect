@@ -4,32 +4,6 @@ plugins {
     id 'maven-publish'
 }
 
-//scmVersion {
-//    tag {
-//        // префикс берётся из ваших свойств
-//        prefix.set("${project.minecraft_version}_${project.mod_version}")
-//    }
-//
-//    // задаём поведение «сколько и как инкрементить»
-//    versionIncrementer("incrementPatch")
-//
-//    // настраиваем «метку» следующей версии
-//    nextVersion {
-//        // разделитель между номером версии и суффиксом
-//        separator.set("-")
-//        // суффикс, обозначающий «начало работы над следующей версией»
-//        suffix.set("SNAPSHOT")
-//
-//        // свой сериализатор: берём bump-нутый патч и прямо формируем строку с вашим префиксом
-//        serializer({ cfg, versionObj ->
-//            // versionObj – это Version API
-//            def bumped = versionObj.incrementPatchVersion()
-//            // собираем: "<mc>_<mod>-<MAJOR.MINOR.(PATCH+1)>"
-//            return "${project.minecraft_version}_${project.mod_version}${cfg.separator}${bumped.asString()}"
-//        })
-//    }
-//}
-
 version = project.mod_version
 group = project.maven_group
 
@@ -38,16 +12,10 @@ base {
 }
 
 repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // Loom автоматически добавляет репозитории для Minecraft и библиотек,
-    // а эти нужны только для сторонних модов.
-    // См. https://docs.gradle.org/current/userguide/declaring_repositories.html
-    maven {
-        url = uri("https://maven.wispforest.io")
-    }
-    maven {
-        url = uri("https://maven.terraformersmc.com/")
-    }
+    // Loom automatically adds repositories for Minecraft and its libraries.
+    // These are only for third‑party mods.
+    maven { url = uri('https://maven.wispforest.io') }
+    maven { url = uri('https://maven.terraformersmc.com/') }
 }
 
 loom {
@@ -68,12 +36,11 @@ fabricApi {
 }
 
 dependencies {
-    // Чтобы менять версии, правьте gradle.properties
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    // Fabric API (рекомендуется)
+    // Fabric API
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation "io.wispforest:owo-lib:${project.owo_version}"
@@ -87,16 +54,27 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit_version}"
 }
 
-processResources {
-    inputs.property("version", project.version)
+/**
+ *  Extra block to ensure data‑gen output is included in the final JAR.
+ */
+sourceSets {
+    main {
+        resources {
+            // JSON files from datagen (Configured/Placed features, etc.)
+            srcDir 'src/main/generated'
+        }
+    }
+}
 
-    filesMatching("fabric.mod.json") {
-        expand "version": inputs.properties.version
+processResources {
+    inputs.property('version', project.version)
+    filesMatching('fabric.mod.json') {
+        expand version: inputs.properties.version
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    options.release = 21
 }
 
 java {
@@ -107,10 +85,15 @@ java {
 }
 
 jar {
-    inputs.property("archivesName", project.base.archivesName)
+    inputs.property('archivesName', project.base.archivesName)
 
-    from("LICENSE") {
+    from('LICENSE') {
         rename { "${it}_${inputs.properties.archivesName}" }
+    }
+
+    // Ensure datagen resources are packaged (redundant but safe)
+    from(sourceSets.main.resources.srcDirs) {
+        include '**/*.json'
     }
 }
 
@@ -120,14 +103,13 @@ test {
 
 publishing {
     publications {
-        create("mavenJava", MavenPublication) {
+        create('mavenJava', MavenPublication) {
             artifactId = project.archives_base_name
             from(components.java)
         }
     }
 
     repositories {
-
+        // Configure your publishing repo here
     }
 }
-
