@@ -54,18 +54,6 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit_version}"
 }
 
-/**
- *  Extra block to ensure data‑gen output is included in the final JAR.
- */
-sourceSets {
-    main {
-        resources {
-            // JSON files from datagen (Configured/Placed features, etc.)
-            srcDir 'src/main/generated'
-        }
-    }
-}
-
 processResources {
     inputs.property('version', project.version)
     filesMatching('fabric.mod.json') {
@@ -89,11 +77,6 @@ jar {
 
     from('LICENSE') {
         rename { "${it}_${inputs.properties.archivesName}" }
-    }
-
-    // Ensure datagen resources are packaged (redundant but safe)
-    from(sourceSets.main.resources.srcDirs) {
-        include '**/*.json'
     }
 }
 

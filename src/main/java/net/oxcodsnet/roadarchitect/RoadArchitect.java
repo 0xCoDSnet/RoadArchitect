@@ -3,10 +3,8 @@ package net.oxcodsnet.roadarchitect;
 import net.fabricmc.api.ModInitializer;
 import net.oxcodsnet.roadarchitect.commands.RoadArchitectDebugCommand;
 import net.oxcodsnet.roadarchitect.config.RoadArchitectConfig;
-import net.oxcodsnet.roadarchitect.handlers.RoadBuilderManager;
+import net.oxcodsnet.roadarchitect.handlers.RoadPipelineController;
 import net.oxcodsnet.roadarchitect.handlers.RoadGraphStateManager;
-import net.oxcodsnet.roadarchitect.handlers.StructureScanManager;
-import net.oxcodsnet.roadarchitect.handlers.PathFinderManager;
 import net.oxcodsnet.roadarchitect.worldgen.RoadFeatureRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +37,10 @@ public class RoadArchitect implements ModInitializer {
         // Proceed with mild caution.
         LOGGER.info("Road Architect initialization...");
 
-        // Регистрация сканирования структур и загрузки состояния
-        StructureScanManager.register();
+        // Регистрация хранилищ и пайплайна
         RoadGraphStateManager.register();
-        PathFinderManager.register();
+        RoadPipelineController.register();
         RoadFeatureRegistry.register();
-        RoadBuilderManager.register();
         RoadArchitectDebugCommand.register();
         LOGGER.info("Road Architect initialization complete!");
     }

@@ -1,13 +1,8 @@
 package net.oxcodsnet.roadarchitect.handlers;
 
 import com.mojang.datafixers.util.Pair;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.util.StructureLocator;
 import org.slf4j.Logger;
@@ -26,12 +21,13 @@ public class StructureScanManager {
      * Выполняет сканирование через {@link StructureLocator#scanGrid} и логирует результат.
      * <p>Performs scanning through {@link StructureLocator#scanGrid} and logs the outcome.</p>
      */
-    private static void Scan(ServerWorld world, String approach, BlockPos center) {
+    static void scan(ServerWorld world, String approach, BlockPos center) {
         int overallRadius = RoadArchitect.CONFIG.playerScanRadius();
         int scanRadius = 1;
         List<String> selectors = RoadArchitect.CONFIG.structureSelectors();
 
-        LOGGER.info("[{}] Scan launch: overallRadius={}, scanRadius={}, selectors={}", approach, overallRadius, scanRadius, selectors);
+        LOGGER.info("[{}] Scan launch: overallRadius={}, scanRadius={}, selectors={}",
+                approach, overallRadius, scanRadius, selectors);
 
         List<Pair<BlockPos, String>> found = StructureLocator.scanGrid(
                 world, center, overallRadius, scanRadius, selectors
