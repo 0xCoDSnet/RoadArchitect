@@ -33,11 +33,11 @@ public class RoadFeature extends Feature<RoadFeatureConfig> {
     @Override
     public boolean generate(FeatureContext<RoadFeatureConfig> ctx) {
         // Datapack‑phase runs only on the logical server; silently skip otherwise.
-        StructureWorldAccess world = ctx.getWorld();
-        if (!(world instanceof ServerWorld serverWorld)) {
+        ServerWorld serverWorld = ctx.getWorld().toServerWorld();
+        StructureWorldAccess structureWorldAccess = ctx.getWorld();
+        if (serverWorld == null) {
             return false;
         }
-
         // Segments are queued per chunk — look up the list for ours.
         ChunkPos chunk = new ChunkPos(ctx.getOrigin());
         RoadBuilderStorage builder = RoadBuilderStorage.get(serverWorld);
@@ -48,7 +48,7 @@ public class RoadFeature extends Feature<RoadFeatureConfig> {
 
         PathStorage paths = PathStorage.get(serverWorld);
         int half = Math.max(0, ctx.getConfig().width() / 2);
-        BlockState road = Blocks.STONE.getDefaultState(); // TODO: surface style via config
+        BlockState road = Blocks.COBBLESTONE.getDefaultState(); // TODO: surface style via config
 
         boolean placed = false;
 
@@ -77,8 +77,8 @@ public class RoadFeature extends Feature<RoadFeatureConfig> {
                 for (int dx = -half; dx <= half; dx++) {
                     for (int dz = -half; dz <= half; dz++) {
                         BlockPos pos = p.add(dx, 0, dz);
-                        world.setBlockState(pos, road, Block.NOTIFY_LISTENERS);
-                        world.setBlockState(pos.up(), Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
+                        structureWorldAccess.setBlockState(pos, road, Block.NOTIFY_LISTENERS);
+                        structureWorldAccess.setBlockState(pos.up(), Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
                     }
                 }
             }
