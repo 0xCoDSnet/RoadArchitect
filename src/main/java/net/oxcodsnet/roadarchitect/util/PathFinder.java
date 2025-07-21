@@ -8,6 +8,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
+import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.NodeStorage;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
 import org.slf4j.Logger;
@@ -16,17 +17,21 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 /**
- * A* path‑finder that builds a route on the world grid (4×4 blocks) directly<br>
- * between two stored nodes. The algorithm reproduces the cost model from the
- * Settlement Roads mod but never explores other nodes from {@link NodeStorage}.
+ * A* path‑finder that works on a X/Z grid with step {@link #GRID_STEP}.<br>
+ * Change {@code GRID_STEP} (1‒10) — offsets and thresholds rebuild at class‑load time.
  */
 public class PathFinder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("roadarchitect/PathFinder");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID +"/PathFinder");
 
-    /** Horizontal grid step (in blocks). */
-    private static final int GRID_STEP = 3;
+    /**
+     * Horizontal grid step in blocks (safe range 1‒10).
+     */
+    public static final int GRID_STEP = 3;      // ← change here, everything else auto‑adapts
 
+    /**
+     * All 8 neighbour offsets generated from {@link #GRID_STEP}.
+     */
     private static final int[][] OFFSETS = generateOffsets();
 
     private final NodeStorage nodes;
@@ -34,10 +39,10 @@ public class PathFinder {
     private final ServerWorld world;
     private final int maxSteps;
 
-    // Fastutil caches (primitive key → primitive/value)
-    private final Long2IntMap heightCache = new Long2IntOpenHashMap();
-    private final Long2DoubleMap stabilityCache = new Long2DoubleOpenHashMap();
-    private final Long2ObjectMap<RegistryEntry<Biome>> biomeCache = new Long2ObjectOpenHashMap<>();
+    // Caches -------------------------------------------------------------
+    private final Long2IntMap heightCache = Long2IntMaps.synchronize(new Long2IntOpenHashMap());
+    private final Long2DoubleMap stabilityCache = Long2DoubleMaps.synchronize(new Long2DoubleOpenHashMap());
+    private final Long2ObjectMap<RegistryEntry<Biome>> biomeCache = Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<>());
 
     public PathFinder(NodeStorage nodes, SurfaceProvider surface, ServerWorld world, int maxSteps) {
         this.nodes = nodes;
@@ -48,13 +53,15 @@ public class PathFinder {
         stabilityCache.defaultReturnValue(Double.MAX_VALUE);
     }
 
-    /** Builds and returns the list of BlockPos the algorithm actually traversed. */
+    /**
+     * Returns the list of BlockPos actually traversed by A*.
+     */
     public List<BlockPos> findPath(String fromId, String toId) {
         return aStar(fromId, toId);
     }
 
     // ────────────────────────────────────────────────────────────────────────
-    // A* core
+    // A* core working on world grid cells
 
     private List<BlockPos> aStar(String fromId, String toId) {
         Node startNode = nodes.all().get(fromId);
@@ -99,15 +106,15 @@ public class PathFinder {
                 int ny = sampleHeight(nx, nz);
                 if (!isTraversable(curY, ny)) continue;
 
-                double stabCost = sampleStability(nx, nz, ny);
-                if (stabCost == Double.MAX_VALUE) continue;
+                double stab = sampleStability(nx, nz, ny);
+                if (stab == Double.MAX_VALUE) continue;
 
                 double tentativeG = gScore.get(current.key)
                         + stepCost(off)
                         + elevationCost(curY, ny)
                         + biomeCost(sampleBiome(neighKey))
                         + yLevelCost(ny)
-                        + stabCost;
+                        + stab;
 
                 if (tentativeG < gScore.get(neighKey)) {
                     parent.put(neighKey, current.key);
@@ -155,7 +162,7 @@ public class PathFinder {
     }
 
     // ────────────────────────────────────────────────────────────────────────
-    // Cost helpers — replicate Settlement Roads weighting.
+    // Cost functions
 
     private static double stepCost(int[] off) {
         return (Math.abs(off[0]) == GRID_STEP && Math.abs(off[1]) == GRID_STEP) ? 1.5 : 1.0;
@@ -188,41 +195,73 @@ public class PathFinder {
         return Math.abs(y1 - y2) <= 3;
     }
 
+    // ────────────────────────────────────────────────────────────────────────
+    // Heuristic & goal test
+
     private static double heuristic(int x, int z, BlockPos goal) {
         int dx = Math.abs(x - goal.getX());
         int dz = Math.abs(z - goal.getZ());
-        double approx = dx + dz - 0.6 * Math.min(dx, dz);
-        return approx * 30.0;
+        double a = dx + dz - 0.6 * Math.min(dx, dz);
+        return a * 40.0;
     }
 
-    /** Перегрузка для двух BlockPos — удобно при инициализации старта. */
     private static double heuristic(BlockPos a, BlockPos b) {
         return heuristic(a.getX(), a.getZ(), b);
     }
 
-    /* ──────── условие достижения цели ────────
-       как в Settlement Roads: достаточно подойти ближе, чем две «клетки сетки». */
     private static boolean reachedTarget(BlockPos a, BlockPos b) {
-        int manhattan = Math.abs(a.getX() - b.getX()) + Math.abs(a.getZ() - b.getZ());
-        return manhattan < GRID_STEP * 2;
+        int man = Math.abs(a.getX() - b.getX()) + Math.abs(a.getZ() - b.getZ());
+        return man < GRID_STEP * 2;
     }
 
-    /* ──────── восстановление пути ──────── */
-    private List<BlockPos> reconstructPath(long goalKey, long startKey, Long2LongMap parent) {
-        List<BlockPos> route = new ArrayList<>();
-        long k = goalKey;
-        while (true) {
-            BlockPos posXZ = keyToPos(k);
-            int y = sampleHeight(posXZ.getX(), posXZ.getZ());
-            route.add(new BlockPos(posXZ.getX(), y, posXZ.getZ()));
-            if (k == startKey) break;
-            k = parent.get(k);
+    // ────────────────────────────────────────────────────────────────────────
+    // Path reconstruction
+
+    /**
+     * Reconstructs the route and inserts interpolation points between each pair of consecutive
+     * grid vertices so that the returned list contains *every* X/Z block the road will occupy.
+     */
+    private List<BlockPos> reconstructPath(long goal, long start, Long2LongMap parent) {
+        List<BlockPos> vertices = new ArrayList<>();
+        // ❶ collect reversed chain of grid cells
+        for (long k = goal; ; k = parent.get(k)) {
+            BlockPos p = keyToPos(k);
+            int y = sampleHeight(p.getX(), p.getZ());
+            vertices.add(new BlockPos(p.getX(), y, p.getZ()));
+            if (k == start) break;
         }
-        Collections.reverse(route);      // от старта к цели
-        return route;
+        Collections.reverse(vertices);
+
+        // ❷ interpolate between each pair (GRID_STEP‑1 points each)
+        List<BlockPos> smooth = new ArrayList<>(vertices.size() * GRID_STEP);
+        for (int i = 0; i < vertices.size() - 1; i++) {
+            BlockPos a = vertices.get(i);
+            BlockPos b = vertices.get(i + 1);
+            smooth.add(a);
+            interpolateSegment(a, b, smooth); // adds points *between* a and b
+        }
+        smooth.add(vertices.get(vertices.size() - 1)); // add goal
+        return smooth;
     }
 
-    /* ──────── утилиты кодирования координат ──────── */
+    /**
+     * Adds intermediate blocks spaced at 1‑block steps between two GRID_STEP‑spaced points.
+     */
+    private void interpolateSegment(BlockPos a, BlockPos b, List<BlockPos> out) {
+        int dx = Integer.signum(b.getX() - a.getX());
+        int dz = Integer.signum(b.getZ() - a.getZ());
+        int steps = Math.max(Math.abs(b.getX() - a.getX()), Math.abs(b.getZ() - a.getZ()));
+        int y = a.getY();
+        for (int i = 1; i < steps; i++) {
+            int x = a.getX() + dx * i;
+            int z = a.getZ() + dz * i;
+            out.add(new BlockPos(x, y, z));
+        }
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Utility: grid, key encoding, offset generation
+
     private static BlockPos snap(BlockPos p) {
         int x = Math.floorDiv(p.getX(), GRID_STEP) * GRID_STEP;
         int z = Math.floorDiv(p.getZ(), GRID_STEP) * GRID_STEP;
@@ -239,11 +278,16 @@ public class PathFinder {
         return new BlockPos(x, 0, z);    // Y добавляем позже через sampleHeight
     }
 
-    private static int[][] generateOffsets(){int d=GRID_STEP;return new int[][]{{d,0},{-d,0},{0,d},{0,-d},{d,d},{d,-d},{-d,d},{-d,-d}};}
-
+    private static int[][] generateOffsets() {
+        int d = GRID_STEP;
+        return new int[][]{{d, 0}, {-d, 0}, {0, d}, {0, -d}, {d, d}, {d, -d}, {-d, d}, {-d, -d}};
+    }
 
     // ────────────────────────────────────────────────────────────────────────
-    /** Provides surface Y for any XZ coordinate without blocking I/O. */
+
+    /**
+     * Provides surface Y for any XZ coordinate without blocking I/O.
+     */
     public interface SurfaceProvider {
         int getSurfaceY(int x, int z);
     }
