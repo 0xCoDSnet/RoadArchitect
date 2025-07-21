@@ -1,186 +1,222 @@
 package net.oxcodsnet.roadarchitect.util;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2LongMap;
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.Heightmap;
-import net.oxcodsnet.roadarchitect.RoadArchitect;
-import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
+import net.minecraft.world.biome.Biome;
 import net.oxcodsnet.roadarchitect.storage.NodeStorage;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.PriorityQueue;
 
 /**
- * Поиск пути по уже вычисленным рёбрам.
- * <p>Finds a path using pre-computed edges.</p>
+ * A* path‑finder that builds a route on the world grid (4×4 blocks) directly<br>
+ * between two stored nodes. The algorithm reproduces the cost model from the
+ * Settlement Roads mod but never explores other nodes from {@link NodeStorage}.
  */
 public class PathFinder {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinder");
+
+    private static final Logger LOGGER = LoggerFactory.getLogger("roadarchitect/PathFinder");
+
+    /** Grid step in blocks (must divide the neighbour offsets). */
+    private static final int GRID_STEP = 4;
 
     private final NodeStorage nodes;
-    private final EdgeStorage edges;
     private final SurfaceProvider surface;
+    private final ServerWorld world;
+    private final int maxSteps;
 
-    /**
-     * Создаёт новый PathFinder с указанными хранилищами и провайдером поверхности.
-     * <p>Constructs a new PathFinder with the given storages and surface provider.</p>
-     */
-    public PathFinder(NodeStorage nodes, EdgeStorage edges, SurfaceProvider surface) {
+    // ────────────────────────────────────────────────────────────────────────
+
+    public PathFinder(NodeStorage nodes, SurfaceProvider surface, ServerWorld world, int maxSteps) {
         this.nodes = nodes;
-        this.edges = edges;
         this.surface = surface;
+        this.world = world;
+        this.maxSteps = maxSteps;
     }
 
-    /**
-     * Находит путь между двумя узлами. Возвращает список позиций по поверхности
-     * или пустой список, если путь не найден.
-     * <p>Finds a path between two nodes. Returns the list of surface positions
-     * or an empty list if the path cannot be found.</p>
-     *
-     * @param fromId id начального узла / start node id
-     * @param toId   id конечного узла / target node id
-     * @return список точек пути / list of path positions
-     */
+    /** Public API: returns a list of BlockPos actually traversed by A*. */
     public List<BlockPos> findPath(String fromId, String toId) {
-        List<String> nodeIds = bfs(fromId, toId);
-        if (nodeIds.isEmpty()) {
+        return aStar(fromId, toId);
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // A* core working on world grid cells, not on graph edges.
+
+    private List<BlockPos> aStar(String fromId, String toId) {
+        Node startNode = nodes.all().get(fromId);
+        Node endNode = nodes.all().get(toId);
+        if (startNode == null || endNode == null) {
+            LOGGER.warn("Missing node(s) {} or {}", fromId, toId);
             return List.of();
         }
 
-        List<BlockPos> path = new ArrayList<>();
-        for (int i = 0; i < nodeIds.size() - 1; i++) {
-            Node a = nodes.all().get(nodeIds.get(i));
-            Node b = nodes.all().get(nodeIds.get(i + 1));
-            if (a == null || b == null) {
-                LOGGER.warn("Missing node for path segment {} -> {}", nodeIds.get(i), nodeIds.get(i + 1));
-                return List.of();
-            }
-            addSegment(path, a.pos(), b.pos());
+        BlockPos startPos = snap(startNode.pos());
+        BlockPos endPos = snap(endNode.pos());
+        int startY = surface.getSurfaceY(startPos.getX(), startPos.getZ());
+        int endY = surface.getSurfaceY(endPos.getX(), endPos.getZ());
+        startPos = new BlockPos(startPos.getX(), startY, startPos.getZ());
+        endPos = new BlockPos(endPos.getX(), endY, endPos.getZ());
+
+        record Rec(long key, double g, double f) {
         }
-        if (path.isEmpty()) {
-            Node single = nodes.all().get(nodeIds.getFirst());
-            if (single != null) {
-                int y = surface.getSurfaceY(single.pos().getX(), single.pos().getZ());
-                path.add(new BlockPos(single.pos().getX(), y, single.pos().getZ()));
-            }
-        }
-        return path;
-    }
+        PriorityQueue<Rec> open = new PriorityQueue<>(Comparator.comparingDouble(r -> r.f));
+        Long2DoubleMap gScore = new Long2DoubleOpenHashMap();
+        gScore.defaultReturnValue(Double.MAX_VALUE);
+        Long2LongMap parent = new Long2LongOpenHashMap();
 
-    /**
-     * Выполняет поиск в ширину между двумя узлами графа.
-     * <p>Performs a breadth-first search between two graph nodes.</p>
-     */
-    private List<String> bfs(String fromId, String toId) {
-        if (!nodes.all().containsKey(fromId) || !nodes.all().containsKey(toId)) {
-            return List.of();
-        }
+        long startKey = hash(startPos.getX(), startPos.getZ());
+        long endKey = hash(endPos.getX(), endPos.getZ());
 
-        Map<String, String> parent = new HashMap<>();
-        Set<String> visited = new HashSet<>();
-        Queue<String> queue = new ArrayDeque<>();
+        gScore.put(startKey, 0.0);
+        open.add(new Rec(startKey, 0.0, heuristic(startPos, endPos)));
 
-        queue.add(fromId);
-        visited.add(fromId);
+        int[][] OFFSETS = {
+                {GRID_STEP, 0}, {-GRID_STEP, 0}, {0, GRID_STEP}, {0, -GRID_STEP},
+                {GRID_STEP, GRID_STEP}, {GRID_STEP, -GRID_STEP}, {-GRID_STEP, GRID_STEP}, {-GRID_STEP, -GRID_STEP}
+        };
 
-        while (!queue.isEmpty()) {
-            String current = queue.poll();
-            if (current.equals(toId)) {
-                break;
+        int iterations = 0;
+        while (!open.isEmpty() && iterations++ < maxSteps) {
+            Rec current = open.poll();
+            if (current.key == endKey || reachedTarget(keyToPos(current.key), endPos)) {
+                return reconstructPath(current.key, startKey, parent);
             }
 
-            Node currentNode = nodes.all().get(current);
-            if (currentNode == null) {
-                continue;
-            }
+            BlockPos curPos = keyToPos(current.key);
+            int curY = surface.getSurfaceY(curPos.getX(), curPos.getZ());
 
-            for (String neighbor : edges.neighbors(current)) {
-                if (visited.contains(neighbor)) {
-                    continue;
+            for (int[] off : OFFSETS) {
+                int nx = curPos.getX() + off[0];
+                int nz = curPos.getZ() + off[1];
+                long neighKey = hash(nx, nz);
+
+                int neighY = surface.getSurfaceY(nx, nz);
+                BlockPos neighPos = new BlockPos(nx, neighY, nz);
+
+                if (!isTraversable(curY, neighY)) {
+                    continue; // слишком резкий подъём / спуск
                 }
-                Node neighborNode = nodes.all().get(neighbor);
-                if (neighborNode == null) {
-                    continue;
+
+                double tentativeG = gScore.get(current.key)
+                        + stepCost(off)
+                        + elevationCost(curY, neighY)
+                        + biomeCost(neighPos)
+                        + yLevelCost(neighY)
+                        + terrainStabilityCost(neighPos, neighY);
+
+                if (tentativeG < gScore.get(neighKey)) {
+                    parent.put(neighKey, current.key);
+                    gScore.put(neighKey, tentativeG);
+                    double f = tentativeG + heuristic(neighPos, endPos);
+                    open.add(new Rec(neighKey, tentativeG, f));
                 }
-                if (canTraverse(currentNode, neighborNode)) {
-                    visited.add(neighbor);
-                    parent.put(neighbor, current);
-                    queue.add(neighbor);
-                }
             }
+            LOGGER.info(String.valueOf(iterations));
         }
-
-        if (!visited.contains(toId)) {
-            LOGGER.debug("Path not found from {} to {}", fromId, toId);
-            return List.of();
-        }
-
-        List<String> result = new ArrayList<>();
-        for (String at = toId; at != null; at = parent.get(at)) {
-            result.add(at);
-            if (at.equals(fromId)) {
-                break;
-            }
-        }
-        Collections.reverse(result);
-        return result;
+        LOGGER.debug("Path not found between {} and {} after {} iterations", fromId, toId, iterations);
+        return List.of();
     }
 
-    /**
-     * Determines whether the edge between two nodes can be traversed based on
-     * terrain height differences.
-     */
-    private boolean canTraverse(Node a, Node b) {
-        int y1 = surface.getSurfaceY(a.pos().getX(), a.pos().getZ());
-        int y2 = surface.getSurfaceY(b.pos().getX(), b.pos().getZ());
-        return Math.abs(y1 - y2) <= 16;
+    // ────────────────────────────────────────────────────────────────────────
+    // Cost helpers — replicate Settlement Roads weighting.
+
+    private static double stepCost(int[] off) {
+        return (Math.abs(off[0]) == GRID_STEP && Math.abs(off[1]) == GRID_STEP) ? 1.5 : 1.0;
     }
 
-    /**
-     * Добавляет линейный сегмент пути между двумя точками.
-     * <p>Adds a straight path segment between two points.</p>
-     */
-    private void addSegment(List<BlockPos> out, BlockPos start, BlockPos end) {
-        int x1 = start.getX();
-        int z1 = start.getZ();
-        int x2 = end.getX();
-        int z2 = end.getZ();
+    private static double elevationCost(int y1, int y2) {
+        return Math.abs(y1 - y2) * 40.0;
+    }
 
-        int dx = Math.abs(x2 - x1);
-        int dz = Math.abs(z2 - z1);
-        int sx = x1 < x2 ? 1 : -1;
-        int sz = z1 < z2 ? 1 : -1;
-        int err = dx - dz;
+    private double biomeCost(BlockPos pos) {
+        RegistryEntry<Biome> biome = world.getBiome(pos);
+        boolean water = biome.isIn(BiomeTags.IS_RIVER) || biome.isIn(BiomeTags.IS_OCEAN) || biome.isIn(BiomeTags.IS_DEEP_OCEAN);
+        return water ? 50.0 * 8.0 : 0.0;
+    }
 
-        int x = x1;
-        int z = z1;
-        while (true) {
-            int y = surface.getSurfaceY(x, z);
-            BlockPos pos = new BlockPos(x, y, z);
-            if (out.isEmpty() || !out.getLast().equals(pos)) {
-                out.add(pos);
-            }
-            if (x == x2 && z == z2) {
-                break;
-            }
-            int e2 = 2 * err;
-            if (e2 > -dz) {
-                err -= dz;
-                x += sx;
-            }
-            if (e2 < dx) {
-                err += dx;
-                z += sz;
+    private static double yLevelCost(int y) {
+        return y == 62 ? 20.0 * 8.0 : 0.0;
+    }
+
+    private double terrainStabilityCost(BlockPos pos, int y) {
+        int cost = 0;
+        for (Direction dir : Direction.Type.HORIZONTAL) {
+            int ny = surface.getSurfaceY(pos.getX() + dir.getOffsetX(), pos.getZ() + dir.getOffsetZ());
+            cost += Math.abs(y - ny);
+            if (cost > 2) {
+                return Double.MAX_VALUE; // клетка слишком неустойчива
             }
         }
+        return cost * 16.0;
     }
 
-    /**
-     * Источник высоты поверхности для расчёта пути.
-     * <p>Provider of surface height values for path calculation.</p>
-     */
+    private static boolean isTraversable(int y1, int y2) {
+        return Math.abs(y1 - y2) <= 3;
+    }
+
+    private static boolean reachedTarget(BlockPos a, BlockPos b) {
+        int manhattan = Math.abs(a.getX() - b.getX()) + Math.abs(a.getZ() - b.getZ());
+        return manhattan < GRID_STEP * 2; // условие как в оригинале
+    }
+
+    private static double heuristic(BlockPos a, BlockPos b) {
+        int dx = Math.abs(a.getX() - b.getX());
+        int dz = Math.abs(a.getZ() - b.getZ());
+        double approx = dx + dz - 0.6 * Math.min(dx, dz);
+        return approx * 30.0;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Path reconstruction
+
+    private List<BlockPos> reconstructPath(long goalKey, long startKey, Long2LongMap parent) {
+        List<BlockPos> cells = new ArrayList<>();
+        long k = goalKey;
+        while (k != startKey) {
+            cells.add(keyToPos(k));
+            k = parent.get(k);
+        }
+        cells.add(keyToPos(startKey));
+        cells.sort(Comparator.comparingInt(BlockPos::getY)); // optional ordering by insertion
+        java.util.Collections.reverse(cells); // from start to goal
+        return cells;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Utility: grid snapping & key encoding
+
+    private static BlockPos snap(BlockPos p) {
+        int x = Math.floorDiv(p.getX(), GRID_STEP) * GRID_STEP;
+        int z = Math.floorDiv(p.getZ(), GRID_STEP) * GRID_STEP;
+        return new BlockPos(x, p.getY(), z);
+    }
+
+    private static long hash(int x, int z) {
+        return ((long) x << 32) | (z & 0xFFFFFFFFL);
+    }
+
+    private static BlockPos keyToPos(long key) {
+        int x = (int) (key >> 32);
+        int z = (int) key;
+        return new BlockPos(x, 0, z);
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    /** Provides surface Y for any XZ coordinate without blocking I/O. */
     public interface SurfaceProvider {
         int getSurfaceY(int x, int z);
     }
@@ -203,8 +239,7 @@ public class PathFinder {
         @Override
         public int getSurfaceY(int x, int z) {
             return world.getChunkManager().getChunkGenerator()
-                    .getHeight(x, z, Heightmap.Type.WORLD_SURFACE, world,
-                            world.getChunkManager().getNoiseConfig());
+                    .getHeight(x, z, Heightmap.Type.WORLD_SURFACE, world, world.getChunkManager().getNoiseConfig());
         }
     }
 }

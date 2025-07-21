@@ -29,7 +29,7 @@ public class PathFinderManager {
     static Map<String, List<BlockPos>> computePaths(ServerWorld world) {
         RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
         PathStorage storage = PathStorage.get(world);
-        PathFinder finder = new PathFinder(graph.nodes(), graph.edges(), new PathFinder.WorldSurfaceProvider(world));
+        PathFinder finder = new PathFinder(graph.nodes(), new PathFinder.WorldSurfaceProvider(world), world, 10240);
 
         Map<String, List<BlockPos>> result = new HashMap<>();
 

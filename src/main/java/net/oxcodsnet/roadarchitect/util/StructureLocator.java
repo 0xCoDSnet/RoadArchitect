@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Утилитарный класс для поиска структур по тегам/ID внутри заданного радиуса чанков.
@@ -29,6 +30,7 @@ import java.util.*;
 public class StructureLocator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/StructureLocator");
+
     private static final DynamicCommandExceptionType INVALID_STRUCTURE_EXCEPTION = new DynamicCommandExceptionType(
             id -> Text.translatable("commands.locate.structure.invalid", id)
     );
@@ -46,10 +48,7 @@ public class StructureLocator {
      * @param structureSelectors список селекторов ("minecraft:village" или "#minecraft:village") / list of selectors ("minecraft:village" or "#minecraft:village")
      * @return список найденных позиций структур / list of found structure positions
      */
-    public static List<Pair<BlockPos, String>> findStructures(ServerWorld world,
-                                                              BlockPos origin,
-                                                              int radius,
-                                                              List<String> structureSelectors) {
+    public static List<Pair<BlockPos, String>> findStructures(ServerWorld world, BlockPos origin, int radius, List<String> structureSelectors) {
         List<Pair<BlockPos, String>> foundPositions = new ArrayList<>();
         Registry<Structure> structureRegistry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
 
@@ -83,21 +82,6 @@ public class StructureLocator {
         }
 
         return foundPositions;
-    }
-
-    /**
-     * Помощник для получения списка записей структур по предикату.
-     * Helper to get a list of structure entries for the given predicate.
-     *
-     * @param predicate предикат структуры / structure predicate
-     * @param registry  реестр структур / structure registry
-     * @return Optional списка структур / Optional of structure entry list
-     */
-    private static Optional<? extends RegistryEntryList.ListBacked<Structure>> getStructureList(
-            RegistryPredicateArgumentType.RegistryPredicate<Structure> predicate,
-            Registry<Structure> registry) {
-        return predicate.getKey()
-                .map(key -> registry.getEntry(key).map(RegistryEntryList::of), registry::getEntryList);
     }
 
     /**
@@ -140,16 +124,36 @@ public class StructureLocator {
                 }
             }
         }
-        // Сохранение узлов
+
+        schedulePersistence(world,allFound);
+        return allFound;
+    }
+
+    private static void schedulePersistence(ServerWorld world, List<Pair<BlockPos, String>> allFound) {
+        // Сохраняем узлы в стейте на основном потоке
         RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
 
         for (Pair<BlockPos, String> pair : allFound) {
-            Node node = state.addNodeWithEdges(pair.getFirst(), pair.getSecond());
-            LOGGER.info("Added node {} on {} ", node.id(), node.pos());
+            Node node = state.addNodeWithEdges(
+                    pair.getFirst(), pair.getSecond());
+            LOGGER.info("Added node {} on {}", node.id(), node.pos());
         }
         state.markDirty();
         LOGGER.info("All nodes are preserved in a persistent state.");
+    }
 
-        return allFound;
+    /**
+     * Помощник для получения списка записей структур по предикату.
+     * Helper to get a list of structure entries for the given predicate.
+     *
+     * @param predicate предикат структуры / structure predicate
+     * @param registry  реестр структур / structure registry
+     * @return Optional списка структур / Optional of structure entry list
+     */
+    private static Optional<? extends RegistryEntryList.ListBacked<Structure>> getStructureList(
+            RegistryPredicateArgumentType.RegistryPredicate<Structure> predicate,
+            Registry<Structure> registry) {
+        return predicate.getKey()
+                .map(key -> registry.getEntry(key).map(RegistryEntryList::of), registry::getEntryList);
     }
 }
