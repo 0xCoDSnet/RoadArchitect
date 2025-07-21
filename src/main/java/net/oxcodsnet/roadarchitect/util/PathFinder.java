@@ -25,7 +25,9 @@ public class PathFinder {
     private static final Logger LOGGER = LoggerFactory.getLogger("roadarchitect/PathFinder");
 
     /** Horizontal grid step (in blocks). */
-    private static final int GRID_STEP = 4;
+    private static final int GRID_STEP = 3;
+
+    private static final int[][] OFFSETS = generateOffsets();
 
     private final NodeStorage nodes;
     private final SurfaceProvider surface;
@@ -77,11 +79,6 @@ public class PathFinder {
 
         gScore.put(startKey, 0.0);
         open.add(new Rec(startKey, 0.0, heuristic(startPos, endPos)));
-
-        int[][] OFFSETS = {
-                {GRID_STEP, 0}, {-GRID_STEP, 0}, {0, GRID_STEP}, {0, -GRID_STEP},
-                {GRID_STEP, GRID_STEP}, {GRID_STEP, -GRID_STEP}, {-GRID_STEP, GRID_STEP}, {-GRID_STEP, -GRID_STEP}
-        };
 
         int iterations = 0;
         while (!open.isEmpty() && iterations++ < maxSteps) {
@@ -241,6 +238,9 @@ public class PathFinder {
         int z = (int) key;
         return new BlockPos(x, 0, z);    // Y добавляем позже через sampleHeight
     }
+
+    private static int[][] generateOffsets(){int d=GRID_STEP;return new int[][]{{d,0},{-d,0},{0,d},{0,-d},{d,d},{d,-d},{-d,d},{-d,-d}};}
+
 
     // ────────────────────────────────────────────────────────────────────────
     /** Provides surface Y for any XZ coordinate without blocking I/O. */

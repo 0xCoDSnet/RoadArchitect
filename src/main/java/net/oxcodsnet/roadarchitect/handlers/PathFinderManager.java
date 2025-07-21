@@ -29,7 +29,7 @@ public class PathFinderManager {
     static Map<String, List<BlockPos>> computePaths(ServerWorld world) {
         RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
         PathStorage storage = PathStorage.get(world);
-        PathFinder finder = new PathFinder(graph.nodes(), new PathFinder.WorldSurfaceProvider(world), world, 10240);
+        PathFinder finder = new PathFinder(graph.nodes(), new PathFinder.WorldSurfaceProvider(world), world, 20480);
 
         Map<String, List<BlockPos>> result = new HashMap<>();
 
@@ -37,7 +37,12 @@ public class PathFinderManager {
             String from = entry.getKey();
             for (Map.Entry<String, EdgeStorage.Status> edge : entry.getValue().entrySet()) {
                 if (edge.getValue() == EdgeStorage.Status.NEW && from.compareTo(edge.getKey()) < 0) {
+
+                    long start = System.nanoTime();
                     List<BlockPos> path = finder.findPath(from, edge.getKey());
+                    long end = System.nanoTime();
+                    double durationMs = (end - start) / 1_000_000.0;
+
                     storage.putPath(from, edge.getKey(), path);
                     graph.edges().setStatus(from, edge.getKey(), EdgeStorage.Status.PROCESSED);
 
@@ -45,6 +50,7 @@ public class PathFinderManager {
                         String key = RoadBuilderStorage.makeKey(from, edge.getKey());
                         result.put(key, path);
                         LOGGER.info("Computed path {} -> {} ({} steps)", from, edge.getKey(), path.size());
+                        LOGGER.info("Время выполнения: {} мс)", durationMs);
                     }
                 }
             }
