@@ -3,7 +3,7 @@
   "package": "net.oxcodsnet.roadarchitect.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ExampleMixin"
+    "ServerChunkManagerInvoker"
   ],
   "injectors": {
     "defaultRequire": 1

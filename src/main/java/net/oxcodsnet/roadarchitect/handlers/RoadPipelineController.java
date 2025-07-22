@@ -8,8 +8,10 @@ import net.oxcodsnet.roadarchitect.RoadArchitect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,10 +62,8 @@ public final class RoadPipelineController {
     private static void runPipeline(ServerWorld world, String reason) {
         try {
             BlockPos center = world.getSpawnPos();
-            Map<String, java.util.List<net.minecraft.util.math.BlockPos>> paths;
-
             StructureScanManager.scan(world, reason, center);
-            paths = PathFinderManager.computePaths(world);
+            Map<String, List<BlockPos>> paths = PathFinderManager.computePaths(world);
             RoadBuilderManager.queueSegments(world, paths);
         } catch (Exception e) {
             LOGGER.error("Pipeline failure", e);
