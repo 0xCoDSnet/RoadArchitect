@@ -120,7 +120,8 @@ public class PathFinder {
         long startKey = hash(startPos.getX(), startPos.getZ());
         long endKey = hash(endPos.getX(), endPos.getZ());
 
-        record Rec(long key, double g, double f) { }
+        record Rec(long key, double g, double f) {
+        }
         PriorityQueue<Rec> open = new PriorityQueue<>(Comparator.comparingDouble(r -> r.f));
         Long2DoubleMap gScore = new Long2DoubleOpenHashMap();
         gScore.defaultReturnValue(Double.MAX_VALUE);
@@ -136,12 +137,12 @@ public class PathFinder {
             int curZ = (int) current.key;
             int curY = sampleHeight(curX, curZ);
 
-//            // ── LOS shortcut ───────────────────────────────────────────
-//            if (hasLineOfSight(curX, curZ, curY, endPos)) {
-//                return finishWithLos(current.key, startKey, parent, endPos);
-//            }
+            // ── LOS shortcut ───────────────────────────────────────────
+            if (hasLineOfSight(curX, curZ, curY, endPos)) {
+                return finishWithLos(current.key, startKey, parent, endPos);
+            }
             // ── reached by radius? ─────────────────────────────────────
-            if (current.key == endKey || reachedTarget(new BlockPos(curX, 0, curZ), endPos)) {
+            if (current.key == endKey || isCloseEnoughToTarget(new BlockPos(curX, 0, curZ), endPos)) {
                 return reconstructPath(current.key, startKey, parent);
             }
 
@@ -160,7 +161,7 @@ public class PathFinder {
                 double tentativeG = gScore.get(current.key)
                         + stepCost(off)
                         + elevationCost(curY, ny)
-                        + biomeCost(sampleBiome(nx, ny ,nz))
+                        + biomeCost(sampleBiome(nx, ny, nz))
                         + yLevelCost(ny)
                         + stab;
 
@@ -181,24 +182,122 @@ public class PathFinder {
     // Line‑of‑sight helper
 
     /**
-     * Returns true if every intermediate cell from (x,z) to goal meets the same traversability
-     * criteria (|ΔY| ≤ 3 and stability ≤ 2). Step is 1 block along Bresenham line.
+     * 3D-Bresenham LOS-проверка, которая шагает по узлам сетки GRID_STEP,
+     * поэтому почти всегда попадает в heightCache. <br>
+     * Условия срыва LOS: <ul>
+     * <li>|cy − terrainY| &gt; 3 (резкий перепад высот);</li>
+     * <li>sampleStability == Double.MAX_VALUE (нестабильный рельеф).</li>
+     * </ul>
+     *
+     * @param x    X-координата (мировая) стартовой ячейки
+     * @param z    Z-координата (мировая) стартовой ячейки
+     * @param y    высота этой ячейки (можно передать sampleHeight(x,z))
+     * @param goal конечная позиция (мировая)
+     * @return true — если по прямой видимости достижима цель
      */
     private boolean hasLineOfSight(int x, int z, int y, BlockPos goal) {
-        int gx = goal.getX();
-        int gz = goal.getZ();
-        int dx = Integer.signum(gx - x);
-        int dz = Integer.signum(gz - z);
-        int steps = Math.max(Math.abs(gx - x), Math.abs(gz - z));
-        int prevY = y;
-        for (int i = 1; i <= steps; i++) {
-            int cx = x + dx * i;
-            int cz = z + dz * i;
-            int cy = sampleHeight(cx, cz);
-            if (isTraversable(prevY, cy)) return false;
-            if (sampleStability(cx, cz, cy) == Double.MAX_VALUE) return false;
-            prevY = cy;
+
+        /*──── 1. Приводим XZ к координатам сетки ──────────────────────────────*/
+        int sx = Math.floorDiv(x, GRID_STEP);
+        int sz = Math.floorDiv(z, GRID_STEP);
+        int gx = Math.floorDiv(goal.getX(), GRID_STEP);
+        int gz = Math.floorDiv(goal.getZ(), GRID_STEP);
+
+        /*──── 2. Высоты старта и цели (уже на сетке) ───────────────────────────*/
+        int sy = sampleHeight(sx * GRID_STEP, sz * GRID_STEP);
+        int gy = sampleHeight(gx * GRID_STEP, gz * GRID_STEP);
+
+        /*──── 3. Разницы и знаки для 3D-Bresenham ─────────────────────────────*/
+        int dx = Math.abs(gx - sx);
+        int dy = Math.abs(gy - sy);
+        int dz = Math.abs(gz - sz);
+
+        int xs = gx >= sx ? 1 : -1;
+        int ys = gy >= sy ? 1 : -1;
+        int zs = gz >= sz ? 1 : -1;
+
+        int cx = sx, cy = sy, cz = sz;
+        int p1, p2;
+
+        /*──── 4. Главная ось — X, Y или Z ─────────────────────────────────────*/
+        if (dx >= dy && dx >= dz) {
+            p1 = 2 * dy - dx;
+            p2 = 2 * dz - dx;
+            while (cx != gx) {
+                cx += xs;
+                if (p1 >= 0) {
+                    cy += ys;
+                    p1 -= 2 * dx;
+                }
+                if (p2 >= 0) {
+                    cz += zs;
+                    p2 -= 2 * dx;
+                }
+                p1 += 2 * dy;
+                p2 += 2 * dz;
+
+                if (!checkGridCell(cx, cz, cy)) return false;
+            }
+
+        } else if (dy >= dx && dy >= dz) {
+            p1 = 2 * dx - dy;
+            p2 = 2 * dz - dy;
+            while (cy != gy) {
+                cy += ys;
+                if (p1 >= 0) {
+                    cx += xs;
+                    p1 -= 2 * dy;
+                }
+                if (p2 >= 0) {
+                    cz += zs;
+                    p2 -= 2 * dy;
+                }
+                p1 += 2 * dx;
+                p2 += 2 * dz;
+
+                if (!checkGridCell(cx, cz, cy)) return false;
+            }
+
+        } else { /* dz — доминирует */
+            p1 = 2 * dy - dz;
+            p2 = 2 * dx - dz;
+            while (cz != gz) {
+                cz += zs;
+                if (p1 >= 0) {
+                    cy += ys;
+                    p1 -= 2 * dz;
+                }
+                if (p2 >= 0) {
+                    cx += xs;
+                    p2 -= 2 * dz;
+                }
+                p1 += 2 * dy;
+                p2 += 2 * dx;
+
+                if (!checkGridCell(cx, cz, cy)) return false;
+            }
         }
+
+        return true;
+    }
+
+    /**
+     * Проверяет одну ячейку сетки: сравнивает желаемый cy с реальной высотой
+     * и устойчивостью рельефа.
+     *
+     * @param gridX координата X узла в «сетке» (не мировая!)
+     * @param gridZ координата Z узла в «сетке» (не мировая!)
+     * @param cy    текущая y-координата луча (мировая)
+     * @return true — если ячейка проходима
+     */
+    private boolean checkGridCell(int gridX, int gridZ, int cy) {
+        int worldX = gridX * GRID_STEP;
+        int worldZ = gridZ * GRID_STEP;
+
+        int terrainY = sampleHeight(worldX, worldZ);          // кэш-хит
+        if (Math.abs(cy - terrainY) > 3) return false;
+
+        if (sampleStability(worldX, worldZ, terrainY) == Double.MAX_VALUE) return false;
         return true;
     }
 
@@ -236,8 +335,6 @@ public class PathFinder {
     }
 
 
-
-
     private double sampleStability(int x, int z, int y) {
         long k = hash(x, z);
         double c = stabilityCache.get(k);
@@ -270,11 +367,11 @@ public class PathFinder {
     }
 
     private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(
-            BiomeTags.IS_RIVER,      80.0,
-            BiomeTags.IS_OCEAN,      999.0,
+            BiomeTags.IS_RIVER, 80.0,
+            BiomeTags.IS_OCEAN, 999.0,
             BiomeTags.IS_DEEP_OCEAN, 999.0,
-            BiomeTags.IS_MOUNTAIN,   50.0,
-            BiomeTags.IS_BEACH,      50.0
+            BiomeTags.IS_MOUNTAIN, 50.0,
+            BiomeTags.IS_BEACH, 50.0
     );
 
     private static double biomeCost(RegistryEntry<Biome> biome) {
@@ -318,8 +415,15 @@ public class PathFinder {
         return heuristic(a.getX(), a.getZ(), b);
     }
 
-    private static boolean reachedTarget(BlockPos a, BlockPos b) {
-        return (Math.abs(a.getX() - b.getX()) + Math.abs(a.getZ() - b.getZ())) < GRID_STEP * 2;
+    /**
+     * Возвращает true, если текущая точка достаточно близко к цели:
+     * либо < GRID_STEP * 2 (для A* сетки), либо ≤ 30 блоков по манхэттенской метрике.
+     */
+    private static boolean isCloseEnoughToTarget(BlockPos current, BlockPos target) {
+        int dx = Math.abs(current.getX() - target.getX());
+        int dz = Math.abs(current.getZ() - target.getZ());
+
+        return (dx + dz) < GRID_STEP * 2 || (dx + dz) <= 30;
     }
 
     // ────────────────────────────────────────────────────────────────────────
@@ -351,9 +455,11 @@ public class PathFinder {
         int dx = Integer.signum(b.getX() - a.getX());
         int dz = Integer.signum(b.getZ() - a.getZ());
         int steps = Math.max(Math.abs(b.getX() - a.getX()), Math.abs(b.getZ() - a.getZ()));
-        int y = a.getY();
         for (int i = 1; i < steps; i++) {
-            out.add(new BlockPos(a.getX() + dx * i, y, a.getZ() + dz * i));
+            int nx = a.getX() + dx * i;
+            int nz = a.getZ() + dz * i;
+            int ny = sampleHeight(nx, nz);
+            out.add(new BlockPos(nx, ny, nz));
         }
     }
 

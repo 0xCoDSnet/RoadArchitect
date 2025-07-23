@@ -46,16 +46,7 @@ public class RoadGraphState extends PersistentState {
         this.edgeStorage = edges;
     }
 
-    /**
-     * Восстанавливает состояние графа из NBT.
-     * <p>Restores the road graph state from NBT.</p>
-     */
-    public static RoadGraphState fromNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
-        double radius = tag.getDouble(RADIUS_KEY);
-        NodeStorage nodes = NodeStorage.fromNbt(tag.getList(NODES_KEY, NbtElement.COMPOUND_TYPE));
-        EdgeStorage edges = EdgeStorage.fromNbt(tag.getCompound(EDGES_KEY), radius);
-        return new RoadGraphState(nodes, edges);
-    }
+
 
     /**
      * Получает или создает состояние графа для мира.
@@ -93,13 +84,102 @@ public class RoadGraphState extends PersistentState {
         Node newNode = this.nodeStorage.add(pos, type);
         for (Node other : this.nodeStorage.all().values()) {
             if (!other.id().equals(newNode.id())) {
-                this.edgeStorage.add(newNode, other);
+                connect(newNode, other);
             }
         }
         this.markDirty();
         return newNode;
     }
 
+    /**
+     * Пытается соединить два узла, запрещая «крестовые» рёбра.
+     */
+    public void connect(Node NodeA, Node NodeB) {
+
+        String idNodeA = NodeA.id();
+        String idNodeB = NodeB.id();
+        if (NodeA == null || NodeB == null || idNodeA.equals(idNodeB)) {
+            return;
+        }
+
+        // 1) проверяем радиус
+        double dx = NodeA.pos().getX() - NodeB.pos().getX();
+        double dz = NodeA.pos().getZ() - NodeB.pos().getZ();
+        double max = edgeStorage.radius() * 2.0;
+        if (dx * dx + dz * dz > max * max) {
+            return;
+        }
+
+        // 2) уже существует?
+        if (edgeStorage.all().containsKey(edgeId(idNodeA, idNodeB))) {
+            return;
+        }
+
+        // 3) пересекает ли новое ребро какие-нибудь существующие?
+        for (EdgeStorage.Edge e : edgeStorage.all().values()) {
+            if (e.connects(idNodeA) || e.connects(idNodeB)) continue;
+            Node n1 = nodeStorage.all().get(e.nodeA());
+            Node n2 = nodeStorage.all().get(e.nodeB());
+            if (n1 == null || n2 == null) continue;
+
+            if (segmentsIntersect2D(NodeA.pos(), NodeB.pos(), n1.pos(), n2.pos())) {
+                return;
+            }
+        }
+
+        // 4) всё чисто — делегируем фактическое создание
+        boolean added = edgeStorage.add(NodeA, NodeB);
+        if (added) this.markDirty();
+    }
+
+    /*========== helpers ==========*/
+
+    private static String edgeId(String idA, String idB) {
+        return idA.compareTo(idB) < 0 ? idA + "+" + idB : idB + "+" + idA;
+    }
+
+    private static boolean segmentsIntersect2D(BlockPos p1, BlockPos p2,
+                                               BlockPos p3, BlockPos p4) {
+        return linesIntersect(
+                p1.getX(), p1.getZ(), p2.getX(), p2.getZ(),
+                p3.getX(), p3.getZ(), p4.getX(), p4.getZ());
+    }
+
+    /** Классический O(1) тест пересечения двух отрезков на плоскости. */
+    private static boolean linesIntersect(int x1, int y1, int x2, int y2,
+                                          int x3, int y3, int x4, int y4) {
+        long d1 = direction(x3, y3, x4, y4, x1, y1);
+        long d2 = direction(x3, y3, x4, y4, x2, y2);
+        long d3 = direction(x1, y1, x2, y2, x3, y3);
+        long d4 = direction(x1, y1, x2, y2, x4, y4);
+        if (d1 * d2 < 0 && d3 * d4 < 0) return true;
+        return (d1 == 0 && onSeg(x3, y3, x4, y4, x1, y1)) ||
+                (d2 == 0 && onSeg(x3, y3, x4, y4, x2, y2)) ||
+                (d3 == 0 && onSeg(x1, y1, x2, y2, x3, y3)) ||
+                (d4 == 0 && onSeg(x1, y1, x2, y2, x4, y4));
+    }
+
+    private static long direction(int ax, int ay, int bx, int by, int cx, int cy) {
+        return (long) (cx - ax) * (by - ay) - (long) (cy - ay) * (bx - ax);
+    }
+
+    private static boolean onSeg(int ax, int ay, int bx, int by, int cx, int cy) {
+        return Math.min(ax, bx) <= cx && cx <= Math.max(ax, bx) &&
+                Math.min(ay, by) <= cy && cy <= Math.max(ay, by);
+    }
+
+
+
+    /**
+     * Восстанавливает состояние графа из NBT.
+     * <p>Restores the road graph state from NBT.</p>
+     */
+    public static RoadGraphState fromNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
+        double radius = tag.getDouble(RADIUS_KEY);
+        NodeStorage nodes = NodeStorage.fromNbt(tag.getList(NODES_KEY, NbtElement.COMPOUND_TYPE));
+        EdgeStorage edges = EdgeStorage.fromNbt(tag.getCompound(EDGES_KEY), radius);
+        return new RoadGraphState(nodes, edges);
+    }
     /**
      * Сохраняет состояние в NBT.
      * <p>Writes this state into an NBT compound.</p>

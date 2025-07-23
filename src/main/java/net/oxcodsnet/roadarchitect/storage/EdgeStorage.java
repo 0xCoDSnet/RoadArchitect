@@ -74,7 +74,6 @@ public class EdgeStorage {
      */
     public boolean add(Node a, Node b) {
         if (a.id().equals(b.id())) return false; // нельзя соединять узел сам с собой
-        if (!intersects(a.pos(), b.pos())) return false; // слишком далеко
 
         String edgeId = edgeId(a.id(), b.id());
         edges.put(edgeId, new Edge(a.id(), b.id(), Status.NEW));
@@ -159,14 +158,6 @@ public class EdgeStorage {
 
     private static String edgeId(String idA, String idB) {
         return idA.compareTo(idB) < 0 ? idA + "+" + idB : idB + "+" + idA;
-    }
-
-    private boolean intersects(BlockPos a, BlockPos b) {
-        double dx = a.getX() - b.getX();
-        double dz = a.getZ() - b.getZ();
-        double distanceSq = dx * dx + dz * dz;
-        double diameter = radius * 2.0;
-        return distanceSq <= diameter * diameter;
     }
 
     public void clear() {
