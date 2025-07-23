@@ -1,5 +1,5 @@
 package net.oxcodsnet.roadarchitect.storage;
-
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
 import org.junit.jupiter.api.Test;
@@ -10,13 +10,16 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Тесты для {@link EdgeStorage}.
- * <p>Tests for {@link EdgeStorage}.</p>
+ * Набор тестов для {@link EdgeStorage} после перехода на хранение рёбер по edgeId.
  */
-class EdgeStorageTest {
+public class EdgeStorageTests {
+
+    private static String edgeId(String id1, String id2) {
+        return id1.compareTo(id2) < 0 ? id1 + "+" + id2 : id2 + "+" + id1;
+    }
+
     /**
      * Проверяет добавление рёбер и соседей.
-     * <p>Tests adding edges and retrieving neighbors.</p>
      */
     @Test
     void addAndNeighbors() {
@@ -27,11 +30,11 @@ class EdgeStorageTest {
         assertTrue(storage.add(a, b));
         assertEquals(Set.of("b"), storage.neighbors("a"));
         assertEquals(Set.of("a"), storage.neighbors("b"));
+        assertEquals(EdgeStorage.Status.NEW, storage.getStatus(edgeId("a", "b")));
     }
 
     /**
      * Проверяет отказ добавления при большом расстоянии.
-     * <p>Tests that edges beyond range are not added.</p>
      */
     @Test
     void addInvalidDistance() {
@@ -45,7 +48,6 @@ class EdgeStorageTest {
 
     /**
      * Проверяет удаление рёбер.
-     * <p>Tests edge removal.</p>
      */
     @Test
     void removeEdge() {
@@ -54,13 +56,12 @@ class EdgeStorageTest {
         Node b = new Node("b", new BlockPos(9, 64, 0), "test");
         storage.add(a, b);
 
-        assertTrue(storage.remove("a", "b"));
+        assertTrue(storage.remove(edgeId("a", "b")));
         assertTrue(storage.all().isEmpty());
     }
 
     /**
      * Проверяет очистку хранилища.
-     * <p>Tests clearing the storage.</p>
      */
     @Test
     void clear() {
@@ -74,8 +75,7 @@ class EdgeStorageTest {
     }
 
     /**
-     * Убеждается, что представление неизменяемо.
-     * <p>Ensures the returned map is unmodifiable.</p>
+     * Убеждается, что представление all() неизменяемо.
      */
     @Test
     void allIsUnmodifiable() {
@@ -84,7 +84,24 @@ class EdgeStorageTest {
         Node b = new Node("b", new BlockPos(9, 64, 0), "test");
         storage.add(a, b);
 
-        Map<String, Set<String>> view = storage.all();
-        assertThrows(UnsupportedOperationException.class, () -> view.clear());
+        Map<String, EdgeStorage.Edge> view = storage.all();
+        assertThrows(UnsupportedOperationException.class, view::clear);
+    }
+
+    /**
+     * Проверяет сохранение и загрузку.
+     */
+    @Test
+    void roundTripSerialization() {
+        EdgeStorage storage = new EdgeStorage(5.0);
+        Node a = new Node("a", BlockPos.ORIGIN, "test");
+        Node b = new Node("b", new BlockPos(9, 64, 0), "test");
+        storage.add(a, b);
+
+        NbtCompound tag = storage.toNbt();
+        EdgeStorage loaded = EdgeStorage.fromNbt(tag, 5.0);
+
+        assertEquals(storage.allWithStatus(), loaded.allWithStatus());
+        assertEquals(storage.radius(), loaded.radius());
     }
 }

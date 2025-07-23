@@ -9,6 +9,7 @@ import net.minecraft.text.Text;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +25,11 @@ public class GraphComponent extends BaseComponent {
     private static final int GRID_SPACING = 100;
     private static final int TARGET_GRID_PX = 80;
     private final List<Node> nodes;
-    private final Map<String, Map<String, EdgeStorage.Status>> edges;
+    private final Collection<EdgeStorage.Edge> edges;
     private final Map<EdgeStorage.Status, Color> statusColors = Map.of(
             EdgeStorage.Status.NEW, Color.ofRgb(0xF2C94C),
-            EdgeStorage.Status.PROCESSED, Color.ofRgb(0x27AE60)
+            EdgeStorage.Status.SUCCESS, Color.ofRgb(0x27AE60),
+            EdgeStorage.Status.FAILURE, Color.ofRgb(0xAE162B)
     );
     private final Map<String, ScreenPos> screenPositions = new HashMap<>();
     private final Map<String, Color> typeColors = new HashMap<>();
@@ -46,7 +48,7 @@ public class GraphComponent extends BaseComponent {
      * Создает компонент для отрисовки графа.
      * <p>Creates a component for rendering the graph.</p>
      */
-    public GraphComponent(List<Node> nodes, Map<String, Map<String, EdgeStorage.Status>> edges) {
+    public GraphComponent(List<Node> nodes, Collection<EdgeStorage.Edge> edges) {
         this.nodes = nodes;
         this.edges = edges;
         this.horizontalSizing(Sizing.fill());
@@ -70,8 +72,7 @@ public class GraphComponent extends BaseComponent {
      * <p>Calculates the distance between two points.</p>
      */
     private static double distance(double x1, double y1, double x2, double y2) {
-        double dx = x1 - x2;
-        double dy = y1 - y2;
+        double dx = x1 - x2, dy = y1 - y2;
         return Math.sqrt(dx * dx + dy * dy);
     }
 
@@ -121,31 +122,31 @@ public class GraphComponent extends BaseComponent {
 
         drawGrid(context);
 
-        // draw edges
-        for (Map.Entry<String, Map<String, EdgeStorage.Status>> entry : edges.entrySet()) {
-            ScreenPos from = screenPositions.get(entry.getKey());
-            if (from == null) continue;
-            for (Map.Entry<String, EdgeStorage.Status> edge : entry.getValue().entrySet()) {
-                ScreenPos to = screenPositions.get(edge.getKey());
-                if (to != null) {
-                    Color color = statusColors.getOrDefault(edge.getValue(), Color.WHITE);
-                    context.drawLine(from.x, from.y, to.x, to.y, 1, color);
-                }
-            }
+        /* ----- draw edges ----- */
+        for (EdgeStorage.Edge edge : edges) {
+            ScreenPos a = screenPositions.get(edge.nodeA());
+            ScreenPos b = screenPositions.get(edge.nodeB());
+            if (a == null || b == null) continue;
+
+            Color col = statusColors.getOrDefault(edge.status(), Color.WHITE);
+            context.drawLine(a.x, a.y, b.x, b.y, 1, col);
         }
 
-        // draw nodes
+        /* ----- draw nodes ----- */
         for (Node node : nodes) {
-            ScreenPos pos = screenPositions.get(node.id());
-            if (pos == null) continue;
-            Color color = typeColors.getOrDefault(node.type(), Color.WHITE);
-            context.drawCircle(pos.x, pos.y, 16, RADIUS, color);
-            context.drawCircle(pos.x, pos.y, 16, RADIUS - 1, Color.BLACK);
-//            context.drawText(Text.literal(node.type()), pos.x + RADIUS + 2, pos.y - 4, 0.7f, 0xFFFFFF);
+            ScreenPos p = screenPositions.get(node.id());
+            if (p == null) continue;
 
-            if (distance(pos.x, pos.y, mouseX, mouseY) <= RADIUS) {
-                Text tip = Text.literal(node.pos().toShortString() + " • " + node.type());
-                context.drawTooltip(MinecraftClient.getInstance().textRenderer, tip, mouseX, mouseY);
+            Color col = typeColors.getOrDefault(node.type(), Color.WHITE);
+            context.drawCircle(p.x, p.y, 16, RADIUS, col);
+            context.drawCircle(p.x, p.y, 16, RADIUS - 1, Color.BLACK);
+
+            if (distance(p.x, p.y, mouseX, mouseY) <= RADIUS) {
+                context.drawTooltip(
+                        MinecraftClient.getInstance().textRenderer,
+                        Text.literal(node.pos().toShortString() + " • " + node.type()),
+                        mouseX, mouseY
+                );
             }
         }
 

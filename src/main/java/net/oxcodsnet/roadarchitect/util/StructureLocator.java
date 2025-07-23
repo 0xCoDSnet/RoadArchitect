@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.*;
 
 /**
  * Утилитарный класс для поиска структур по тегам/ID внутри заданного радиуса чанков.
@@ -131,15 +130,14 @@ public class StructureLocator {
 
     private static void schedulePersistence(ServerWorld world, List<Pair<BlockPos, String>> allFound) {
         // Сохраняем узлы в стейте на основном потоке
-        RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+        RoadGraphState roadGraph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
 
         for (Pair<BlockPos, String> pair : allFound) {
-            Node node = state.addNodeWithEdges(
-                    pair.getFirst(), pair.getSecond());
+            Node node = roadGraph.addNodeWithEdges(pair.getFirst(), pair.getSecond());
             LOGGER.info("Added node {} on {}", node.id(), node.pos());
         }
-        state.markDirty();
-        LOGGER.info("All nodes are preserved in a persistent state.");
+        roadGraph.markDirty();
+        LOGGER.info("All nodes are preserved in a persistent roadGraph.");
     }
 
     /**

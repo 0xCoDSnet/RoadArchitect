@@ -22,7 +22,9 @@ public class StructureScanManager {
      * <p>Performs scanning through {@link StructureLocator#scanGrid} and logs the outcome.</p>
      */
     static void scan(ServerWorld world, String approach, BlockPos center) {
-        int overallRadius = RoadArchitect.CONFIG.playerScanRadius();
+        scan(world, approach, center, 1);
+    }
+    static void scan(ServerWorld world, String approach, BlockPos center, int overallRadius) {
         int scanRadius = 1;
         List<String> selectors = RoadArchitect.CONFIG.structureSelectors();
 

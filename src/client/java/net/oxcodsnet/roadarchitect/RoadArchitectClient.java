@@ -3,24 +3,17 @@ package net.oxcodsnet.roadarchitect;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.fabricmc.fabric.api.client.screen.v1.Screens;
-import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.client.gui.screen.world.CreateWorldScreen;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.world.GeneratorOptionsHolder;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.world.level.LevelInfo;
-import net.oxcodsnet.roadarchitect.client.gui.MyWorldGenScreen;
 import net.oxcodsnet.roadarchitect.client.gui.RoadGraphDebugScreen;
+import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -32,13 +25,7 @@ public class RoadArchitectClient implements ClientModInitializer {
     private static KeyBinding debugKey;
 
     @Override
-    /**
-     * Точка входа на клиенте. Регистрирует клавишу отладки и обработчик тиков.
-     * <p>Client entry point that registers a debug key and tick handler.</p>
-     */
     public void onInitializeClient() {
-
-
 
         debugKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.roadarchitect.debug",
@@ -49,16 +36,21 @@ public class RoadArchitectClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (debugKey.wasPressed()) {
+
                 if (client.currentScreen instanceof RoadGraphDebugScreen) {
                     client.setScreen(null);
-                } else {
-                    ServerWorld world = client.getServer() == null ? null : client.getServer().getOverworld();
-                    if (world != null) {
-                        RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
-                        List<Node> nodes = new ArrayList<>(state.nodes().all().values());
-                        client.setScreen(new RoadGraphDebugScreen(nodes, state.edges().allWithStatus()));
-                    }
+                    continue;
                 }
+
+                ServerWorld world = client.getServer() == null ? null : client.getServer().getOverworld();
+                if (world == null) continue;
+
+                RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+
+                List<Node> nodes  = new ArrayList<>(state.nodes().all().values());
+                Collection<EdgeStorage.Edge> edges = state.edges().all().values();
+
+                client.setScreen(new RoadGraphDebugScreen(nodes, edges));
             }
         });
     }

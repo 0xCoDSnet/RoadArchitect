@@ -6,18 +6,18 @@ import net.oxcodsnet.roadarchitect.RoadArchitect;
 
 import java.util.List;
 
-@Modmenu(modId = RoadArchitect.MOD_ID)
-@Config(name = "roadarchitect", wrapperName = "RoadArchitectConfig")
+
 /**
  * Настройки мода Road Architect.
  * <p>Configuration model for the Road Architect mod.</p>
  */
+@Modmenu(modId = RoadArchitect.MOD_ID)
+@Config(name = "roadarchitect", wrapperName = "RoadArchitectConfig")
 public class RoadArchitectConfigModel {
-    public int playerScanRadius = 100;
-    public int chunkLoadScanRadius = 50;
-    public int maxConnectionDistance = 2048;
+    public int initScanRadius = 100;
+    public int chunkGenerateScanRadius = 15;
+    public int maxConnectionDistance = 715;
     public List<String> structureSelectors = List.of(
-            "#minecraft:village",
-            "minecraft:village_plains"
+            "#minecraft:village"
     );
 }

@@ -3,19 +3,13 @@ package net.oxcodsnet.roadarchitect.util;
 import it.unimi.dsi.fastutil.longs.*;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.BiomeTags;
-import net.minecraft.server.world.ChunkTicketType;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.biome.source.BiomeSource;
-import net.minecraft.world.biome.source.util.MultiNoiseUtil;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.gen.noise.NoiseConfig;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.NodeStorage;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
@@ -41,7 +35,7 @@ public class PathFinder {
 
 
     /*================ USER‑TUNABLE PARAMS ================*/
-    public static final int GRID_STEP = 3; // horizontal granularity
+    public static final int GRID_STEP = 3;
     private static final int[][] OFFSETS = generateOffsets();
     /*=====================================================*/
 
@@ -70,11 +64,8 @@ public class PathFinder {
         return aStar(fromId, toId);
     }
 
-
-
-    public void prefillHeightCache(int minX, int minZ, int maxX, int maxZ) {
+    public void prefillHeightCacheAndBiomeCache(int minX, int minZ, int maxX, int maxZ) {
         int step = GRID_STEP;
-        // пул, автоматически равный числу доступных ядер
         ExecutorService executor = Executors.newWorkStealingPool();
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -87,21 +78,29 @@ public class PathFinder {
                             .getChunkGenerator()
                             .getHeight(
                                     fx, fz,
-                                    Heightmap.Type.WORLD_SURFACE,
+                                    Heightmap.Type.WORLD_SURFACE_WG,
                                     world,
                                     world.getChunkManager().getNoiseConfig()
                             );
                     long key = hash(fx, fz);
                     heightCache.put(key, fy);
                 }, executor));
+                futures.add(CompletableFuture.runAsync(() -> {
+                    RegistryEntry<Biome> biome = world.getChunkManager()
+                            .getChunkGenerator()
+                            .getBiomeSource()
+                            .getBiome(fx, 0, fz,
+                                    world.getChunkManager().getNoiseConfig().getMultiNoiseSampler()
+                            );
+                    long key = hash(fx, fz);
+                    biomeCache.put(key, biome);
+                }, executor));
             }
         }
 
-        // ждём, пока все задачи закончатся
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         executor.shutdown();
-        LOGGER.info("Height cache prefilling complete: [{}..{}] x [{}..{}]",
-                minX, maxX, minZ, maxZ);
+        LOGGER.info("Height, Biome caches prefilling complete: [{}..{}] x [{}..{}]", minX, maxX, minZ, maxZ);
     }
 
     // ────────────────────────────────────────────────────────────────────────
@@ -130,7 +129,6 @@ public class PathFinder {
         gScore.put(startKey, 0.0);
         open.add(new Rec(startKey, 0.0, heuristic(startPos, endPos)));
 
-//        LOGGER.info("-! while !-");
         int iterations = 0;
         while (!open.isEmpty() && iterations++ < maxSteps) {
             Rec current = open.poll();
@@ -146,7 +144,7 @@ public class PathFinder {
             if (current.key == endKey || reachedTarget(new BlockPos(curX, 0, curZ), endPos)) {
                 return reconstructPath(current.key, startKey, parent);
             }
-//            LOGGER.info("-! for !-");
+
             // ── expand neighbours ──────────────────────────────────────
             for (int[] off : OFFSETS) {
                 int nx = curX + off[0];
@@ -154,17 +152,17 @@ public class PathFinder {
                 long neighKey = hash(nx, nz);
 
                 int ny = sampleHeight(nx, nz);
-                if (!isTraversable(curY, ny)) continue;
+                if (isTraversable(curY, ny)) continue;
 
-//                double stab = sampleStability(nx, nz, ny);
-//                if (stab == Double.MAX_VALUE) continue;
+                double stab = sampleStability(nx, nz, ny);
+                if (stab == Double.MAX_VALUE) continue;
 
                 double tentativeG = gScore.get(current.key)
                         + stepCost(off)
                         + elevationCost(curY, ny)
-                        + biomeCost(sampleBiome(neighKey))
-                        + yLevelCost(ny);
-//                        + stab;
+                        + biomeCost(sampleBiome(nx, ny ,nz))
+                        + yLevelCost(ny)
+                        + stab;
 
                 if (tentativeG < gScore.get(neighKey)) {
                     parent.put(neighKey, current.key);
@@ -172,7 +170,6 @@ public class PathFinder {
                     double f = tentativeG + heuristic(nx, nz, endPos);
                     open.add(new Rec(neighKey, tentativeG, f));
                 }
-//                LOGGER.info("iterations: {}", iterations);
             }
         }
         LOGGER.debug("Path not found between {} and {} after {} iterations", fromId, toId, iterations);
@@ -198,7 +195,7 @@ public class PathFinder {
             int cx = x + dx * i;
             int cz = z + dz * i;
             int cy = sampleHeight(cx, cz);
-            if (!isTraversable(prevY, cy)) return false;
+            if (isTraversable(prevY, cy)) return false;
             if (sampleStability(cx, cz, cy) == Double.MAX_VALUE) return false;
             prevY = cy;
         }
@@ -219,15 +216,6 @@ public class PathFinder {
 
     // ────────────────────────────────────────────────────────────────────────
     // Caching helpers
-
-//    private int sampleHeight(int x, int z) {
-//        long key = hash(x, z);
-//        return heightCache.computeIfAbsent(key, k -> {
-//            Chunk chunk = world.getChunkManager().getChunk(x >> 4, z >> 4, ChunkStatus.SURFACE, true);
-//            Heightmap hm = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
-//            return hm.get(x & 15, z & 15);
-//        });
-//    }
 
     private int sampleHeight(int x, int z) {
         long key = hash(x, z);
@@ -259,13 +247,12 @@ public class PathFinder {
         return c;
     }
 
-    private RegistryEntry<Biome> sampleBiome(long k) {
+    private RegistryEntry<Biome> sampleBiome(int x, int y, int z) {
+        long k = hash(x, z);
         RegistryEntry<Biome> biome = biomeCache.get(k);
-        BiomeSource source = world.getChunkManager().getChunkGenerator().getBiomeSource();
         if (biome == null) {
-            int x = (int) (k >> 32), z = (int) k;
-            biome = source.getBiome(x, 0, z, world.getChunkManager().getNoiseConfig().getMultiNoiseSampler());
-//            biome = world.getBiomeForNoiseGen(x, 0, z);;
+            BiomeSource source = world.getChunkManager().getChunkGenerator().getBiomeSource();
+            biome = source.getBiome(x, y, z, world.getChunkManager().getNoiseConfig().getMultiNoiseSampler());
             biomeCache.put(k, biome);
         }
         return biome;
@@ -282,12 +269,25 @@ public class PathFinder {
         return Math.abs(y1 - y2) * 40.0;
     }
 
-    private static double biomeCost(RegistryEntry<Biome> b) {
-        return (b.isIn(BiomeTags.IS_RIVER) || b.isIn(BiomeTags.IS_OCEAN) || b.isIn(BiomeTags.IS_DEEP_OCEAN) || b.isIn(BiomeTags.IS_MOUNTAIN) || b.isIn(BiomeTags.IS_BEACH)) ? 400.0 : 0.0;
+    private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(
+            BiomeTags.IS_RIVER,      80.0,
+            BiomeTags.IS_OCEAN,      999.0,
+            BiomeTags.IS_DEEP_OCEAN, 999.0,
+            BiomeTags.IS_MOUNTAIN,   50.0,
+            BiomeTags.IS_BEACH,      50.0
+    );
+
+    private static double biomeCost(RegistryEntry<Biome> biome) {
+        for (Map.Entry<TagKey<Biome>, Double> entry : BIOME_COSTS.entrySet()) {
+            if (biome.isIn(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return 0.0;
     }
 
     private static double yLevelCost(int y) {
-        return y == 62 ? 160.0 : 0.0;
+        return y <= 63 ? 160 : 0.0;
     }
 
     private double terrainStabilityCost(int x, int z, int y) {
@@ -301,7 +301,7 @@ public class PathFinder {
     }
 
     private static boolean isTraversable(int y1, int y2) {
-        return Math.abs(y1 - y2) <= 3;
+        return Math.abs(y1 - y2) > 3;
     }
 
     // ────────────────────────────────────────────────────────────────────────
@@ -340,7 +340,7 @@ public class PathFinder {
             out.add(a);
             interpolateSegment(a, b, out);
         }
-        out.add(v.get(v.size() - 1));
+        out.add(v.getLast());
         return out;
     }
 

@@ -26,8 +26,7 @@ public class RoadBuilderStorage extends PersistentState {
     private static final String START_KEY = "start";
     private static final String END_KEY = "end";
 
-    public static final Type<RoadBuilderStorage> TYPE = new Type<>(RoadBuilderStorage::new,
-            RoadBuilderStorage::fromNbt, DataFixTypes.SAVED_DATA_SCOREBOARD);
+    public static final Type<RoadBuilderStorage> TYPE = new Type<>(RoadBuilderStorage::new, RoadBuilderStorage::fromNbt, DataFixTypes.SAVED_DATA_SCOREBOARD);
     private final Map<ChunkPos, List<SegmentEntry>> segments = new ConcurrentHashMap<>();
 
     /**

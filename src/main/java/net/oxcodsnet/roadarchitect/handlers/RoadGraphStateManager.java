@@ -20,7 +20,6 @@ public class RoadGraphStateManager {
      * <p>Registers listeners to automatically load and save {@link RoadGraphState}.</p>
      */
     public static void register() {
-        // Предзагрузка состояния при загрузке мира
         ServerWorldEvents.LOAD.register((server, world) -> {
             if (!world.isClient()) {
                 RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());

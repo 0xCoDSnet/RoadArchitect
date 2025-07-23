@@ -1,9 +1,12 @@
 package net.oxcodsnet.roadarchitect.handlers;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.WorldChunk;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +40,18 @@ public final class RoadPipelineController {
         ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
             if (world.getRegistryKey() == World.OVERWORLD && INITIALIZED.add(world)) {
                 LOGGER.info("First chunk loaded in {}, starting pipeline", world.getRegistryKey().getValue());
-                startPipeline(world, "initial_chunk");
+                startPipelineInit(world, "initial_chunk");
             }
         });
+
+//        ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
+//            if (world.getRegistryKey() == World.OVERWORLD) {
+//                if(chunk.hasStructureReferences()){
+//                    LOGGER.info("Chunk generate in {}, starting pipeline", world.getRegistryKey().getValue());
+//                    startPipeline(world, chunk,"chunk with structure references");
+//                }
+//            }
+//        });
 
 //        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 //            ServerPlayerEntity player = handler.getPlayer();
@@ -50,20 +62,16 @@ public final class RoadPipelineController {
 //        });
     }
 
-    private static void startPipeline(ServerWorld world, String reason) {
+    private static void startPipeline(ServerWorld world, WorldChunk chunk, String reason) {
         if (!RUNNING.compareAndSet(false, true)) {
             return;
         }
+
         LOGGER.info("Pipeline start: {}", reason);
-        runPipeline(world, reason);
-
-    }
-
-    private static void runPipeline(ServerWorld world, String reason) {
         try {
-            BlockPos center = world.getSpawnPos();
-            StructureScanManager.scan(world, reason, center);
-            Map<String, List<BlockPos>> paths = PathFinderManager.computePaths(world);
+            BlockPos center = chunk.getPos().getCenterAtY(0);
+            StructureScanManager.scan(world, reason, center, RoadArchitect.CONFIG.chunkGenerateScanRadius());
+            Map<String, List<BlockPos>> paths = PathFinderManager.computePaths(world, 50);
             RoadBuilderManager.queueSegments(world, paths);
         } catch (Exception e) {
             LOGGER.error("Pipeline failure", e);
@@ -71,5 +79,25 @@ public final class RoadPipelineController {
             RUNNING.set(false);
             LOGGER.info("Pipeline finished: {}", reason);
         }
+    }
+
+    private static void startPipelineInit(ServerWorld world, String reason) {
+        if (!RUNNING.compareAndSet(false, true)) {
+            return;
+        }
+
+        LOGGER.info("Pipeline start: {}", reason);
+        try {
+            BlockPos center = world.getSpawnPos();
+            StructureScanManager.scan(world, reason, center, RoadArchitect.CONFIG.initScanRadius());
+            Map<String, List<BlockPos>> paths = PathFinderManager.computePaths(world, 500);
+            RoadBuilderManager.queueSegments(world, paths);
+        } catch (Exception e) {
+            LOGGER.error("Pipeline failure", e);
+        } finally {
+            RUNNING.set(false);
+            LOGGER.info("Pipeline finished: {}", reason);
+        }
+
     }
 }
