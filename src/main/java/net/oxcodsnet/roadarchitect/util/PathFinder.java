@@ -60,8 +60,14 @@ public class PathFinder {
      * Returns the list of BlockPos actually traversed by A*.
      */
     public List<BlockPos> findPath(String fromId, String toId) {
+        // Each invocation gets its own debug list
+        List<String> debugReasons = Collections.synchronizedList(new ArrayList<>());
         LOGGER.info("Finding path from {} to {}", fromId, toId);
-        return aStar(fromId, toId);
+        List<BlockPos> path = aStar(fromId, toId, debugReasons);
+        if (path.isEmpty()) {
+            LOGGER.warn("Path not found; reasons: {}", debugReasons);
+        }
+        return path;
     }
 
     public void prefillHeightCacheAndBiomeCache(int minX, int minZ, int maxX, int maxZ) {
@@ -106,22 +112,20 @@ public class PathFinder {
     // ────────────────────────────────────────────────────────────────────────
     // A* core with LOS‑shortcut
 
-    private List<BlockPos> aStar(String fromId, String toId) {
+    private List<BlockPos> aStar(String fromId, String toId, List<String> debugReasons) {
         Node startNode = nodes.all().get(fromId);
         Node endNode = nodes.all().get(toId);
         if (startNode == null || endNode == null) {
-            LOGGER.warn("Missing node(s) {} or {}", fromId, toId);
+            debugReasons.add("Missing start or end node");
             return List.of();
         }
 
         BlockPos startPos = snap(startNode.pos());
         BlockPos endPos = snap(endNode.pos());
-
         long startKey = hash(startPos.getX(), startPos.getZ());
         long endKey = hash(endPos.getX(), endPos.getZ());
 
-        record Rec(long key, double g, double f) {
-        }
+        record Rec(long key, double g, double f) {}
         PriorityQueue<Rec> open = new PriorityQueue<>(Comparator.comparingDouble(r -> r.f));
         Long2DoubleMap gScore = new Long2DoubleOpenHashMap();
         gScore.defaultReturnValue(Double.MAX_VALUE);
@@ -137,33 +141,48 @@ public class PathFinder {
             int curZ = (int) current.key;
             int curY = sampleHeight(curX, curZ);
 
-            // ── LOS shortcut ───────────────────────────────────────────
-            if (hasLineOfSight(curX, curZ, curY, endPos)) {
-                return finishWithLos(current.key, startKey, parent, endPos);
-            }
-            // ── reached by radius? ─────────────────────────────────────
+//            // LOS shortcut
+//            if (hasLineOfSight(curX, curZ, curY, endPos, debugReasons)) {
+//                LOGGER.info("Path found via LOS after {} iterations; reasons: {}", iterations, debugReasons);
+//                return finishWithLos(current.key, startKey, parent, endPos);
+//            }
+            // reached target
             if (current.key == endKey || isCloseEnoughToTarget(new BlockPos(curX, 0, curZ), endPos)) {
+                LOGGER.info("Path found via A* expansion after {} iterations; reasons: {}", iterations, debugReasons);
                 return reconstructPath(current.key, startKey, parent);
             }
 
-            // ── expand neighbours ──────────────────────────────────────
+            boolean expanded = false;
             for (int[] off : OFFSETS) {
                 int nx = curX + off[0];
                 int nz = curZ + off[1];
                 long neighKey = hash(nx, nz);
 
                 int ny = sampleHeight(nx, nz);
-                if (isTraversable(curY, ny)) continue;
+//                if (!isTraversable(curY, ny)) {
+//                    debugReasons.add(String.format("Steep height diff at (%d,%d) -> (%d,%d)", curX, curZ, nx, nz));
+//                    continue;
+//                }
 
                 double stab = sampleStability(nx, nz, ny);
-                if (stab == Double.MAX_VALUE) continue;
+                if (stab == Double.MAX_VALUE) {
+                    debugReasons.add(String.format("Unstable terrain at (%d,%d)", nx, nz));
+                    continue;
+                }
 
+                double bCost = biomeCost(sampleBiome(nx, ny, nz));
+                if (bCost >= 999.0) {
+                    debugReasons.add(String.format("Impassable biome at (%d,%d)", nx, nz));
+                    continue;
+                }
+
+                expanded = true;
                 double tentativeG = gScore.get(current.key)
                         + stepCost(off)
                         + elevationCost(curY, ny)
-                        + biomeCost(sampleBiome(nx, ny, nz))
-                        + yLevelCost(ny)
-                        + stab;
+                        + bCost
+                        + yLevelCost(ny);
+                        //+ stab;
 
                 if (tentativeG < gScore.get(neighKey)) {
                     parent.put(neighKey, current.key);
@@ -172,8 +191,13 @@ public class PathFinder {
                     open.add(new Rec(neighKey, tentativeG, f));
                 }
             }
+            if (!expanded) {
+                debugReasons.add("No valid neighbours to expand");
+            }
         }
-        LOGGER.debug("Path not found between {} and {} after {} iterations", fromId, toId, iterations);
+        if (debugReasons.isEmpty()) {
+            debugReasons.add("Reached max iterations or no open nodes");
+        }
         return List.of();
     }
 
@@ -195,31 +219,27 @@ public class PathFinder {
      * @param goal конечная позиция (мировая)
      * @return true — если по прямой видимости достижима цель
      */
-    private boolean hasLineOfSight(int x, int z, int y, BlockPos goal) {
-
-        /*──── 1. Приводим XZ к координатам сетки ──────────────────────────────*/
+    private boolean hasLineOfSight(int x, int z, int y, BlockPos goal, List<String> debugReasons) {
         int sx = Math.floorDiv(x, GRID_STEP);
         int sz = Math.floorDiv(z, GRID_STEP);
         int gx = Math.floorDiv(goal.getX(), GRID_STEP);
         int gz = Math.floorDiv(goal.getZ(), GRID_STEP);
-
-        /*──── 2. Высоты старта и цели (уже на сетке) ───────────────────────────*/
         int sy = sampleHeight(sx * GRID_STEP, sz * GRID_STEP);
         int gy = sampleHeight(gx * GRID_STEP, gz * GRID_STEP);
 
-        /*──── 3. Разницы и знаки для 3D-Bresenham ─────────────────────────────*/
         int dx = Math.abs(gx - sx);
         int dy = Math.abs(gy - sy);
         int dz = Math.abs(gz - sz);
-
         int xs = gx >= sx ? 1 : -1;
         int ys = gy >= sy ? 1 : -1;
         int zs = gz >= sz ? 1 : -1;
 
-        int cx = sx, cy = sy, cz = sz;
-        int p1, p2;
+        int cx = sx;
+        int cy = sy;
+        int cz = sz;
+        int p1;
+        int p2;
 
-        /*──── 4. Главная ось — X, Y или Z ─────────────────────────────────────*/
         if (dx >= dy && dx >= dz) {
             p1 = 2 * dy - dx;
             p2 = 2 * dz - dx;
@@ -235,10 +255,10 @@ public class PathFinder {
                 }
                 p1 += 2 * dy;
                 p2 += 2 * dz;
-
-                if (!checkGridCell(cx, cz, cy)) return false;
+                if (!checkGridCell(cx, cz, cy, debugReasons)) {
+                    return false;
+                }
             }
-
         } else if (dy >= dx && dy >= dz) {
             p1 = 2 * dx - dy;
             p2 = 2 * dz - dy;
@@ -254,11 +274,11 @@ public class PathFinder {
                 }
                 p1 += 2 * dx;
                 p2 += 2 * dz;
-
-                if (!checkGridCell(cx, cz, cy)) return false;
+                if (!checkGridCell(cx, cz, cy, debugReasons)) {
+                    return false;
+                }
             }
-
-        } else { /* dz — доминирует */
+        } else {
             p1 = 2 * dy - dz;
             p2 = 2 * dx - dz;
             while (cz != gz) {
@@ -273,11 +293,11 @@ public class PathFinder {
                 }
                 p1 += 2 * dy;
                 p2 += 2 * dx;
-
-                if (!checkGridCell(cx, cz, cy)) return false;
+                if (!checkGridCell(cx, cz, cy, debugReasons)) {
+                    return false;
+                }
             }
         }
-
         return true;
     }
 
@@ -290,14 +310,22 @@ public class PathFinder {
      * @param cy    текущая y-координата луча (мировая)
      * @return true — если ячейка проходима
      */
-    private boolean checkGridCell(int gridX, int gridZ, int cy) {
+
+    private boolean checkGridCell(int gridX, int gridZ, int cy, List<String> debugReasons) {
         int worldX = gridX * GRID_STEP;
         int worldZ = gridZ * GRID_STEP;
-
-        int terrainY = sampleHeight(worldX, worldZ);          // кэш-хит
-        if (Math.abs(cy - terrainY) > 3) return false;
-
-        if (sampleStability(worldX, worldZ, terrainY) == Double.MAX_VALUE) return false;
+        int terrainY = sampleHeight(worldX, worldZ);
+        if (Math.abs(cy - terrainY) > 3) {
+            return false;
+        }
+        if (sampleStability(worldX, worldZ, terrainY) == Double.MAX_VALUE) {
+            return false;
+        }
+        RegistryEntry<Biome> biome = sampleBiome(worldX, terrainY, worldZ);
+        if (biome.isIn(BiomeTags.IS_OCEAN) || biome.isIn(BiomeTags.IS_DEEP_OCEAN)) {
+            debugReasons.add(String.format("LOS blocked by biome at (%d,%d)", worldX, worldZ));
+            return false;
+        }
         return true;
     }
 
