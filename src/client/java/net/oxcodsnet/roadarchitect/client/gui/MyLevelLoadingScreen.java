@@ -9,23 +9,24 @@ import io.wispforest.owo.ui.core.OwoUIAdapter;
 import io.wispforest.owo.ui.core.Surface;
 import io.wispforest.owo.ui.core.VerticalAlignment;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.world.CreateWorldScreen;
+import net.minecraft.client.gui.screen.world.LevelLoadingScreen;
 import net.minecraft.text.Text;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import org.jetbrains.annotations.NotNull;
 
-public class MyWorldGenScreen extends BaseOwoScreen<FlowLayout> {
-    private final CreateWorldScreen parent;
+public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
+    private final LevelLoadingScreen parent;
     private OwoUIAdapter<FlowLayout> adapter;
 
-    public MyWorldGenScreen(CreateWorldScreen parent) {
+    public MyLevelLoadingScreen(LevelLoadingScreen parent) {
         super(Text.literal("Custom WorldGen"));
         this.parent = parent;
     }
 
     @Override
     protected @NotNull OwoUIAdapter<FlowLayout> createAdapter() {
-        return OwoUIAdapter.create(this, Containers::verticalFlow);
+        this.adapter = OwoUIAdapter.create(this, Containers::verticalFlow);
+        return this.adapter;
     }
 
     @Override
@@ -41,20 +42,31 @@ public class MyWorldGenScreen extends BaseOwoScreen<FlowLayout> {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // Отрисовываем оригинальный экран мирогенерации
         parent.render(context, mouseX, mouseY, delta);
-
-        // Затем рисуем owo-ui
         super.render(context, mouseX, mouseY, delta);
     }
 
     @Override
     public boolean mouseClicked(double x, double y, int button) {
-        // Сначала owo-ui
-        if (adapter.mouseClicked(x, y, button)) return true;
-        // Иначе передаём родительскому экрану
+        if (this.adapter.mouseClicked(x, y, button)) return true;
         return parent.mouseClicked(x, y, button);
     }
 
-    // По аналогии добавьте keyPressed, charTyped и т.д.
+    @Override
+    public boolean mouseReleased(double x, double y, int button) {
+        if (this.adapter.mouseReleased(x, y, button)) return true;
+        return parent.mouseReleased(x, y, button);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (this.adapter.keyPressed(keyCode, scanCode, modifiers)) return true;
+        return parent.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        if (this.adapter.charTyped(chr, modifiers)) return true;
+        return parent.charTyped(chr, modifiers);
+    }
 }
