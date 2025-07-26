@@ -37,6 +37,16 @@ public class PathFinder {
     /*================ USER‑TUNABLE PARAMS ================*/
     public static final int GRID_STEP = 3;
     private static final int[][] OFFSETS = generateOffsets();
+    private static final int TARGET_RADIUS = 70;
+    private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(
+            BiomeTags.IS_RIVER, 80.0,
+            BiomeTags.IS_OCEAN, 999.0,
+            BiomeTags.IS_DEEP_OCEAN, 999.0,
+            BiomeTags.IS_MOUNTAIN, 50.0,
+            BiomeTags.IS_BEACH, 50.0
+    );
+    /*=====================================================*/
+
     /*=====================================================*/
 
     private final NodeStorage nodes;
@@ -60,14 +70,7 @@ public class PathFinder {
      * Returns the list of BlockPos actually traversed by A*.
      */
     public List<BlockPos> findPath(String fromId, String toId) {
-        // Each invocation gets its own debug list
-        List<String> debugReasons = Collections.synchronizedList(new ArrayList<>());
-        LOGGER.info("Finding path from {} to {}", fromId, toId);
-        List<BlockPos> path = aStar(fromId, toId, debugReasons);
-        if (path.isEmpty()) {
-            LOGGER.warn("Path not found; reasons: {}", debugReasons);
-        }
-        return path;
+        return aStar(fromId, toId);
     }
 
     public void prefillHeightCacheAndBiomeCache(int minX, int minZ, int maxX, int maxZ) {
@@ -112,20 +115,21 @@ public class PathFinder {
     // ────────────────────────────────────────────────────────────────────────
     // A* core with LOS‑shortcut
 
-    private List<BlockPos> aStar(String fromId, String toId, List<String> debugReasons) {
+    private List<BlockPos> aStar(String fromId, String toId) {
         Node startNode = nodes.all().get(fromId);
         Node endNode = nodes.all().get(toId);
         if (startNode == null || endNode == null) {
-            debugReasons.add("Missing start or end node");
+            LOGGER.warn("Missing node(s) {} or {}", fromId, toId);
             return List.of();
         }
+
+        record Rec(long key, double g, double f) { }
 
         BlockPos startPos = snap(startNode.pos());
         BlockPos endPos = snap(endNode.pos());
         long startKey = hash(startPos.getX(), startPos.getZ());
         long endKey = hash(endPos.getX(), endPos.getZ());
 
-        record Rec(long key, double g, double f) {}
         PriorityQueue<Rec> open = new PriorityQueue<>(Comparator.comparingDouble(r -> r.f));
         Long2DoubleMap gScore = new Long2DoubleOpenHashMap();
         gScore.defaultReturnValue(Double.MAX_VALUE);
@@ -141,48 +145,40 @@ public class PathFinder {
             int curZ = (int) current.key;
             int curY = sampleHeight(curX, curZ);
 
-//            // LOS shortcut
-//            if (hasLineOfSight(curX, curZ, curY, endPos, debugReasons)) {
-//                LOGGER.info("Path found via LOS after {} iterations; reasons: {}", iterations, debugReasons);
+            // ── LOS shortcut ───────────────────────────────────────────
+//            if (hasLineOfSight(curX, curZ, curY, endPos)) {
 //                return finishWithLos(current.key, startKey, parent, endPos);
 //            }
-            // reached target
+            // ── reached by radius? ─────────────────────────────────────
             if (current.key == endKey || isCloseEnoughToTarget(new BlockPos(curX, 0, curZ), endPos)) {
-                LOGGER.info("Path found via A* expansion after {} iterations; reasons: {}", iterations, debugReasons);
-                return reconstructPath(current.key, startKey, parent);
+                List<BlockPos> path = reconstructPath(current.key, startKey, parent);
+
+//                BlockPos last = path.getLast();
+//                BlockPos adjusted = adjustEndpoint(last, endPos);
+//                path.set(path.size() - 1, adjusted);
+
+                LOGGER.info("Path found between {} and {} after {} iterations", fromId, toId, iterations);
+                return path;
             }
 
-            boolean expanded = false;
+            // ── expand neighbours ──────────────────────────────────────
             for (int[] off : OFFSETS) {
                 int nx = curX + off[0];
                 int nz = curZ + off[1];
                 long neighKey = hash(nx, nz);
 
                 int ny = sampleHeight(nx, nz);
-//                if (!isTraversable(curY, ny)) {
-//                    debugReasons.add(String.format("Steep height diff at (%d,%d) -> (%d,%d)", curX, curZ, nx, nz));
-//                    continue;
-//                }
+                if (isTraversable(curY, ny)) continue;
 
                 double stab = sampleStability(nx, nz, ny);
-                if (stab == Double.MAX_VALUE) {
-                    debugReasons.add(String.format("Unstable terrain at (%d,%d)", nx, nz));
-                    continue;
-                }
+                if (stab == Double.MAX_VALUE) continue;
 
-                double bCost = biomeCost(sampleBiome(nx, ny, nz));
-                if (bCost >= 999.0) {
-                    debugReasons.add(String.format("Impassable biome at (%d,%d)", nx, nz));
-                    continue;
-                }
-
-                expanded = true;
                 double tentativeG = gScore.get(current.key)
                         + stepCost(off)
                         + elevationCost(curY, ny)
-                        + bCost
-                        + yLevelCost(ny);
-                        //+ stab;
+                        + biomeCost(sampleBiome(nx, ny, nz))
+                        + yLevelCost(ny)
+                        + stab;
 
                 if (tentativeG < gScore.get(neighKey)) {
                     parent.put(neighKey, current.key);
@@ -191,13 +187,8 @@ public class PathFinder {
                     open.add(new Rec(neighKey, tentativeG, f));
                 }
             }
-            if (!expanded) {
-                debugReasons.add("No valid neighbours to expand");
-            }
         }
-        if (debugReasons.isEmpty()) {
-            debugReasons.add("Reached max iterations or no open nodes");
-        }
+        LOGGER.warn("Path not found between {} and {} after {} iterations", fromId, toId, iterations);
         return List.of();
     }
 
@@ -219,27 +210,31 @@ public class PathFinder {
      * @param goal конечная позиция (мировая)
      * @return true — если по прямой видимости достижима цель
      */
-    private boolean hasLineOfSight(int x, int z, int y, BlockPos goal, List<String> debugReasons) {
+    private boolean hasLineOfSight(int x, int z, int y, BlockPos goal) {
+
+        /*──── 1. Приводим XZ к координатам сетки ──────────────────────────────*/
         int sx = Math.floorDiv(x, GRID_STEP);
         int sz = Math.floorDiv(z, GRID_STEP);
         int gx = Math.floorDiv(goal.getX(), GRID_STEP);
         int gz = Math.floorDiv(goal.getZ(), GRID_STEP);
+
+        /*──── 2. Высоты старта и цели (уже на сетке) ───────────────────────────*/
         int sy = sampleHeight(sx * GRID_STEP, sz * GRID_STEP);
         int gy = sampleHeight(gx * GRID_STEP, gz * GRID_STEP);
 
+        /*──── 3. Разницы и знаки для 3D-Bresenham ─────────────────────────────*/
         int dx = Math.abs(gx - sx);
         int dy = Math.abs(gy - sy);
         int dz = Math.abs(gz - sz);
+
         int xs = gx >= sx ? 1 : -1;
         int ys = gy >= sy ? 1 : -1;
         int zs = gz >= sz ? 1 : -1;
 
-        int cx = sx;
-        int cy = sy;
-        int cz = sz;
-        int p1;
-        int p2;
+        int cx = sx, cy = sy, cz = sz;
+        int p1, p2;
 
+        /*──── 4. Главная ось — X, Y или Z ─────────────────────────────────────*/
         if (dx >= dy && dx >= dz) {
             p1 = 2 * dy - dx;
             p2 = 2 * dz - dx;
@@ -255,10 +250,10 @@ public class PathFinder {
                 }
                 p1 += 2 * dy;
                 p2 += 2 * dz;
-                if (!checkGridCell(cx, cz, cy, debugReasons)) {
-                    return false;
-                }
+
+                if (!checkGridCell(cx, cz, cy)) return false;
             }
+
         } else if (dy >= dx && dy >= dz) {
             p1 = 2 * dx - dy;
             p2 = 2 * dz - dy;
@@ -274,11 +269,11 @@ public class PathFinder {
                 }
                 p1 += 2 * dx;
                 p2 += 2 * dz;
-                if (!checkGridCell(cx, cz, cy, debugReasons)) {
-                    return false;
-                }
+
+                if (!checkGridCell(cx, cz, cy)) return false;
             }
-        } else {
+
+        } else { /* dz — доминирует */
             p1 = 2 * dy - dz;
             p2 = 2 * dx - dz;
             while (cz != gz) {
@@ -293,11 +288,11 @@ public class PathFinder {
                 }
                 p1 += 2 * dy;
                 p2 += 2 * dx;
-                if (!checkGridCell(cx, cz, cy, debugReasons)) {
-                    return false;
-                }
+
+                if (!checkGridCell(cx, cz, cy)) return false;
             }
         }
+
         return true;
     }
 
@@ -310,22 +305,14 @@ public class PathFinder {
      * @param cy    текущая y-координата луча (мировая)
      * @return true — если ячейка проходима
      */
-
-    private boolean checkGridCell(int gridX, int gridZ, int cy, List<String> debugReasons) {
+    private boolean checkGridCell(int gridX, int gridZ, int cy) {
         int worldX = gridX * GRID_STEP;
         int worldZ = gridZ * GRID_STEP;
-        int terrainY = sampleHeight(worldX, worldZ);
-        if (Math.abs(cy - terrainY) > 3) {
-            return false;
-        }
-        if (sampleStability(worldX, worldZ, terrainY) == Double.MAX_VALUE) {
-            return false;
-        }
-        RegistryEntry<Biome> biome = sampleBiome(worldX, terrainY, worldZ);
-        if (biome.isIn(BiomeTags.IS_OCEAN) || biome.isIn(BiomeTags.IS_DEEP_OCEAN)) {
-            debugReasons.add(String.format("LOS blocked by biome at (%d,%d)", worldX, worldZ));
-            return false;
-        }
+
+        int terrainY = sampleHeight(worldX, worldZ);          // кэш-хит
+        if (Math.abs(cy - terrainY) > 3) return false;
+
+        if (sampleStability(worldX, worldZ, terrainY) == Double.MAX_VALUE) return false;
         return true;
     }
 
@@ -394,14 +381,6 @@ public class PathFinder {
         return Math.abs(y1 - y2) * 40.0;
     }
 
-    private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(
-            BiomeTags.IS_RIVER, 80.0,
-            BiomeTags.IS_OCEAN, 999.0,
-            BiomeTags.IS_DEEP_OCEAN, 999.0,
-            BiomeTags.IS_MOUNTAIN, 50.0,
-            BiomeTags.IS_BEACH, 50.0
-    );
-
     private static double biomeCost(RegistryEntry<Biome> biome) {
         for (Map.Entry<TagKey<Biome>, Double> entry : BIOME_COSTS.entrySet()) {
             if (biome.isIn(entry.getKey())) {
@@ -451,7 +430,7 @@ public class PathFinder {
         int dx = Math.abs(current.getX() - target.getX());
         int dz = Math.abs(current.getZ() - target.getZ());
 
-        return (dx + dz) < GRID_STEP * 2 || (dx + dz) <= 30;
+        return (dx + dz) < GRID_STEP * 2 || (dx + dz) <= TARGET_RADIUS;
     }
 
     // ────────────────────────────────────────────────────────────────────────
@@ -489,6 +468,20 @@ public class PathFinder {
             int ny = sampleHeight(nx, nz);
             out.add(new BlockPos(nx, ny, nz));
         }
+    }
+
+    private BlockPos adjustEndpoint(BlockPos currentPos, BlockPos goalPos) {
+        double dx = currentPos.getX() - goalPos.getX();
+        double dz = currentPos.getZ() - goalPos.getZ();
+        double dist = Math.sqrt(dx * dx + dz * dz);
+        if (dist == 0) {
+            return currentPos;
+        }
+        double scale = (double) PathFinder.TARGET_RADIUS / dist;
+        int x = goalPos.getX() + (int) Math.round(dx * scale);
+        int z = goalPos.getZ() + (int) Math.round(dz * scale);
+        int y = sampleHeight(x, z);
+        return new BlockPos(x, y, z);
     }
 
     // ────────────────────────────────────────────────────────────────────────
