@@ -5,6 +5,7 @@ import io.wispforest.owo.ui.core.Color;
 import io.wispforest.owo.ui.core.OwoUIDrawContext;
 import io.wispforest.owo.ui.core.Sizing;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
@@ -193,9 +194,16 @@ public class GraphComponent extends BaseComponent {
             ScreenPos pos = screenPositions.get(node.id());
             if (pos != null && distance(pos.x, pos.y, mouseX, mouseY) <= RADIUS) {
                 MinecraftClient client = MinecraftClient.getInstance();
-                if (client.player != null) {
-                    client.player.setPosition(node.pos().getX() + 0.5, node.pos().getY(), node.pos().getZ() + 0.5);
-                }
+                client.execute(() -> {
+                    if (client.getServer() != null && client.player != null) {
+                        ServerPlayerEntity sp = client.getServer()
+                                .getPlayerManager()
+                                .getPlayer(client.player.getUuid());
+                        if (sp != null) {
+                            sp.requestTeleport(node.pos().getX() + 0.5, node.pos().getY(), node.pos().getZ() + 0.5);
+                        }
+                    }
+                });
                 return true;
             }
         }
