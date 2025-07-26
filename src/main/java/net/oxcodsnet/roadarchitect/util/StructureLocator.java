@@ -13,6 +13,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.gen.structure.Structure;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
@@ -116,8 +117,14 @@ public class StructureLocator {
                 List<Pair<BlockPos, String>> found = findStructures(world, scanOrigin, scanRadius, structureSelectors);
                 for (Pair<BlockPos, String> pair : found) {
                     BlockPos pos = pair.getFirst();
-                    if (seen.add(pos)) {
-                        allFound.add(pair);
+
+                    int pos_y = sampleHeight(world, pos.getX(), pos.getZ());
+
+                    BlockPos new_pos = new BlockPos(pos.getX(), pos_y, pos.getZ());
+                    Pair<BlockPos, String>  new_pair = new Pair<>(new_pos, pair.getSecond());
+
+                    if (seen.add(new_pos)) {
+                        allFound.add(new_pair);
                         LOGGER.debug("Grid scan found new structure at {}", pos);
                     }
                 }
@@ -153,5 +160,17 @@ public class StructureLocator {
             Registry<Structure> registry) {
         return predicate.getKey()
                 .map(key -> registry.getEntry(key).map(RegistryEntryList::of), registry::getEntryList);
+    }
+
+    private static int sampleHeight(ServerWorld world, int x, int z) {
+        int height = world.getChunkManager()
+                .getChunkGenerator()
+                .getHeight(
+                        x, z,
+                        Heightmap.Type.WORLD_SURFACE,
+                        world,
+                        world.getChunkManager().getNoiseConfig()
+                );
+        return height;
     }
 }
