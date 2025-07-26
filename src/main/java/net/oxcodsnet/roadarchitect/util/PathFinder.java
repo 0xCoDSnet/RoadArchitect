@@ -21,10 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.LongAdder;
+
+import static net.oxcodsnet.roadarchitect.util.CacheManager.hash;
+import static net.oxcodsnet.roadarchitect.util.CacheManager.keyToPos;
 
 /**
  * A* path‑finder working on a configurable X/Z grid.
@@ -38,7 +37,7 @@ public class PathFinder {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinder");
 
     /* ================ USER‑TUNABLE PARAMS ================ */
-    public static final int GRID_STEP = 3;
+    public static final int GRID_STEP = 4;
     private static final int[][] OFFSETS = generateOffsets();
     private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(
             BiomeTags.IS_RIVER, 400.0,
@@ -48,14 +47,6 @@ public class PathFinder {
             BiomeTags.IS_BEACH, 160.0
     );
     /* ===================================================== */
-
-    private final LongAdder heightCacheHits = new LongAdder();
-    private final LongAdder heightCacheMisses = new LongAdder();
-    private final LongAdder stabilityCacheHits = new LongAdder();
-    private final LongAdder stabilityCacheMisses = new LongAdder();
-    private final LongAdder biomeCacheHits = new LongAdder();
-    private final LongAdder biomeCacheMisses = new LongAdder();
-
     private final NodeStorage nodes;
     private final ServerWorld world;
     private final int maxSteps;
@@ -66,10 +57,6 @@ public class PathFinder {
     private final MultiNoiseUtil.MultiNoiseSampler noiseSampler;
     private final BiomeSource biomeSource;
 
-    /* ── thread‑safe caches ── */
-    private final Long2IntMap heightCache = Long2IntMaps.synchronize(new Long2IntOpenHashMap());
-    private final Long2DoubleMap stabilityCache = Long2DoubleMaps.synchronize(new Long2DoubleOpenHashMap());
-    private final Long2ObjectMap<RegistryEntry<Biome>> biomeCache = Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<>());
 
     public PathFinder(NodeStorage nodes, ServerWorld world, int maxSteps) {
         this.nodes = nodes;
@@ -80,9 +67,6 @@ public class PathFinder {
         this.noiseConfig = world.getChunkManager().getNoiseConfig();
         this.noiseSampler = noiseConfig.getMultiNoiseSampler();
         this.biomeSource = generator.getBiomeSource();
-
-        heightCache.defaultReturnValue(Integer.MIN_VALUE);
-        stabilityCache.defaultReturnValue(Double.MAX_VALUE);
     }
 
     /**
@@ -90,46 +74,7 @@ public class PathFinder {
      */
     public List<BlockPos> findPath(String fromId, String toId) {
         List<BlockPos> path = aStar(fromId, toId);
-        logCacheStats();
         return path;
-    }
-
-    /**
-     * Warms up the height and biome caches asynchronously inside the given rectangular area.
-     */
-    public void prefillHeightCacheAndBiomeCache(int minX, int minZ, int maxX, int maxZ) {
-        int step = GRID_STEP;
-        ExecutorService executor = Executors.newWorkStealingPool();
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-        for (int x = minX; x <= maxX; x += step) {
-            for (int z = minZ; z <= maxZ; z += step) {
-                final int fx = x;
-                final int fz = z;
-                long key = hash(fx, fz);
-
-                // height
-                futures.add(CompletableFuture.runAsync(() -> {
-                    int height = generator.getHeight(fx, fz, Heightmap.Type.WORLD_SURFACE, world, noiseConfig);
-                    heightCache.put(key, height);
-                }, executor));
-
-                // biome
-                futures.add(CompletableFuture.runAsync(() -> {
-                    RegistryEntry<Biome> biome = biomeSource.getBiome(
-                            BiomeCoords.fromBlock(fx),
-                            316,
-                            BiomeCoords.fromBlock(fz),
-                            noiseSampler
-                    );
-                    biomeCache.put(key, biome);
-                }, executor));
-            }
-        }
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        executor.shutdown();
-        LOGGER.info("Height & Biome cache prefilling complete: [{}..{}] × [{}..{}]", minX, maxX, minZ, maxZ);
     }
 
     // ───────────────────────────────────────────────────────────────────────
@@ -139,7 +84,7 @@ public class PathFinder {
         Node startNode = nodes.all().get(fromId);
         Node endNode   = nodes.all().get(toId);
         if (startNode == null || endNode == null) {
-            LOGGER.warn("Missing node(s) {} or {}", fromId, toId);
+            LOGGER.debug("Missing node(s) {} or {}", fromId, toId);
             return List.of();
         }
 
@@ -168,7 +113,7 @@ public class PathFinder {
             // goal test
             if (current.key == endKey) {
                 List<BlockPos> path = reconstructPath(current.key, startKey, parent);
-                LOGGER.info("Path found between {} and {} after {} iterations", fromId, toId, iterations);
+                LOGGER.debug("Path found between {} and {} after {} iterations", fromId, toId, iterations);
                 return path;
             }
 
@@ -208,7 +153,7 @@ public class PathFinder {
                 }
             }
         }
-        LOGGER.warn("Path not found between {} and {} after {} iterations", fromId, toId, iterations);
+        LOGGER.debug("Path not found between {} and {} after {} iterations", fromId, toId, iterations);
         return List.of();
     }
 
@@ -217,46 +162,26 @@ public class PathFinder {
 
     private int sampleHeight(int x, int z) {
         long key = hash(x, z);
-        int cached = heightCache.get(key);
-        if (cached != Integer.MIN_VALUE) {
-            heightCacheHits.increment();
-            return cached;
-        }
-        heightCacheMisses.increment();
-        int height = generator.getHeight(x, z, Heightmap.Type.WORLD_SURFACE, world, noiseConfig);
-        heightCache.put(key, height);
-        return height;
+        return CacheManager.getHeight(key, () ->
+                generator.getHeight(x, z, Heightmap.Type.WORLD_SURFACE, world, noiseConfig)
+        );
     }
 
     private double sampleStability(int x, int z, int y) {
-        long k = hash(x, z);
-        double cached = stabilityCache.get(k);
-        if (cached != Double.MAX_VALUE) {
-            stabilityCacheHits.increment();
-            return cached;
-        }
-        stabilityCacheMisses.increment();
-        double c = terrainStabilityCost(x, z, y);
-        stabilityCache.put(k, c);
-        return c;
+        long key = hash(x, z);
+        return CacheManager.getStability(key, () -> terrainStabilityCost(x, z, y));
     }
 
     private RegistryEntry<Biome> sampleBiome(int x, int z, int y) {
-        long k = hash(x, z);
-        RegistryEntry<Biome> cached = biomeCache.get(k);
-        if (cached != null) {
-            biomeCacheHits.increment();
-            return cached;
-        }
-        biomeCacheMisses.increment();
-        RegistryEntry<Biome> biome = biomeSource.getBiome(
-                BiomeCoords.fromBlock(x),
-                316,
-                BiomeCoords.fromBlock(z),
-                noiseSampler
+        long key = hash(x, z);
+        return CacheManager.getBiome(key, () ->
+                biomeSource.getBiome(
+                        BiomeCoords.fromBlock(x),
+                        316,
+                        BiomeCoords.fromBlock(z),
+                        noiseSampler
+                )
         );
-        biomeCache.put(k, biome);
-        return biome;
     }
 
     // ───────────────────────────────────────────────────────────────────────
@@ -361,26 +286,8 @@ public class PathFinder {
         return new BlockPos(x, p.getY(), z);
     }
 
-    private static long hash(int x, int z) {
-        return ((long) x << 32) | (z & 0xFFFF_FFFFL);
-    }
-
-    private static BlockPos keyToPos(long k) {
-        return new BlockPos((int) (k >> 32), 0, (int) k);
-    }
-
     private static int[][] generateOffsets() {
         int d = GRID_STEP;
         return new int[][]{{d, 0}, {-d, 0}, {0, d}, {0, -d}, {d, d}, {d, -d}, {-d, d}, {-d, -d}};
-    }
-
-    // ───────────────────────────────────────────────────────────────────────
-    // Diagnostics
-
-    private void logCacheStats() {
-        LOGGER.info("Cache stats — height: hits={} misses={}; stability: hits={} misses={}; biome: hits={} misses={}",
-                heightCacheHits.sum(), heightCacheMisses.sum(),
-                stabilityCacheHits.sum(), stabilityCacheMisses.sum(),
-                biomeCacheHits.sum(), biomeCacheMisses.sum());
     }
 }

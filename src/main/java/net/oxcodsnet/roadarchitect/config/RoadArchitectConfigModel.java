@@ -15,8 +15,9 @@ import java.util.List;
 @Config(name = "roadarchitect", wrapperName = "RoadArchitectConfig")
 public class RoadArchitectConfigModel {
     public int initScanRadius = 100;
-    public int chunkGenerateScanRadius = 15;
+    public int chunkGenerateScanRadius = 25;
     public int maxConnectionDistance = 715;
+    public int pipelineIntervalSeconds = 120;
     public List<String> structureSelectors = List.of(
             "#minecraft:village"
     );

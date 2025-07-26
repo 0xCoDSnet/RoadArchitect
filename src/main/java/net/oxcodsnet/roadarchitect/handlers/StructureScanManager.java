@@ -17,24 +17,14 @@ import java.util.List;
 public class StructureScanManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
 
-    /**
-     * Выполняет сканирование через {@link StructureLocator#scanGrid} и логирует результат.
-     * <p>Performs scanning through {@link StructureLocator#scanGrid} and logs the outcome.</p>
-     */
     static void scan(ServerWorld world, String approach, BlockPos center) {
         scan(world, approach, center, 1);
     }
     static void scan(ServerWorld world, String approach, BlockPos center, int overallRadius) {
         int scanRadius = 1;
         List<String> selectors = RoadArchitect.CONFIG.structureSelectors();
-
-        LOGGER.info("[{}] Scan launch: overallRadius={}, scanRadius={}, selectors={}",
-                approach, overallRadius, scanRadius, selectors);
-
-        List<Pair<BlockPos, String>> found = StructureLocator.scanGrid(
-                world, center, overallRadius, scanRadius, selectors
-        );
-
+        LOGGER.info("[{}] Scan launch: overallRadius={}, scanRadius={}, selectors={}", approach, overallRadius, scanRadius, selectors);
+        List<Pair<BlockPos, String>> found = StructureLocator.scanGrid(world, center, overallRadius, scanRadius, selectors);
         LOGGER.info("[{}] Scanning is completed. Found structures: {}", approach, found.size());
     }
 }

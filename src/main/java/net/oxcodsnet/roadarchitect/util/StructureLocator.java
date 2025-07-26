@@ -12,6 +12,7 @@ import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.gen.structure.Structure;
@@ -22,6 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
+
+import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 /**
  * Утилитарный класс для поиска структур по тегам/ID внутри заданного радиуса чанков.
@@ -118,7 +124,7 @@ public class StructureLocator {
                 for (Pair<BlockPos, String> pair : found) {
                     BlockPos pos = pair.getFirst();
 
-                    int pos_y = sampleHeight(world, pos.getX(), pos.getZ());
+                    int pos_y = CacheManager.getHeight(world, pos.getX(), pos.getZ());
 
                     BlockPos new_pos = new BlockPos(pos.getX(), pos_y, pos.getZ());
                     Pair<BlockPos, String>  new_pair = new Pair<>(new_pos, pair.getSecond());
@@ -160,17 +166,5 @@ public class StructureLocator {
             Registry<Structure> registry) {
         return predicate.getKey()
                 .map(key -> registry.getEntry(key).map(RegistryEntryList::of), registry::getEntryList);
-    }
-
-    private static int sampleHeight(ServerWorld world, int x, int z) {
-        int height = world.getChunkManager()
-                .getChunkGenerator()
-                .getHeight(
-                        x, z,
-                        Heightmap.Type.WORLD_SURFACE,
-                        world,
-                        world.getChunkManager().getNoiseConfig()
-                );
-        return height;
     }
 }

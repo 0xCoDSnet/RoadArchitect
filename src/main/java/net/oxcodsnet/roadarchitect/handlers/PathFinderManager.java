@@ -7,6 +7,7 @@ import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.PathStorage;
 import net.oxcodsnet.roadarchitect.storage.RoadBuilderStorage;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
+import net.oxcodsnet.roadarchitect.util.CacheManager;
 import net.oxcodsnet.roadarchitect.util.PathFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,87 +16,74 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * Управляет вычислением путей между узлами при различных событиях сервера.
  * <p>Handles path calculation between nodes on various server events.</p>
  */
 public class PathFinderManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinderManager");
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+            RoadArchitect.MOD_ID + "/PathFinderManager"
+    );
 
-    private static final ExecutorService PATH_EXECUTOR = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("ra-path-", 0).factory());
+    private static final int CORES = Runtime.getRuntime().availableProcessors();
+    private static final ForkJoinPool PATH_EXECUTOR = new ForkJoinPool(CORES);
 
-    /**
-     * Результат одной задачи поиска пути.
-     */
-    private record PathJob(String edgeId, String from, String to, List<BlockPos> path, double durationMs) {
-    }
+    private record PathJob(
+            String edgeId, String from, String to, List<BlockPos> path, double durationMs
+    ) {}
 
-    /**
-     * Запускает вычисление всех новых (Status.NEW) рёбер на карте и возвращает найденные маршруты.
-     * Ключ результата совпадает с {@link RoadBuilderStorage#makeKey(String, String)}.
-     */
-    static Map<String, List<BlockPos>> computePaths(ServerWorld world) {
-        return computePaths(world, 50);
-    }
-
-    static Map<String, List<BlockPos>> computePaths(ServerWorld world, int preFillCacheZone) {
+    public static Map<String, List<BlockPos>> computePaths(ServerWorld world, int preFillCacheZone, int maxSteps) {
         RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
         PathStorage storage = PathStorage.get(world);
 
-        // Один thread‑safe экземпляр PathFinder на все задачи
-        PathFinder finder = new PathFinder(graph.nodes(), world, 10480*2);
-        long startNs_test = System.nanoTime();
-        finder.prefillHeightCacheAndBiomeCache(-preFillCacheZone, -preFillCacheZone, preFillCacheZone, preFillCacheZone);
-        double ms_test_1 = (System.nanoTime() - startNs_test) / 1_000_000.0;
-        LOGGER.warn("prefillHeightCacheAndBiomeCache: {} ms", ms_test_1);
+        // warm up caches once
+        CacheManager.prefill(world, -preFillCacheZone, -preFillCacheZone, preFillCacheZone,  preFillCacheZone);
+        PathFinder finder = new PathFinder(graph.nodes(), world, maxSteps);
 
         List<CompletableFuture<PathJob>> futures = new ArrayList<>();
-
-        for (Map.Entry<String, EdgeStorage.Status> entry : graph.edges().allWithStatus().entrySet()) {
+        for (var entry : graph.edges().allWithStatus().entrySet()) {
+            if (entry.getValue() != EdgeStorage.Status.NEW) continue;
             String edgeId = entry.getKey();
-            EdgeStorage.Status status = entry.getValue();
-
-            if (status != EdgeStorage.Status.NEW) continue;
-
-            String[] nodes = splitEdgeId(edgeId);
+            String[] nodes = edgeId.split("\\+", 2);
             if (nodes.length != 2) {
-                LOGGER.warn("Invalid edge id: {}", edgeId);
+                LOGGER.debug("Invalid edge id: {}", edgeId);
                 continue;
             }
-            String from = nodes[0];
-            String to = nodes[1];
+            String from = nodes[0], to = nodes[1];
 
-            futures.add(CompletableFuture.supplyAsync(() -> {
-                long startNs = System.nanoTime();
+            CompletableFuture<PathJob> job = CompletableFuture.supplyAsync(() -> {
+                long start = System.nanoTime();
                 List<BlockPos> path = finder.findPath(from, to);
-                double ms = (System.nanoTime() - startNs) / 1_000_000.0;
+                double ms = (System.nanoTime() - start) / 1_000_000.0;
                 return new PathJob(edgeId, from, to, path, ms);
-            }, PATH_EXECUTOR));
+            }, PATH_EXECUTOR);
+            futures.add(job);
         }
 
-        // Ожидаем завершения всех задач
-        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         Map<String, List<BlockPos>> result = new HashMap<>();
-
-        for (CompletableFuture<PathJob> future : futures) {
+        for (var future : futures) {
             try {
                 PathJob job = future.get();
                 storage.putPath(job.from(), job.to(), job.path());
                 if (!job.path().isEmpty()) {
-                    String key = RoadBuilderStorage.makeKey(job.from(), job.to());
-                    result.put(key, job.path());
+                    result.put(RoadBuilderStorage.makeKey(
+                            job.from(), job.to()), job.path()
+                    );
                     graph.edges().setStatus(job.edgeId(), EdgeStorage.Status.SUCCESS);
-                    LOGGER.info(">>> Computed path {} ({} steps)", job.edgeId(), job.path().size());
-                    LOGGER.info(">>> Duration: {} ms", job.durationMs());
+                    LOGGER.debug(
+                            ">>> Computed path {} ({} steps)",
+                            job.edgeId(), job.path().size()
+                    );
                 } else {
                     graph.edges().setStatus(job.edgeId(), EdgeStorage.Status.FAILURE);
-                    LOGGER.info("!<No path for {}>! Duration: {} ms", job.edgeId(), job.durationMs());
+                    LOGGER.debug(
+                            "!<No path for {}>! Duration: {} ms",
+                            job.edgeId(), job.durationMs()
+                    );
                 }
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error("Path computation failed", e);
@@ -105,19 +93,20 @@ public class PathFinderManager {
 
         storage.markDirty();
         graph.markDirty();
-
-        double ms_test_2 = (System.nanoTime() - startNs_test) / 1_000_000.0;
-        LOGGER.warn("prefillHeightCacheAndBiomeCache: {} ms", ms_test_2);
-        LOGGER.info("Path calculation completed for world {}", world.getRegistryKey().getValue());
+        LOGGER.debug("Path calculation completed for world {}",
+                world.getRegistryKey().getValue()
+        );
         return result;
     }
 
-    /**
-     * edgeId имеет формат "min+max" (отсортированная пара UUID).
-     */
-    private static String[] splitEdgeId(String edgeId) {
-        return edgeId.split("\\+", 2);
+    // overloads for backwards compatibility
+    public static Map<String, List<BlockPos>> computePaths(ServerWorld world) {
+        return computePaths(world, 50, 10480 * 2);
     }
 
-
+    public static Map<String, List<BlockPos>> computePaths(
+            ServerWorld world, int preFillCacheZone
+    ) {
+        return computePaths(world, preFillCacheZone, 10480 * 2);
+    }
 }
