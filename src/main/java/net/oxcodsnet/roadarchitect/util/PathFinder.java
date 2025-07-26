@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * A* path‑finder working on a configurable X/Z grid.<br>
@@ -35,9 +36,8 @@ public class PathFinder {
 
 
     /*================ USER‑TUNABLE PARAMS ================*/
-    public static final int GRID_STEP = 3;
+    public static final int GRID_STEP = 4;
     private static final int[][] OFFSETS = generateOffsets();
-    private static final int TARGET_RADIUS = 70;
     private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(
             BiomeTags.IS_RIVER, 80.0,
             BiomeTags.IS_OCEAN, 999.0,
@@ -46,7 +46,12 @@ public class PathFinder {
             BiomeTags.IS_BEACH, 50.0
     );
     /*=====================================================*/
-
+    private final LongAdder heightCacheHits = new LongAdder();
+    private final LongAdder heightCacheMisses = new LongAdder();
+    private final LongAdder stabilityCacheHits = new LongAdder();
+    private final LongAdder stabilityCacheMisses = new LongAdder();
+    private final LongAdder biomeCacheHits = new LongAdder();
+    private final LongAdder biomeCacheMisses = new LongAdder();
     /*=====================================================*/
 
     private final NodeStorage nodes;
@@ -70,7 +75,9 @@ public class PathFinder {
      * Returns the list of BlockPos actually traversed by A*.
      */
     public List<BlockPos> findPath(String fromId, String toId) {
-        return aStar(fromId, toId);
+        List<BlockPos> path = aStar(fromId, toId);
+        logCacheStats();
+        return path;
     }
 
     public void prefillHeightCacheAndBiomeCache(int minX, int minZ, int maxX, int maxZ) {
@@ -82,6 +89,7 @@ public class PathFinder {
             for (int z = minZ; z <= maxZ; z += step) {
                 final int fx = x;
                 final int fz = z;
+                long key = hash(fx, fz);
                 futures.add(CompletableFuture.runAsync(() -> {
                     int fy = world.getChunkManager()
                             .getChunkGenerator()
@@ -91,7 +99,6 @@ public class PathFinder {
                                     world,
                                     world.getChunkManager().getNoiseConfig()
                             );
-                    long key = hash(fx, fz);
                     heightCache.put(key, fy);
                 }, executor));
                 futures.add(CompletableFuture.runAsync(() -> {
@@ -101,7 +108,6 @@ public class PathFinder {
                             .getBiome(fx, 0, fz,
                                     world.getChunkManager().getNoiseConfig().getMultiNoiseSampler()
                             );
-                    long key = hash(fx, fz);
                     biomeCache.put(key, biome);
                 }, executor));
             }
@@ -145,18 +151,9 @@ public class PathFinder {
             int curZ = (int) current.key;
             int curY = sampleHeight(curX, curZ);
 
-            // ── LOS shortcut ───────────────────────────────────────────
-//            if (hasLineOfSight(curX, curZ, curY, endPos)) {
-//                return finishWithLos(current.key, startKey, parent, endPos);
-//            }
-            // ── reached by radius? ─────────────────────────────────────
-            if (current.key == endKey || isCloseEnoughToTarget(new BlockPos(curX, 0, curZ), endPos)) {
+            // ───────────────────────────────────────
+            if (current.key == endKey) {
                 List<BlockPos> path = reconstructPath(current.key, startKey, parent);
-
-//                BlockPos last = path.getLast();
-//                BlockPos adjusted = adjustEndpoint(last, endPos);
-//                path.set(path.size() - 1, adjusted);
-
                 LOGGER.info("Path found between {} and {} after {} iterations", fromId, toId, iterations);
                 return path;
             }
@@ -173,10 +170,13 @@ public class PathFinder {
                 double stab = sampleStability(nx, nz, ny);
                 if (stab == Double.MAX_VALUE) continue;
 
+                double bCost = biomeCost(sampleBiome(nx, ny, nz));
+                if (bCost >= 999.0) continue;
+
                 double tentativeG = gScore.get(current.key)
                         + stepCost(off)
                         + elevationCost(curY, ny)
-                        + biomeCost(sampleBiome(nx, ny, nz))
+                        + bCost
                         + yLevelCost(ny)
                         + stab;
 
@@ -194,149 +194,16 @@ public class PathFinder {
 
 
     // ────────────────────────────────────────────────────────────────────────
-    // Line‑of‑sight helper
-
-    /**
-     * 3D-Bresenham LOS-проверка, которая шагает по узлам сетки GRID_STEP,
-     * поэтому почти всегда попадает в heightCache. <br>
-     * Условия срыва LOS: <ul>
-     * <li>|cy − terrainY| &gt; 3 (резкий перепад высот);</li>
-     * <li>sampleStability == Double.MAX_VALUE (нестабильный рельеф).</li>
-     * </ul>
-     *
-     * @param x    X-координата (мировая) стартовой ячейки
-     * @param z    Z-координата (мировая) стартовой ячейки
-     * @param y    высота этой ячейки (можно передать sampleHeight(x,z))
-     * @param goal конечная позиция (мировая)
-     * @return true — если по прямой видимости достижима цель
-     */
-    private boolean hasLineOfSight(int x, int z, int y, BlockPos goal) {
-
-        /*──── 1. Приводим XZ к координатам сетки ──────────────────────────────*/
-        int sx = Math.floorDiv(x, GRID_STEP);
-        int sz = Math.floorDiv(z, GRID_STEP);
-        int gx = Math.floorDiv(goal.getX(), GRID_STEP);
-        int gz = Math.floorDiv(goal.getZ(), GRID_STEP);
-
-        /*──── 2. Высоты старта и цели (уже на сетке) ───────────────────────────*/
-        int sy = sampleHeight(sx * GRID_STEP, sz * GRID_STEP);
-        int gy = sampleHeight(gx * GRID_STEP, gz * GRID_STEP);
-
-        /*──── 3. Разницы и знаки для 3D-Bresenham ─────────────────────────────*/
-        int dx = Math.abs(gx - sx);
-        int dy = Math.abs(gy - sy);
-        int dz = Math.abs(gz - sz);
-
-        int xs = gx >= sx ? 1 : -1;
-        int ys = gy >= sy ? 1 : -1;
-        int zs = gz >= sz ? 1 : -1;
-
-        int cx = sx, cy = sy, cz = sz;
-        int p1, p2;
-
-        /*──── 4. Главная ось — X, Y или Z ─────────────────────────────────────*/
-        if (dx >= dy && dx >= dz) {
-            p1 = 2 * dy - dx;
-            p2 = 2 * dz - dx;
-            while (cx != gx) {
-                cx += xs;
-                if (p1 >= 0) {
-                    cy += ys;
-                    p1 -= 2 * dx;
-                }
-                if (p2 >= 0) {
-                    cz += zs;
-                    p2 -= 2 * dx;
-                }
-                p1 += 2 * dy;
-                p2 += 2 * dz;
-
-                if (!checkGridCell(cx, cz, cy)) return false;
-            }
-
-        } else if (dy >= dx && dy >= dz) {
-            p1 = 2 * dx - dy;
-            p2 = 2 * dz - dy;
-            while (cy != gy) {
-                cy += ys;
-                if (p1 >= 0) {
-                    cx += xs;
-                    p1 -= 2 * dy;
-                }
-                if (p2 >= 0) {
-                    cz += zs;
-                    p2 -= 2 * dy;
-                }
-                p1 += 2 * dx;
-                p2 += 2 * dz;
-
-                if (!checkGridCell(cx, cz, cy)) return false;
-            }
-
-        } else { /* dz — доминирует */
-            p1 = 2 * dy - dz;
-            p2 = 2 * dx - dz;
-            while (cz != gz) {
-                cz += zs;
-                if (p1 >= 0) {
-                    cy += ys;
-                    p1 -= 2 * dz;
-                }
-                if (p2 >= 0) {
-                    cx += xs;
-                    p2 -= 2 * dz;
-                }
-                p1 += 2 * dy;
-                p2 += 2 * dx;
-
-                if (!checkGridCell(cx, cz, cy)) return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Проверяет одну ячейку сетки: сравнивает желаемый cy с реальной высотой
-     * и устойчивостью рельефа.
-     *
-     * @param gridX координата X узла в «сетке» (не мировая!)
-     * @param gridZ координата Z узла в «сетке» (не мировая!)
-     * @param cy    текущая y-координата луча (мировая)
-     * @return true — если ячейка проходима
-     */
-    private boolean checkGridCell(int gridX, int gridZ, int cy) {
-        int worldX = gridX * GRID_STEP;
-        int worldZ = gridZ * GRID_STEP;
-
-        int terrainY = sampleHeight(worldX, worldZ);          // кэш-хит
-        if (Math.abs(cy - terrainY) > 3) return false;
-
-        if (sampleStability(worldX, worldZ, terrainY) == Double.MAX_VALUE) return false;
-        return true;
-    }
-
-    /**
-     * Combines A* prefix with straight LOS finish.
-     */
-    private List<BlockPos> finishWithLos(long currentKey, long startKey, Long2LongMap parent, BlockPos goal) {
-        List<BlockPos> path = reconstructPath(currentKey, startKey, parent); // already interpolated
-        BlockPos last = path.getLast();
-        interpolateSegment(last, goal, path);
-        int yGoal = sampleHeight(goal.getX(), goal.getZ());
-        path.add(new BlockPos(goal.getX(), yGoal, goal.getZ()));
-        return path;
-    }
-
-    // ────────────────────────────────────────────────────────────────────────
     // Caching helpers
 
     private int sampleHeight(int x, int z) {
         long key = hash(x, z);
         int cached = heightCache.get(key);
         if (cached != heightCache.defaultReturnValue()) {
+            heightCacheHits.increment();
             return cached;
         }
+        heightCacheMisses.increment();
         int h = world.getChunkManager()
                 .getChunkGenerator()
                 .getHeight(
@@ -349,11 +216,14 @@ public class PathFinder {
         return h;
     }
 
-
     private double sampleStability(int x, int z, int y) {
         long k = hash(x, z);
         double c = stabilityCache.get(k);
-        if (c != Double.MAX_VALUE) return c;
+        if (c != Double.MAX_VALUE) {
+            stabilityCacheHits.increment();
+            return c;
+        }
+        stabilityCacheMisses.increment();
         c = terrainStabilityCost(x, z, y);
         stabilityCache.put(k, c);
         return c;
@@ -422,17 +292,6 @@ public class PathFinder {
         return heuristic(a.getX(), a.getZ(), b);
     }
 
-    /**
-     * Возвращает true, если текущая точка достаточно близко к цели:
-     * либо < GRID_STEP * 2 (для A* сетки), либо ≤ 30 блоков по манхэттенской метрике.
-     */
-    private static boolean isCloseEnoughToTarget(BlockPos current, BlockPos target) {
-        int dx = Math.abs(current.getX() - target.getX());
-        int dz = Math.abs(current.getZ() - target.getZ());
-
-        return (dx + dz) < GRID_STEP * 2 || (dx + dz) <= TARGET_RADIUS;
-    }
-
     // ────────────────────────────────────────────────────────────────────────
     // Path reconstruction with interpolation
 
@@ -470,20 +329,6 @@ public class PathFinder {
         }
     }
 
-    private BlockPos adjustEndpoint(BlockPos currentPos, BlockPos goalPos) {
-        double dx = currentPos.getX() - goalPos.getX();
-        double dz = currentPos.getZ() - goalPos.getZ();
-        double dist = Math.sqrt(dx * dx + dz * dz);
-        if (dist == 0) {
-            return currentPos;
-        }
-        double scale = (double) PathFinder.TARGET_RADIUS / dist;
-        int x = goalPos.getX() + (int) Math.round(dx * scale);
-        int z = goalPos.getZ() + (int) Math.round(dz * scale);
-        int y = sampleHeight(x, z);
-        return new BlockPos(x, y, z);
-    }
-
     // ────────────────────────────────────────────────────────────────────────
     // Utility: grid, key encoding, offset generation
 
@@ -504,5 +349,15 @@ public class PathFinder {
     private static int[][] generateOffsets() {
         int d = GRID_STEP;
         return new int[][]{{d, 0}, {-d, 0}, {0, d}, {0, -d}, {d, d}, {d, -d}, {-d, d}, {-d, -d}};
+    }
+
+    // ----------------------------------------------------------------------
+    private void logCacheStats() {
+        LOGGER.info(
+                "Cache stats — height: hits={}, misses={}; stability: hits={}, misses={}; biome: hits={}, misses={}",
+                heightCacheHits.sum(), heightCacheMisses.sum(),
+                stabilityCacheHits.sum(), stabilityCacheMisses.sum(),
+                biomeCacheHits.sum(), biomeCacheMisses.sum()
+        );
     }
 }

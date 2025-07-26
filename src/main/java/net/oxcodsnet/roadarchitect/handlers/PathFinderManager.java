@@ -48,8 +48,11 @@ public class PathFinderManager {
         PathStorage storage = PathStorage.get(world);
 
         // Один thread‑safe экземпляр PathFinder на все задачи
-        PathFinder finder = new PathFinder(graph.nodes(), world, 8192);
+        PathFinder finder = new PathFinder(graph.nodes(), world, 10480*2);
+        long startNs_test = System.nanoTime();
         finder.prefillHeightCacheAndBiomeCache(-preFillCacheZone, -preFillCacheZone, preFillCacheZone, preFillCacheZone);
+        double ms_test_1 = (System.nanoTime() - startNs_test) / 1_000_000.0;
+        LOGGER.warn("prefillHeightCacheAndBiomeCache: {} ms", ms_test_1);
 
         List<CompletableFuture<PathJob>> futures = new ArrayList<>();
 
@@ -102,6 +105,9 @@ public class PathFinderManager {
 
         storage.markDirty();
         graph.markDirty();
+
+        double ms_test_2 = (System.nanoTime() - startNs_test) / 1_000_000.0;
+        LOGGER.warn("prefillHeightCacheAndBiomeCache: {} ms", ms_test_2);
         LOGGER.info("Path calculation completed for world {}", world.getRegistryKey().getValue());
         return result;
     }
