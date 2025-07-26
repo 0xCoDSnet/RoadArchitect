@@ -9,7 +9,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.source.BiomeCoords;
 import net.minecraft.world.biome.source.BiomeSource;
+import net.minecraft.world.biome.source.util.MultiNoiseUtil;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.gen.noise.NoiseConfig;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.NodeStorage;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
@@ -23,42 +27,46 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * A* path‑finder working on a configurable X/Z grid.<br>
+ * A* path‑finder working on a configurable X/Z grid.
  * <ul>
  *   <li>Thread‑safe caches (FastUtil&nbsp;+ synchronize)</li>
- *   <li>Early <b>line‑of‑sight</b> shortcut: if текущая вершина видит цель без
- *       резких перепадов, поиск прерывается и путь достраивается прямой.</li>
- *   <li>Optional interpolation between grid vertices → вернётся каждый блок дороги.</li>
+ *   <li>Early <b>line‑of‑sight</b> shortcut: if the current vertex sees the goal without steep height changes, search stops early.</li>
+ *   <li>Optional interpolation between grid vertices → returns every road block.</li>
  * </ul>
  */
 public class PathFinder {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinder");
 
-
-    /*================ USER‑TUNABLE PARAMS ================*/
-    public static final int GRID_STEP = 4;
+    /* ================ USER‑TUNABLE PARAMS ================ */
+    public static final int GRID_STEP = 3;
     private static final int[][] OFFSETS = generateOffsets();
     private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(
-            BiomeTags.IS_RIVER, 80.0,
+            BiomeTags.IS_RIVER, 400.0,
             BiomeTags.IS_OCEAN, 999.0,
             BiomeTags.IS_DEEP_OCEAN, 999.0,
-            BiomeTags.IS_MOUNTAIN, 50.0,
-            BiomeTags.IS_BEACH, 50.0
+            BiomeTags.IS_MOUNTAIN, 160.0,
+            BiomeTags.IS_BEACH, 160.0
     );
-    /*=====================================================*/
+    /* ===================================================== */
+
     private final LongAdder heightCacheHits = new LongAdder();
     private final LongAdder heightCacheMisses = new LongAdder();
     private final LongAdder stabilityCacheHits = new LongAdder();
     private final LongAdder stabilityCacheMisses = new LongAdder();
     private final LongAdder biomeCacheHits = new LongAdder();
     private final LongAdder biomeCacheMisses = new LongAdder();
-    /*=====================================================*/
 
     private final NodeStorage nodes;
     private final ServerWorld world;
     private final int maxSteps;
 
-    /*── thread‑safe caches ──*/
+    /* ── hot references to world‑gen objects ── */
+    private final ChunkGenerator generator;
+    private final NoiseConfig noiseConfig;
+    private final MultiNoiseUtil.MultiNoiseSampler noiseSampler;
+    private final BiomeSource biomeSource;
+
+    /* ── thread‑safe caches ── */
     private final Long2IntMap heightCache = Long2IntMaps.synchronize(new Long2IntOpenHashMap());
     private final Long2DoubleMap stabilityCache = Long2DoubleMaps.synchronize(new Long2DoubleOpenHashMap());
     private final Long2ObjectMap<RegistryEntry<Biome>> biomeCache = Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<>());
@@ -67,12 +75,18 @@ public class PathFinder {
         this.nodes = nodes;
         this.world = world;
         this.maxSteps = maxSteps;
+
+        this.generator   = world.getChunkManager().getChunkGenerator();
+        this.noiseConfig = world.getChunkManager().getNoiseConfig();
+        this.noiseSampler = noiseConfig.getMultiNoiseSampler();
+        this.biomeSource = generator.getBiomeSource();
+
         heightCache.defaultReturnValue(Integer.MIN_VALUE);
         stabilityCache.defaultReturnValue(Double.MAX_VALUE);
     }
 
     /**
-     * Returns the list of BlockPos actually traversed by A*.
+     * Returns the list of {@link BlockPos} actually traversed by A*.
      */
     public List<BlockPos> findPath(String fromId, String toId) {
         List<BlockPos> path = aStar(fromId, toId);
@@ -80,6 +94,9 @@ public class PathFinder {
         return path;
     }
 
+    /**
+     * Warms up the height and biome caches asynchronously inside the given rectangular area.
+     */
     public void prefillHeightCacheAndBiomeCache(int minX, int minZ, int maxX, int maxZ) {
         int step = GRID_STEP;
         ExecutorService executor = Executors.newWorkStealingPool();
@@ -90,24 +107,21 @@ public class PathFinder {
                 final int fx = x;
                 final int fz = z;
                 long key = hash(fx, fz);
+
+                // height
                 futures.add(CompletableFuture.runAsync(() -> {
-                    int fy = world.getChunkManager()
-                            .getChunkGenerator()
-                            .getHeight(
-                                    fx, fz,
-                                    Heightmap.Type.WORLD_SURFACE_WG,
-                                    world,
-                                    world.getChunkManager().getNoiseConfig()
-                            );
-                    heightCache.put(key, fy);
+                    int height = generator.getHeight(fx, fz, Heightmap.Type.WORLD_SURFACE, world, noiseConfig);
+                    heightCache.put(key, height);
                 }, executor));
+
+                // biome
                 futures.add(CompletableFuture.runAsync(() -> {
-                    RegistryEntry<Biome> biome = world.getChunkManager()
-                            .getChunkGenerator()
-                            .getBiomeSource()
-                            .getBiome(fx, 0, fz,
-                                    world.getChunkManager().getNoiseConfig().getMultiNoiseSampler()
-                            );
+                    RegistryEntry<Biome> biome = biomeSource.getBiome(
+                            BiomeCoords.fromBlock(fx),
+                            316,
+                            BiomeCoords.fromBlock(fz),
+                            noiseSampler
+                    );
                     biomeCache.put(key, biome);
                 }, executor));
             }
@@ -115,15 +129,15 @@ public class PathFinder {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         executor.shutdown();
-        LOGGER.info("Height, Biome caches prefilling complete: [{}..{}] x [{}..{}]", minX, maxX, minZ, maxZ);
+        LOGGER.info("Height & Biome cache prefilling complete: [{}..{}] × [{}..{}]", minX, maxX, minZ, maxZ);
     }
 
-    // ────────────────────────────────────────────────────────────────────────
+    // ───────────────────────────────────────────────────────────────────────
     // A* core with LOS‑shortcut
 
     private List<BlockPos> aStar(String fromId, String toId) {
         Node startNode = nodes.all().get(fromId);
-        Node endNode = nodes.all().get(toId);
+        Node endNode   = nodes.all().get(toId);
         if (startNode == null || endNode == null) {
             LOGGER.warn("Missing node(s) {} or {}", fromId, toId);
             return List.of();
@@ -132,9 +146,9 @@ public class PathFinder {
         record Rec(long key, double g, double f) { }
 
         BlockPos startPos = snap(startNode.pos());
-        BlockPos endPos = snap(endNode.pos());
-        long startKey = hash(startPos.getX(), startPos.getZ());
-        long endKey = hash(endPos.getX(), endPos.getZ());
+        BlockPos endPos   = snap(endNode.pos());
+        long startKey     = hash(startPos.getX(), startPos.getZ());
+        long endKey       = hash(endPos.getX(), endPos.getZ());
 
         PriorityQueue<Rec> open = new PriorityQueue<>(Comparator.comparingDouble(r -> r.f));
         Long2DoubleMap gScore = new Long2DoubleOpenHashMap();
@@ -151,27 +165,33 @@ public class PathFinder {
             int curZ = (int) current.key;
             int curY = sampleHeight(curX, curZ);
 
-            // ───────────────────────────────────────
+            // goal test
             if (current.key == endKey) {
                 List<BlockPos> path = reconstructPath(current.key, startKey, parent);
                 LOGGER.info("Path found between {} and {} after {} iterations", fromId, toId, iterations);
                 return path;
             }
 
-            // ── expand neighbours ──────────────────────────────────────
+            // expand neighbours
             for (int[] off : OFFSETS) {
                 int nx = curX + off[0];
                 int nz = curZ + off[1];
                 long neighKey = hash(nx, nz);
 
                 int ny = sampleHeight(nx, nz);
-                if (isTraversable(curY, ny)) continue;
+                if (isSteep(curY, ny)) {
+                    continue;
+                }
 
                 double stab = sampleStability(nx, nz, ny);
-                if (stab == Double.MAX_VALUE) continue;
+                if (stab == Double.MAX_VALUE) {
+                    continue;
+                }
 
-                double bCost = biomeCost(sampleBiome(nx, ny, nz));
-                if (bCost >= 999.0) continue;
+                double bCost = biomeCost(sampleBiome(nx, nz, ny));
+                if (bCost >= 999.0) {
+                    continue;
+                }
 
                 double tentativeG = gScore.get(current.key)
                         + stepCost(off)
@@ -192,55 +212,54 @@ public class PathFinder {
         return List.of();
     }
 
-
-    // ────────────────────────────────────────────────────────────────────────
-    // Caching helpers
+    // ───────────────────────────────────────────────────────────────────────
+    // Caching helpers (ultrafast world‑gen API)
 
     private int sampleHeight(int x, int z) {
         long key = hash(x, z);
         int cached = heightCache.get(key);
-        if (cached != heightCache.defaultReturnValue()) {
+        if (cached != Integer.MIN_VALUE) {
             heightCacheHits.increment();
             return cached;
         }
         heightCacheMisses.increment();
-        int h = world.getChunkManager()
-                .getChunkGenerator()
-                .getHeight(
-                        x, z,
-                        Heightmap.Type.WORLD_SURFACE,
-                        world,
-                        world.getChunkManager().getNoiseConfig()
-                );
-        heightCache.put(key, h);
-        return h;
+        int height = generator.getHeight(x, z, Heightmap.Type.WORLD_SURFACE, world, noiseConfig);
+        heightCache.put(key, height);
+        return height;
     }
 
     private double sampleStability(int x, int z, int y) {
         long k = hash(x, z);
-        double c = stabilityCache.get(k);
-        if (c != Double.MAX_VALUE) {
+        double cached = stabilityCache.get(k);
+        if (cached != Double.MAX_VALUE) {
             stabilityCacheHits.increment();
-            return c;
+            return cached;
         }
         stabilityCacheMisses.increment();
-        c = terrainStabilityCost(x, z, y);
+        double c = terrainStabilityCost(x, z, y);
         stabilityCache.put(k, c);
         return c;
     }
 
-    private RegistryEntry<Biome> sampleBiome(int x, int y, int z) {
+    private RegistryEntry<Biome> sampleBiome(int x, int z, int y) {
         long k = hash(x, z);
-        RegistryEntry<Biome> biome = biomeCache.get(k);
-        if (biome == null) {
-            BiomeSource source = world.getChunkManager().getChunkGenerator().getBiomeSource();
-            biome = source.getBiome(x, y, z, world.getChunkManager().getNoiseConfig().getMultiNoiseSampler());
-            biomeCache.put(k, biome);
+        RegistryEntry<Biome> cached = biomeCache.get(k);
+        if (cached != null) {
+            biomeCacheHits.increment();
+            return cached;
         }
+        biomeCacheMisses.increment();
+        RegistryEntry<Biome> biome = biomeSource.getBiome(
+                BiomeCoords.fromBlock(x),
+                316,
+                BiomeCoords.fromBlock(z),
+                noiseSampler
+        );
+        biomeCache.put(k, biome);
         return biome;
     }
 
-    // ────────────────────────────────────────────────────────────────────────
+    // ───────────────────────────────────────────────────────────────────────
     // Cost functions and filters
 
     private static double stepCost(int[] off) {
@@ -265,21 +284,23 @@ public class PathFinder {
     }
 
     private double terrainStabilityCost(int x, int z, int y) {
-        int c = 0;
+        int cost = 0;
         for (Direction d : Direction.Type.HORIZONTAL) {
             int ny = sampleHeight(x + d.getOffsetX(), z + d.getOffsetZ());
-            c += Math.abs(y - ny);
-            if (c > 2) return Double.MAX_VALUE;
+            cost += Math.abs(y - ny);
+            if (cost > 2) {
+                return Double.MAX_VALUE;
+            }
         }
-        return c * 16.0;
+        return cost * 16.0;
     }
 
-    private static boolean isTraversable(int y1, int y2) {
+    private static boolean isSteep(int y1, int y2) {
         return Math.abs(y1 - y2) > 3;
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Heuristic & goal test
+    // ───────────────────────────────────────────────────────────────────────
+    // Heuristics
 
     private static double heuristic(int x, int z, BlockPos goal) {
         int dx = Math.abs(x - goal.getX());
@@ -292,31 +313,33 @@ public class PathFinder {
         return heuristic(a.getX(), a.getZ(), b);
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Path reconstruction with interpolation
+    // ───────────────────────────────────────────────────────────────────────
+    // Path reconstruction
 
     private List<BlockPos> reconstructPath(long goal, long start, Long2LongMap parent) {
-        List<BlockPos> v = new ArrayList<>();
+        List<BlockPos> vertices = new ArrayList<>();
         for (long k = goal; ; k = parent.get(k)) {
             BlockPos p = keyToPos(k);
             int y = sampleHeight(p.getX(), p.getZ());
-            v.add(new BlockPos(p.getX(), y, p.getZ()));
-            if (k == start) break;
+            vertices.add(new BlockPos(p.getX(), y, p.getZ()));
+            if (k == start) {
+                break;
+            }
         }
-        Collections.reverse(v);
-        List<BlockPos> out = new ArrayList<>(v.size() * GRID_STEP);
-        for (int i = 0; i < v.size() - 1; i++) {
-            BlockPos a = v.get(i), b = v.get(i + 1);
+        Collections.reverse(vertices);
+
+        List<BlockPos> out = new ArrayList<>(vertices.size() * GRID_STEP);
+        for (int i = 0; i < vertices.size() - 1; i++) {
+            BlockPos a = vertices.get(i);
+            BlockPos b = vertices.get(i + 1);
             out.add(a);
             interpolateSegment(a, b, out);
         }
-        out.add(v.getLast());
+        out.add(vertices.getLast());
         return out;
     }
 
-    /**
-     * Adds intermediate 1‑block steps between two points (inclusive start, exclusive end).
-     */
+    /** Adds intermediate 1‑block steps between two points (inclusive start, exclusive end). */
     private void interpolateSegment(BlockPos a, BlockPos b, List<BlockPos> out) {
         int dx = Integer.signum(b.getX() - a.getX());
         int dz = Integer.signum(b.getZ() - a.getZ());
@@ -329,8 +352,8 @@ public class PathFinder {
         }
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Utility: grid, key encoding, offset generation
+    // ───────────────────────────────────────────────────────────────────────
+    // Utility
 
     private static BlockPos snap(BlockPos p) {
         int x = Math.floorDiv(p.getX(), GRID_STEP) * GRID_STEP;
@@ -351,13 +374,13 @@ public class PathFinder {
         return new int[][]{{d, 0}, {-d, 0}, {0, d}, {0, -d}, {d, d}, {d, -d}, {-d, d}, {-d, -d}};
     }
 
-    // ----------------------------------------------------------------------
+    // ───────────────────────────────────────────────────────────────────────
+    // Diagnostics
+
     private void logCacheStats() {
-        LOGGER.info(
-                "Cache stats — height: hits={}, misses={}; stability: hits={}, misses={}; biome: hits={}, misses={}",
+        LOGGER.info("Cache stats — height: hits={} misses={}; stability: hits={} misses={}; biome: hits={} misses={}",
                 heightCacheHits.sum(), heightCacheMisses.sum(),
                 stabilityCacheHits.sum(), stabilityCacheMisses.sum(),
-                biomeCacheHits.sum(), biomeCacheMisses.sum()
-        );
+                biomeCacheHits.sum(), biomeCacheMisses.sum());
     }
 }
