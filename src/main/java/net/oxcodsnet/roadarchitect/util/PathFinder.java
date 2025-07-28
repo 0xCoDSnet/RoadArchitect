@@ -112,7 +112,10 @@ public class PathFinder {
 
             // goal test
             if (current.key == endKey) {
+                long start2 = System.nanoTime();
                 List<BlockPos> path = reconstructPath(current.key, startKey, parent);
+                double ms2 = (System.nanoTime() - start2) / 1_000_000.0;
+                LOGGER.info("[{}] ReconstructPath finished in {} ms", current.key, ms2);
                 LOGGER.debug("Path found between {} and {} after {} iterations", fromId, toId, iterations);
                 return path;
             }

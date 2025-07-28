@@ -39,7 +39,7 @@ public class PathFinderManager {
         PathStorage storage = PathStorage.get(world);
 
         // warm up caches once
-        CacheManager.prefill(world, -preFillCacheZone, -preFillCacheZone, preFillCacheZone,  preFillCacheZone);
+        // CacheManager.prefill(world, -preFillCacheZone, -preFillCacheZone, preFillCacheZone,  preFillCacheZone);
         PathFinder finder = new PathFinder(graph.nodes(), world, maxSteps);
 
         List<CompletableFuture<PathJob>> futures = new ArrayList<>();

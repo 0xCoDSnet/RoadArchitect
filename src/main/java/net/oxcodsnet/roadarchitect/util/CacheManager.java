@@ -1,6 +1,17 @@
 package net.oxcodsnet.roadarchitect.util;
 
-import it.unimi.dsi.fastutil.longs.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ForkJoinPool;
+import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
+import java.util.function.Supplier;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import net.oxcodsnet.roadarchitect.RoadArchitect;
+import net.oxcodsnet.roadarchitect.util.PathFinder;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -11,14 +22,6 @@ import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.biome.source.util.MultiNoiseUtil;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.noise.NoiseConfig;
-import net.oxcodsnet.roadarchitect.RoadArchitect;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ForkJoinPool;
-import java.util.function.DoubleSupplier;
-import java.util.function.IntSupplier;
-import java.util.function.Supplier;
 
 /**
  * Centralized, thread-safe caches for world generation data.
@@ -26,14 +29,10 @@ import java.util.function.Supplier;
  */
 public final class CacheManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + CacheManager.class);
-    private static final Long2IntMap HEIGHT_CACHE = Long2IntMaps.synchronize(new Long2IntOpenHashMap());
-    private static final Long2DoubleMap STABILITY_CACHE = Long2DoubleMaps.synchronize(new Long2DoubleOpenHashMap());
-    private static final Long2ObjectMap<RegistryEntry<Biome>> BIOME_CACHE = Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<>());
 
-    static {
-        HEIGHT_CACHE.defaultReturnValue(Integer.MIN_VALUE);
-        STABILITY_CACHE.defaultReturnValue(Double.MAX_VALUE);
-    }
+    private static final ConcurrentMap<Long, Integer> HEIGHT_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Long, Double> STABILITY_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Long, RegistryEntry<Biome>> BIOME_CACHE = new ConcurrentHashMap<>();
 
     private CacheManager() {
         // no-op
@@ -56,32 +55,25 @@ public final class CacheManager {
                     int finalX = x;
                     int finalZ = z;
                     ForkJoinPool.commonPool().execute(() -> {
-                        int h = gen.getHeight(finalX, finalZ, Heightmap.Type.WORLD_SURFACE, world, cfg);
+                        int h = gen.getHeight(finalX, finalZ, Heightmap.Type.WORLD_SURFACE,
+                                world, cfg);
                         HEIGHT_CACHE.put(key, h);
                     });
                     ForkJoinPool.commonPool().execute(() -> {
                         RegistryEntry<Biome> biome = bsrc.getBiome(
-                                BiomeCoords.fromBlock(finalX),
-                                316,
-                                BiomeCoords.fromBlock(finalZ),
-                                sampler
-                        );
+                                BiomeCoords.fromBlock(finalX), 316,
+                                BiomeCoords.fromBlock(finalZ), sampler);
                         BIOME_CACHE.put(key, biome);
                     });
                 }
             }
-            LOGGER.debug("CacheManager: Prefill complete [{}..{}]×[{}..{}]", minX, maxX, minZ, maxZ);
+            LOGGER.debug("Prefill complete [{}..{}]×[{}..{}]",
+                    minX, maxX, minZ, maxZ);
         });
     }
 
     public static int getHeight(long key, IntSupplier loader) {
-        int val = HEIGHT_CACHE.get(key);
-        if (val != Integer.MIN_VALUE) {
-            return val;
-        }
-        int h = loader.getAsInt();
-        HEIGHT_CACHE.put(key, h);
-        return h;
+        return HEIGHT_CACHE.computeIfAbsent(key, k -> loader.getAsInt());
     }
 
     public static int getHeight(ServerWorld world, int x, int z) {
@@ -92,23 +84,11 @@ public final class CacheManager {
     }
 
     public static double getStability(long key, DoubleSupplier loader) {
-        double val = STABILITY_CACHE.get(key);
-        if (val != Double.MAX_VALUE) {
-            return val;
-        }
-        double s = loader.getAsDouble();
-        STABILITY_CACHE.put(key, s);
-        return s;
+        return STABILITY_CACHE.computeIfAbsent(key, k -> loader.getAsDouble());
     }
 
     public static RegistryEntry<Biome> getBiome(long key, Supplier<RegistryEntry<Biome>> loader) {
-        RegistryEntry<Biome> entry = BIOME_CACHE.get(key);
-        if (entry != null) {
-            return entry;
-        }
-        RegistryEntry<Biome> b = loader.get();
-        BIOME_CACHE.put(key, b);
-        return b;
+        return BIOME_CACHE.computeIfAbsent(key, k -> loader.get());
     }
 
     public static long hash(int x, int z) {

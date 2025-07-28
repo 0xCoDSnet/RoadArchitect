@@ -114,7 +114,7 @@ public final class RoadPipelineController {
         try {
             LOGGER.info("Pipeline start: {}", reason);
             StructureScanManager.scan(world, reason, center, RoadArchitect.CONFIG.chunkGenerateScanRadius());
-            Map<String, List<BlockPos>> paths = PathFinderManager.computePaths(world, 50, 5240);
+            Map<String, List<BlockPos>> paths = PathFinderManager.computePaths(world, 50, RoadArchitect.CONFIG.maxConnectionDistance()*2);
             RoadBuilderManager.queueSegments(world, paths);
         } catch (Exception e) {
             LOGGER.error("Pipeline failure", e);
@@ -130,10 +130,20 @@ public final class RoadPipelineController {
         }
         try {
             LOGGER.info("Pipeline start: {}", reason);
+            long start1 = System.nanoTime();
             BlockPos center = world.getSpawnPos();
             StructureScanManager.scan(world, reason, center, RoadArchitect.CONFIG.initScanRadius());
-            Map<String, List<BlockPos>> rawPaths = PathFinderManager.computePaths(world, 1000);
+            double ms1 = (System.nanoTime() - start1) / 1_000_000.0;
+            LOGGER.info("StructureScanManager finished in {} ms", ms1);
+            long start2 = System.nanoTime();
+            Map<String, List<BlockPos>> rawPaths = PathFinderManager.computePaths(world, 1000, RoadArchitect.CONFIG.maxConnectionDistance()*10);
+            double ms2 = (System.nanoTime() - start2) / 1_000_000.0;
+            LOGGER.info("PathFinderManager finished in {} ms", ms2);
+            long start3 = System.nanoTime();
             RoadBuilderManager.queueSegments(world, rawPaths);
+            double ms3 = (System.nanoTime() - start3) / 1_000_000.0;
+            LOGGER.info("RoadBuilderManager finished in {} ms", ms3);
+
         } catch (Exception e) {
             LOGGER.error("Pipeline failure", e);
         } finally {
