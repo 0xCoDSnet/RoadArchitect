@@ -5,7 +5,6 @@ import net.minecraft.util.math.BlockPos;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.PathStorage;
-import net.oxcodsnet.roadarchitect.storage.RoadBuilderStorage;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import net.oxcodsnet.roadarchitect.util.CacheManager;
 import net.oxcodsnet.roadarchitect.util.PathFinder;
@@ -13,9 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.*;
 
 /**
@@ -34,12 +31,12 @@ public class PathFinderManager {
             String edgeId, String from, String to, List<BlockPos> path, double durationMs
     ) {}
 
-    public static Map<String, List<BlockPos>> computePaths(ServerWorld world, int preFillCacheZone, int maxSteps) {
+    public static void computePaths(ServerWorld world, int preFillCacheZone, int maxSteps) {
         RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
         PathStorage storage = PathStorage.get(world);
 
         // warm up caches once
-        // CacheManager.prefill(world, -preFillCacheZone, -preFillCacheZone, preFillCacheZone,  preFillCacheZone);
+        CacheManager.prefill(world, -preFillCacheZone, -preFillCacheZone, preFillCacheZone,  preFillCacheZone);
         PathFinder finder = new PathFinder(graph.nodes(), world, maxSteps);
 
         List<CompletableFuture<PathJob>> futures = new ArrayList<>();
@@ -64,15 +61,12 @@ public class PathFinderManager {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-        Map<String, List<BlockPos>> result = new HashMap<>();
         for (var future : futures) {
             try {
                 PathJob job = future.get();
-                storage.putPath(job.from(), job.to(), job.path());
+                PathStorage.Status st = job.path().isEmpty() ? PathStorage.Status.FAILED : PathStorage.Status.PENDING;
+                storage.putPath(job.from(), job.to(), job.path(), st);
                 if (!job.path().isEmpty()) {
-                    result.put(RoadBuilderStorage.makeKey(
-                            job.from(), job.to()), job.path()
-                    );
                     graph.edges().setStatus(job.edgeId(), EdgeStorage.Status.SUCCESS);
                     LOGGER.debug(
                             ">>> Computed path {} ({} steps)",
@@ -96,17 +90,16 @@ public class PathFinderManager {
         LOGGER.debug("Path calculation completed for world {}",
                 world.getRegistryKey().getValue()
         );
-        return result;
     }
 
     // overloads for backwards compatibility
-    public static Map<String, List<BlockPos>> computePaths(ServerWorld world) {
-        return computePaths(world, 50, 10480 * 2);
+    public static void computePaths(ServerWorld world) {
+        computePaths(world, 50, 10480 * 2);
     }
 
-    public static Map<String, List<BlockPos>> computePaths(
+    public static void computePaths(
             ServerWorld world, int preFillCacheZone
     ) {
-        return computePaths(world, preFillCacheZone, 10480 * 2);
+        computePaths(world, preFillCacheZone, 10480 * 2);
     }
 }

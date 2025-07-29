@@ -113,11 +113,11 @@ public class PathFinder {
             // goal test
             if (current.key == endKey) {
                 long start2 = System.nanoTime();
-                List<BlockPos> path = reconstructPath(current.key, startKey, parent);
+                List<BlockPos> verts = reconstructVertices(current.key, startKey, parent);
                 double ms2 = (System.nanoTime() - start2) / 1_000_000.0;
-                LOGGER.info("[{}] ReconstructPath finished in {} ms", current.key, ms2);
+                LOGGER.info("[{}] Vertex reconstruction finished in {} ms", current.key, ms2);
                 LOGGER.debug("Path found between {} and {} after {} iterations", fromId, toId, iterations);
-                return path;
+                return verts;
             }
 
             // expand neighbours
@@ -244,7 +244,7 @@ public class PathFinder {
     // ───────────────────────────────────────────────────────────────────────
     // Path reconstruction
 
-    private List<BlockPos> reconstructPath(long goal, long start, Long2LongMap parent) {
+    private List<BlockPos> reconstructVertices(long goal, long start, Long2LongMap parent) {
         List<BlockPos> vertices = new ArrayList<>();
         for (long k = goal; ; k = parent.get(k)) {
             BlockPos p = keyToPos(k);
@@ -255,29 +255,7 @@ public class PathFinder {
             }
         }
         Collections.reverse(vertices);
-
-        List<BlockPos> out = new ArrayList<>(vertices.size() * GRID_STEP);
-        for (int i = 0; i < vertices.size() - 1; i++) {
-            BlockPos a = vertices.get(i);
-            BlockPos b = vertices.get(i + 1);
-            out.add(a);
-            interpolateSegment(a, b, out);
-        }
-        out.add(vertices.getLast());
-        return out;
-    }
-
-    /** Adds intermediate 1‑block steps between two points (inclusive start, exclusive end). */
-    private void interpolateSegment(BlockPos a, BlockPos b, List<BlockPos> out) {
-        int dx = Integer.signum(b.getX() - a.getX());
-        int dz = Integer.signum(b.getZ() - a.getZ());
-        int steps = Math.max(Math.abs(b.getX() - a.getX()), Math.abs(b.getZ() - a.getZ()));
-        for (int i = 1; i < steps; i++) {
-            int nx = a.getX() + dx * i;
-            int nz = a.getZ() + dz * i;
-            int ny = sampleHeight(nx, nz);
-            out.add(new BlockPos(nx, ny, nz));
-        }
+        return vertices;
     }
 
     // ───────────────────────────────────────────────────────────────────────

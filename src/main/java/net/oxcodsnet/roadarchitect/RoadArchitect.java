@@ -5,6 +5,7 @@ import net.oxcodsnet.roadarchitect.commands.RoadArchitectDebugCommand;
 import net.oxcodsnet.roadarchitect.config.RoadArchitectConfig;
 import net.oxcodsnet.roadarchitect.handlers.RoadGraphStateManager;
 import net.oxcodsnet.roadarchitect.handlers.RoadPipelineController;
+import net.oxcodsnet.roadarchitect.handlers.RoadPostProcessor;
 import net.oxcodsnet.roadarchitect.worldgen.RoadFeatureRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,7 @@ public class RoadArchitect implements ModInitializer {
         // Регистрация хранилищ и пайплайна
         RoadGraphStateManager.register();
         RoadPipelineController.register();
+        RoadPostProcessor.register();
         RoadFeatureRegistry.register();
         RoadArchitectDebugCommand.register();
         LOGGER.info("Road Architect initialization complete!");

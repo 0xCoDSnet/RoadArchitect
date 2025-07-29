@@ -15,7 +15,7 @@ class PathStorageSerializationTest {
     @Test
     void roundTrip() {
         PathStorage storage = new PathStorage();
-        storage.putPath("a", "b", List.of(BlockPos.ORIGIN, new BlockPos(1, 64, 1)));
+        storage.putPath("a", "b", List.of(BlockPos.ORIGIN, new BlockPos(1, 64, 1)), PathStorage.Status.READY);
 
         NbtCompound tag = storage.writeNbt(new NbtCompound(), null);
         PathStorage loaded = PathStorage.fromNbt(tag, null);

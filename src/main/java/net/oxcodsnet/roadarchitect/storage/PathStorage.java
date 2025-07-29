@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.util.math.ChunkPos;
 
 /**
  * Хранит просчитанные пути между узлами как {@link PersistentState}.
@@ -29,10 +30,19 @@ public class PathStorage extends PersistentState {
     private static final String FROM_KEY = "from";
     private static final String TO_KEY = "to";
     private static final String POS_KEY = "pos";
+    private static final String STATUS_KEY = "status";
 
     public static final Type<PathStorage> TYPE = new Type<>(PathStorage::new, PathStorage::fromNbt, DataFixTypes.SAVED_DATA_SCOREBOARD);
 
+    public enum Status {
+        PENDING,
+        PROCESSING,
+        READY,
+        FAILED
+    }
+
     private final Map<String, List<BlockPos>> paths = new ConcurrentHashMap<>();
+    private final Map<String, Status> statuses = new ConcurrentHashMap<>();
 
 
     /**
@@ -65,6 +75,15 @@ public class PathStorage extends PersistentState {
                 positions.add(BlockPos.fromLong(((NbtLong) nbtElement).longValue()));
             }
             storage.paths.put(key, positions);
+            Status status = Status.READY;
+            if (entry.contains(STATUS_KEY, NbtElement.STRING_TYPE)) {
+                try {
+                    status = Status.valueOf(entry.getString(STATUS_KEY));
+                } catch (IllegalArgumentException ignore) {
+                    // keep READY
+                }
+            }
+            storage.statuses.put(key, status);
         }
         return storage;
     }
@@ -85,7 +104,7 @@ public class PathStorage extends PersistentState {
     public NbtCompound writeNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         NbtList list = new NbtList();
         for (Map.Entry<String, List<BlockPos>> entry : paths.entrySet()) {
-            String[] ids = entry.getKey().split("\\|");
+            String[] ids = entry.getKey().split("\\|", 2);
             if (ids.length != 2) continue;
             NbtCompound elem = new NbtCompound();
             elem.putString(FROM_KEY, ids[0]);
@@ -95,6 +114,8 @@ public class PathStorage extends PersistentState {
                 posList.add(NbtLong.of(pos.asLong()));
             }
             elem.put(POS_KEY, posList);
+            Status st = statuses.getOrDefault(entry.getKey(), Status.PENDING);
+            elem.putString(STATUS_KEY, st.name());
             list.add(elem);
         }
         tag.put(PATHS_KEY, list);
@@ -105,8 +126,16 @@ public class PathStorage extends PersistentState {
      * Сохраняет путь между двумя узлами.
      * <p>Stores a path connecting two nodes.</p>
      */
-    public void putPath(String from, String to, List<BlockPos> path) {
-        paths.put(makeKey(from, to), List.copyOf(path));
+    public void putPath(String from, String to, List<BlockPos> path, Status status) {
+        String key = makeKey(from, to);
+        paths.put(key, List.copyOf(path));
+        statuses.put(key, status);
+        markDirty();
+    }
+
+    public void updatePath(String key, List<BlockPos> path, Status status) {
+        paths.put(key, List.copyOf(path));
+        statuses.put(key, status);
         markDirty();
     }
 
@@ -116,5 +145,48 @@ public class PathStorage extends PersistentState {
      */
     public List<BlockPos> getPath(String from, String to) {
         return paths.getOrDefault(makeKey(from, to), List.of());
+    }
+
+    public List<BlockPos> getPath(String key) {
+        return paths.getOrDefault(key, List.of());
+    }
+
+    public Status getStatus(String key) {
+        return statuses.getOrDefault(key, Status.PENDING);
+    }
+
+    public void setStatus(String key, Status status) {
+        statuses.put(key, status);
+        markDirty();
+    }
+
+    public Map<String, Status> allStatuses() {
+        return Map.copyOf(statuses);
+    }
+
+    public boolean tryMarkProcessing(String key) {
+        synchronized (statuses) {
+            Status cur = statuses.get(key);
+            if (cur != Status.PENDING) {
+                return false;
+            }
+            statuses.put(key, Status.PROCESSING);
+            markDirty();
+            return true;
+        }
+    }
+
+    public List<String> getPendingForChunk(ChunkPos chunk) {
+        List<String> out = new ArrayList<>();
+        for (Map.Entry<String, List<BlockPos>> e : paths.entrySet()) {
+            if (getStatus(e.getKey()) != Status.PENDING) continue;
+            for (BlockPos p : e.getValue()) {
+                if (new ChunkPos(p).equals(chunk)) {
+                    out.add(e.getKey());
+                    break;
+                }
+            }
+        }
+        return out;
     }
 }

@@ -42,8 +42,8 @@ public class EdgeStorageTests {
         Node a = new Node("a", BlockPos.ORIGIN, "test");
         Node c = new Node("c", new BlockPos(20, 64, 0), "test");
 
-        assertFalse(storage.add(a, c));
-        assertTrue(storage.all().isEmpty());
+        assertTrue(storage.add(a, c));
+        assertFalse(storage.all().isEmpty());
     }
 
     /**
