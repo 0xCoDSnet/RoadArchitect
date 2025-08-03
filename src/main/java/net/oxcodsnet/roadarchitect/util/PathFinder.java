@@ -37,7 +37,9 @@ public class PathFinder {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinder");
 
     /* ================ USER‑TUNABLE PARAMS ================ */
-    public static final int GRID_STEP = 4;
+    public static final int GRID_STEP = 3;
+    /** Inflation factor ε for ARA* (Weighted A*) */
+    public static final double HEURISTIC_WEIGHT = 2.8;
     private static final int[][] OFFSETS = generateOffsets();
     private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(
             BiomeTags.IS_RIVER, 400.0,
@@ -73,12 +75,11 @@ public class PathFinder {
      * Returns the list of {@link BlockPos} actually traversed by A*.
      */
     public List<BlockPos> findPath(String fromId, String toId) {
-        List<BlockPos> path = aStar(fromId, toId);
-        return path;
+        return aStar(fromId, toId);
     }
 
     // ───────────────────────────────────────────────────────────────────────
-    // A* core with LOS‑shortcut
+    // A* core
 
     private List<BlockPos> aStar(String fromId, String toId) {
         Node startNode = nodes.all().get(fromId);
@@ -101,7 +102,11 @@ public class PathFinder {
         Long2LongMap parent = new Long2LongOpenHashMap();
 
         gScore.put(startKey, 0.0);
-        open.add(new Rec(startKey, 0.0, heuristic(startPos, endPos)));
+        open.add(new Rec(
+                startKey,
+                0.0,
+                heuristic(startPos, endPos) * HEURISTIC_WEIGHT   // inflated h
+        ));
 
         int iterations = 0;
         while (!open.isEmpty() && iterations++ < maxSteps) {
@@ -112,12 +117,7 @@ public class PathFinder {
 
             // goal test
             if (current.key == endKey) {
-                long start2 = System.nanoTime();
-                List<BlockPos> verts = reconstructVertices(current.key, startKey, parent);
-                double ms2 = (System.nanoTime() - start2) / 1_000_000.0;
-                LOGGER.info("[{}] Vertex reconstruction finished in {} ms", current.key, ms2);
-                LOGGER.debug("Path found between {} and {} after {} iterations", fromId, toId, iterations);
-                return verts;
+                return reconstructVertices(current.key, startKey, parent);
             }
 
             // expand neighbours
@@ -151,7 +151,7 @@ public class PathFinder {
                 if (tentativeG < gScore.get(neighKey)) {
                     parent.put(neighKey, current.key);
                     gScore.put(neighKey, tentativeG);
-                    double f = tentativeG + heuristic(nx, nz, endPos);
+                    double f = tentativeG + heuristic(nx, nz, endPos) * HEURISTIC_WEIGHT;
                     open.add(new Rec(neighKey, tentativeG, f));
                 }
             }

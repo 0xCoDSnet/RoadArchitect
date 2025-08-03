@@ -36,7 +36,7 @@ public class PathFinderManager {
         PathStorage storage = PathStorage.get(world);
 
         // warm up caches once
-        CacheManager.prefill(world, -preFillCacheZone, -preFillCacheZone, preFillCacheZone,  preFillCacheZone);
+        // CacheManager.prefill(world, -preFillCacheZone, -preFillCacheZone, preFillCacheZone,  preFillCacheZone);
         PathFinder finder = new PathFinder(graph.nodes(), world, maxSteps);
 
         List<CompletableFuture<PathJob>> futures = new ArrayList<>();
@@ -68,14 +68,14 @@ public class PathFinderManager {
                 storage.putPath(job.from(), job.to(), job.path(), st);
                 if (!job.path().isEmpty()) {
                     graph.edges().setStatus(job.edgeId(), EdgeStorage.Status.SUCCESS);
-                    LOGGER.debug(
-                            ">>> Computed path {} ({} steps)",
-                            job.edgeId(), job.path().size()
+                    LOGGER.info(
+                            ">>> Computed path {} ({} ms)",
+                            job.edgeId(), job.durationMs()
                     );
                 } else {
                     graph.edges().setStatus(job.edgeId(), EdgeStorage.Status.FAILURE);
-                    LOGGER.debug(
-                            "!<No path for {}>! Duration: {} ms",
+                    LOGGER.info(
+                            "! No path for {} ({} ms)",
                             job.edgeId(), job.durationMs()
                     );
                 }

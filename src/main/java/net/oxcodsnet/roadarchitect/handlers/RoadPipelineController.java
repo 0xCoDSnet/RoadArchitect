@@ -113,7 +113,7 @@ public final class RoadPipelineController {
         try {
             LOGGER.info("Pipeline start: {}", reason);
             StructureScanManager.scan(world, reason, center, RoadArchitect.CONFIG.chunkGenerateScanRadius());
-            PathFinderManager.computePaths(world, 50, (RoadArchitect.CONFIG.maxConnectionDistance() * 10)/2);
+            PathFinderManager.computePaths(world, 50, RoadArchitect.CONFIG.maxConnectionDistance() * 5);
         } catch (Exception e) {
             LOGGER.error("Pipeline failure", e);
         } finally {
