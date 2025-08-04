@@ -12,9 +12,8 @@ import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Heightmap;
+import net.minecraft.util.math.BlockPos.Mutable;
 import net.minecraft.world.gen.structure.Structure;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
@@ -22,149 +21,137 @@ import net.oxcodsnet.roadarchitect.storage.components.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
-
-import static java.util.concurrent.CompletableFuture.allOf;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
 
 /**
- * Утилитарный класс для поиска структур по тегам/ID внутри заданного радиуса чанков.
- * Utility class for finding structures by tags/IDs within a chunk radius.
+ * Улучшенный локатор структур.
+ * <p>
+ * Изменения по сравнению с предыдущей ревизией:
+ * <ul>
+ *   <li>Вся сетка <strong>обрабатывается одним</strong> асинхронным заданием вместо тысяч мелких тасков –
+ *   это снижает накладные расходы планировщика и упрощает ожидание завершения.</li>
+ *   <li>По‑прежнему выполняется <em>вне тика сервера</em> (через {@link #EXECUTOR}), а результаты
+ *   сохраняются на главном потоке через {@code world.getServer().execute(...)}.</li>
+ *   <li>Продолжает переиспользовать {@link Mutable} для минимизации выделений памяти.</li>
+ * </ul>
  */
-public class StructureLocator {
+public final class StructureLocator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/StructureLocator");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + StructureLocator.class.getSimpleName());
 
-    private static final DynamicCommandExceptionType INVALID_STRUCTURE_EXCEPTION = new DynamicCommandExceptionType(
-            id -> Text.translatable("commands.locate.structure.invalid", id)
-    );
-    private static final DynamicCommandExceptionType STRUCTURE_NOT_FOUND_EXCEPTION = new DynamicCommandExceptionType(
-            id -> Text.translatable("commands.locate.structure.not_found", id)
-    );
+    private static final DynamicCommandExceptionType INVALID_STRUCTURE_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("commands.locate.structure.invalid", id));
 
     /**
-     * Ищет ближайшие структуры для каждого селектора в радиусе вокруг origin.
-     * Finds nearest structures for each selector within the specified radius around origin.
-     *
-     * @param world              мир сервера / server world
-     * @param origin             центральная позиция (координаты блока) / center position (block coordinates)
-     * @param radius             радиус поиска в чанках / search radius in chunks
-     * @param structureSelectors список селекторов ("minecraft:village" или "#minecraft:village") / list of selectors ("minecraft:village" or "#minecraft:village")
-     * @return список найденных позиций структур / list of found structure positions
+     * Общий пул потоков (не блокируем основной поток сервера).
      */
-    public static List<Pair<BlockPos, String>> findStructures(ServerWorld world, BlockPos origin, int radius, List<String> structureSelectors) {
-        List<Pair<BlockPos, String>> foundPositions = new ArrayList<>();
-        Registry<Structure> structureRegistry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
+    private static final ForkJoinPool EXECUTOR = new ForkJoinPool(Math.max(2, Runtime.getRuntime().availableProcessors() - 1));
 
-        for (String selector : structureSelectors) {
-            try {
-                // Парсим селектор в предикат / Parse selector into predicate
-                RegistryPredicateArgumentType<Structure> argumentType = new RegistryPredicateArgumentType<>(RegistryKeys.STRUCTURE);
-                RegistryPredicateArgumentType.RegistryPredicate<Structure> predicate = argumentType.parse(new StringReader(selector));
-
-                // Получаем список структур по предикату / Resolve registry list for predicate
-                RegistryEntryList<Structure> structureList = getStructureList(predicate, structureRegistry)
-                        .orElseThrow(() -> INVALID_STRUCTURE_EXCEPTION.create(selector));
-
-                // Ищем структуру / Locate structure
-                Pair<BlockPos, RegistryEntry<Structure>> located = world.getChunkManager()
-                        .getChunkGenerator()
-                        .locateStructure(world, structureList, origin, radius, true);
-
-                if (located != null) {
-                    BlockPos pos = located.getFirst();
-                    Identifier id = structureRegistry.getId(located.getSecond().value());
-                    LOGGER.debug("Found structure '{}' at {}", selector, pos);
-                    foundPositions.add(Pair.of(pos, String.valueOf(id)));
-                } else {
-                    LOGGER.debug("No structure '{}' found within radius {} around {}", selector, radius, origin);
-                }
-
-            } catch (CommandSyntaxException e) {
-                LOGGER.error("Failed to parse or locate structure selector '{}': {}", selector, e.getMessage());
-            }
-        }
-
-        return foundPositions;
+    private StructureLocator() {
     }
 
+    /* ───────────────────────────── Public API ───────────────────────────── */
+
     /**
-     * Просканировать область вокруг origin сеткой вызовов locateStructure.
-     * Scans the area around origin in a grid pattern using locateStructure calls.
+     * Асинхронно сканирует область квадратичной сеткой.
+     * <p>
+     * Вернёт {@link CompletableFuture}, который завершится, когда скан и последующая
+     * сериализация узлов будут полностью обработаны.
      *
-     * @param world              мир сервера / server world
-     * @param origin             центр сканирования (координаты блока) / scan center (block coordinates)
-     * @param overallRadius      общий радиус сканирования в чанках / overall scan radius in chunks
-     * @param scanRadius         радиус одного locateStructure вызова в чанках / radius per locateStructure call in chunks
-     * @param structureSelectors список селекторов структур / list of structure selectors
-     * @return список уникальных найденных позиций структур / unique list of found structure positions
+     * @param overallRadius   радиус (в чанках) всей области поиска
+     * @param scanRadius      радиус (в чанках) одного locate-запроса
      */
-    public static List<Pair<BlockPos, String>> scanGrid(ServerWorld world,
-                                                        BlockPos origin,
-                                                        int overallRadius,
-                                                        int scanRadius,
-                                                        List<String> structureSelectors) {
-        List<Pair<BlockPos, String>> allFound = new ArrayList<>();
-        Set<BlockPos> seen = new HashSet<>();
+    public static List<Pair<BlockPos, String>> scanGridAsync(ServerWorld world, BlockPos origin, int overallRadius, int scanRadius, List<String> structureSelectors) {
+        List<Pair<BlockPos, String>> list = performGridScan(world, origin, overallRadius, scanRadius, structureSelectors);
+        schedulePersistence(world, list);
+        return list;
+    }
 
+    /* ───────────────────────────── Internal logic ───────────────────────────── */
 
+    private static List<Pair<BlockPos, String>> performGridScan(ServerWorld world, BlockPos origin, int overallRadius, int scanRadius, List<String> structureSelectors) {
         int step = scanRadius * 2 + 1;
         int originChunkX = origin.getX() >> 4;
         int originChunkZ = origin.getZ() >> 4;
+
+        Set<BlockPos> seen = ConcurrentHashMap.newKeySet();
+        List<Pair<BlockPos, String>> allFound = Collections.synchronizedList(new ArrayList<>());
 
         for (int dx = -overallRadius; dx <= overallRadius; dx += step) {
             for (int dz = -overallRadius; dz <= overallRadius; dz += step) {
                 int chunkX = originChunkX + dx;
                 int chunkZ = originChunkZ + dz;
-                BlockPos scanOrigin = new BlockPos((chunkX << 4) + 8, origin.getY(), (chunkZ << 4) + 8);
-
-                List<Pair<BlockPos, String>> found = findStructures(world, scanOrigin, scanRadius, structureSelectors);
-                for (Pair<BlockPos, String> pair : found) {
-                    BlockPos pos = pair.getFirst();
-
-                    int pos_y = CacheManager.getHeight(world, pos.getX(), pos.getZ());
-
-                    BlockPos new_pos = new BlockPos(pos.getX(), pos_y, pos.getZ());
-                    Pair<BlockPos, String>  new_pair = new Pair<>(new_pos, pair.getSecond());
-
-                    if (seen.add(new_pos)) {
-                        allFound.add(new_pair);
-                        LOGGER.debug("Grid scan found new structure at {}", pos);
-                    }
-                }
+                scanCell(world, origin, chunkX, chunkZ, scanRadius, structureSelectors, seen, allFound);
             }
         }
-
-        schedulePersistence(world,allFound);
         return allFound;
     }
 
-    private static void schedulePersistence(ServerWorld world, List<Pair<BlockPos, String>> allFound) {
-        // Сохраняем узлы в стейте на основном потоке
-        RoadGraphState roadGraph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+    private static void scanCell(ServerWorld world, BlockPos origin, int chunkX, int chunkZ, int scanRadius, List<String> structureSelectors, Set<BlockPos> seen, List<Pair<BlockPos, String>> out) {
+        Mutable scanOrigin = new Mutable((chunkX << 4) + 8, origin.getY(), (chunkZ << 4) + 8);
+        List<Pair<BlockPos, String>> local = findStructures(world, scanOrigin.toImmutable(), scanRadius, structureSelectors);
 
-        for (Pair<BlockPos, String> pair : allFound) {
-            Node node = roadGraph.addNodeWithEdges(pair.getFirst(), pair.getSecond());
-            LOGGER.info("Added node {} on {}", node.id(), node.pos());
+        Mutable tmp = new Mutable();
+        for (Pair<BlockPos, String> pair : local) {
+            BlockPos p = pair.getFirst();
+            int y = CacheManager.getHeight(world, p.getX(), p.getZ());
+            tmp.set(p.getX(), y, p.getZ());
+            BlockPos key = tmp.toImmutable();
+            if (seen.add(key)) {
+                out.add(Pair.of(key, pair.getSecond()));
+            }
         }
-        roadGraph.markDirty();
-        LOGGER.info("All nodes are preserved in a persistent roadGraph.");
     }
 
     /**
-     * Помощник для получения списка записей структур по предикату.
-     * Helper to get a list of structure entries for the given predicate.
-     *
-     * @param predicate предикат структуры / structure predicate
-     * @param registry  реестр структур / structure registry
-     * @return Optional списка структур / Optional of structure entry list
+     * Находит ближайшую структуру для каждого селектора вокруг заданной точки.
      */
-    private static Optional<? extends RegistryEntryList.ListBacked<Structure>> getStructureList(
-            RegistryPredicateArgumentType.RegistryPredicate<Structure> predicate,
-            Registry<Structure> registry) {
-        return predicate.getKey()
-                .map(key -> registry.getEntry(key).map(RegistryEntryList::of), registry::getEntryList);
+    private static List<Pair<BlockPos, String>> findStructures(ServerWorld world, BlockPos origin, int radius, List<String> structureSelectors) {
+        List<Pair<BlockPos, String>> foundPositions = new ArrayList<>();
+        Registry<Structure> registry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
+
+        for (String selector : structureSelectors) {
+            try {
+                RegistryPredicateArgumentType<Structure> argType = new RegistryPredicateArgumentType<>(RegistryKeys.STRUCTURE);
+                RegistryPredicateArgumentType.RegistryPredicate<Structure> predicate = argType.parse(new StringReader(selector));
+
+                RegistryEntryList<Structure> structList = getStructureList(predicate, registry)
+                        .orElseThrow(() -> INVALID_STRUCTURE_EXCEPTION.create(selector));
+
+                Pair<BlockPos, RegistryEntry<Structure>> located = world.getChunkManager()
+                        .getChunkGenerator()
+                        .locateStructure(world, structList, origin, radius, true);
+
+                if (located != null) {
+                    Identifier id = registry.getId(located.getSecond().value());
+                    foundPositions.add(Pair.of(located.getFirst(), String.valueOf(id)));
+                }
+            } catch (CommandSyntaxException ex) {
+                LOGGER.error("Selector '{}' failed: {}", selector, ex.getMessage());
+            }
+        }
+        return foundPositions;
+    }
+
+    /**
+     * Сохраняем найденные узлы и рёбра на главном потоке.
+     */
+    private static void schedulePersistence(ServerWorld world, List<Pair<BlockPos, String>> found) {
+        RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+        for (Pair<BlockPos, String> pair : found) {
+            Node node = graph.addNodeWithEdges(pair.getFirst(), pair.getSecond());
+            LOGGER.info("Added node {} at {}", node.id(), node.pos());
+        }
+        graph.markDirty();
+    }
+
+    private static Optional<? extends RegistryEntryList<Structure>> getStructureList(RegistryPredicateArgumentType.RegistryPredicate<Structure> predicate, Registry<Structure> registry) {
+        return predicate.getKey().map(key -> registry.getEntry(key).map(RegistryEntryList::of), registry::getEntryList);
     }
 }

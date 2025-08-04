@@ -37,7 +37,7 @@ public class CacheStorage extends PersistentState {
         return manager.getOrCreate(TYPE, KEY);
     }
 
-    public static CacheStorage fromNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
+    public static CacheStorage fromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         CacheStorage storage = new CacheStorage();
         NbtList hList = tag.getList(HEIGHTS_KEY, NbtElement.COMPOUND_TYPE);
         for (int i = 0; i < hList.size(); i++) {
@@ -64,7 +64,7 @@ public class CacheStorage extends PersistentState {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
+    public NbtCompound writeNbt(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         NbtList hList = new NbtList();
         for (Map.Entry<Long, Integer> entry : heights.entrySet()) {
             NbtCompound elem = new NbtCompound();
