@@ -1,7 +1,7 @@
 package net.oxcodsnet.roadarchitect.util;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
@@ -10,12 +10,17 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
+import net.oxcodsnet.roadarchitect.storage.CacheStorage;
 import net.oxcodsnet.roadarchitect.util.PathFinder;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeCoords;
 import net.minecraft.world.biome.source.BiomeSource;
@@ -28,14 +33,53 @@ import net.minecraft.world.gen.noise.NoiseConfig;
  * Reused across multiple PathFinder instances to avoid cache warm-up on each search.
  */
 public final class CacheManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + CacheManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + CacheManager.class.getSimpleName());
 
-    private static final ConcurrentMap<Long, Integer> HEIGHT_CACHE = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<Long, Double> STABILITY_CACHE = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<Long, RegistryEntry<Biome>> BIOME_CACHE = new ConcurrentHashMap<>();
+    private static final Map<RegistryKey<World>, CacheStorage> STATES = new ConcurrentHashMap<>();
 
     private CacheManager() {
         // no-op
+    }
+
+    /** Registers world load/unload hooks. */
+    public static void register() {
+        ServerWorldEvents.LOAD.register((server, world) -> {
+            if (world.isClient()) {
+                return;
+            }
+            load(world);
+        });
+
+        ServerWorldEvents.UNLOAD.register((server, world) -> {
+            if (world.isClient()) {
+                return;
+            }
+            save(world);
+        });
+
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            for (ServerWorld world : server.getWorlds()) {
+                save(world);
+            }
+        });
+    }
+
+    private static CacheStorage state(ServerWorld world) {
+        return STATES.computeIfAbsent(world.getRegistryKey(), k -> CacheStorage.get(world));
+    }
+
+    private static void load(ServerWorld world) {
+        CacheStorage storage = CacheStorage.get(world);
+        STATES.put(world.getRegistryKey(), storage);
+        LOGGER.info("Cache loaded for world {}", world.getRegistryKey().getValue());
+    }
+
+    private static void save(ServerWorld world) {
+        CacheStorage storage = STATES.remove(world.getRegistryKey());
+        if (storage != null) {
+            storage.markDirty();
+            LOGGER.info("Cache saved for world {}", world.getRegistryKey().getValue());
+        }
     }
 
     /**
@@ -43,6 +87,7 @@ public final class CacheManager {
      */
     public static void prefill(ServerWorld world, int minX, int minZ, int maxX, int maxZ) {
         int step = PathFinder.GRID_STEP;
+        CacheStorage storage = state(world);
         ForkJoinPool.commonPool().submit(() -> {
             ChunkGenerator gen = world.getChunkManager().getChunkGenerator();
             NoiseConfig cfg = world.getChunkManager().getNoiseConfig();
@@ -57,13 +102,13 @@ public final class CacheManager {
                     ForkJoinPool.commonPool().execute(() -> {
                         int h = gen.getHeight(finalX, finalZ, Heightmap.Type.WORLD_SURFACE,
                                 world, cfg);
-                        HEIGHT_CACHE.put(key, h);
+                        storage.heights().put(key, h);
                     });
                     ForkJoinPool.commonPool().execute(() -> {
                         RegistryEntry<Biome> biome = bsrc.getBiome(
                                 BiomeCoords.fromBlock(finalX), 316,
                                 BiomeCoords.fromBlock(finalZ), sampler);
-                        BIOME_CACHE.put(key, biome);
+                        storage.biomes().put(key, biome);
                     });
                 }
             }
@@ -72,23 +117,23 @@ public final class CacheManager {
         });
     }
 
-    public static int getHeight(long key, IntSupplier loader) {
-        return HEIGHT_CACHE.computeIfAbsent(key, k -> loader.getAsInt());
+    public static int getHeight(ServerWorld world, long key, IntSupplier loader) {
+        return state(world).heights().computeIfAbsent(key, k -> loader.getAsInt());
     }
 
     public static int getHeight(ServerWorld world, int x, int z) {
         ChunkGenerator gen = world.getChunkManager().getChunkGenerator();
         NoiseConfig cfg = world.getChunkManager().getNoiseConfig();
         long key = hash(x, z);
-        return getHeight(key, () -> gen.getHeight(x, z, Heightmap.Type.WORLD_SURFACE, world, cfg));
+        return getHeight(world, key, () -> gen.getHeight(x, z, Heightmap.Type.WORLD_SURFACE, world, cfg));
     }
 
-    public static double getStability(long key, DoubleSupplier loader) {
-        return STABILITY_CACHE.computeIfAbsent(key, k -> loader.getAsDouble());
+    public static double getStability(ServerWorld world, long key, DoubleSupplier loader) {
+        return state(world).stabilities().computeIfAbsent(key, k -> loader.getAsDouble());
     }
 
-    public static RegistryEntry<Biome> getBiome(long key, Supplier<RegistryEntry<Biome>> loader) {
-        return BIOME_CACHE.computeIfAbsent(key, k -> loader.get());
+    public static RegistryEntry<Biome> getBiome(ServerWorld world, long key, Supplier<RegistryEntry<Biome>> loader) {
+        return state(world).biomes().computeIfAbsent(key, k -> loader.get());
     }
 
     public static long hash(int x, int z) {

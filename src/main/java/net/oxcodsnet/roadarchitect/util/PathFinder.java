@@ -165,19 +165,19 @@ public class PathFinder {
 
     private int sampleHeight(int x, int z) {
         long key = hash(x, z);
-        return CacheManager.getHeight(key, () ->
+        return CacheManager.getHeight(world, key, () ->
                 generator.getHeight(x, z, Heightmap.Type.WORLD_SURFACE, world, noiseConfig)
         );
     }
 
     private double sampleStability(int x, int z, int y) {
         long key = hash(x, z);
-        return CacheManager.getStability(key, () -> terrainStabilityCost(x, z, y));
+        return CacheManager.getStability(world, key, () -> terrainStabilityCost(x, z, y));
     }
 
     private RegistryEntry<Biome> sampleBiome(int x, int z, int y) {
         long key = hash(x, z);
-        return CacheManager.getBiome(key, () ->
+        return CacheManager.getBiome(world, key, () ->
                 biomeSource.getBiome(
                         BiomeCoords.fromBlock(x),
                         316,
