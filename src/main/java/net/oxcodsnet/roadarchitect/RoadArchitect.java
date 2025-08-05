@@ -1,7 +1,6 @@
 package net.oxcodsnet.roadarchitect;
 
 import net.fabricmc.api.ModInitializer;
-import net.oxcodsnet.roadarchitect.commands.RoadArchitectDebugCommand;
 import net.oxcodsnet.roadarchitect.config.RoadArchitectConfig;
 import net.oxcodsnet.roadarchitect.handlers.RoadGraphStateManager;
 import net.oxcodsnet.roadarchitect.handlers.RoadPipelineController;
@@ -34,7 +33,6 @@ public class RoadArchitect implements ModInitializer {
         RoadPostProcessor.register();
         CacheManager.register();
         RoadFeatureRegistry.register();
-        RoadArchitectDebugCommand.register();
         LOGGER.info("Road Architect initialization complete!");
     }
 }

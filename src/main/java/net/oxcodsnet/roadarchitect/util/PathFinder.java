@@ -39,7 +39,7 @@ public class PathFinder {
     /* ================ USER‑TUNABLE PARAMS ================ */
     public static final int GRID_STEP = 3;
     /** Inflation factor ε for ARA* (Weighted A*) */
-    public static final double HEURISTIC_WEIGHT = 2.8;
+    public static final double HEURISTIC_WEIGHT = 2;
     private static final int[][] OFFSETS = generateOffsets();
     private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(
             BiomeTags.IS_RIVER, 400.0,

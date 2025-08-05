@@ -57,8 +57,10 @@ public final class RoadFeatureRegistry {
     /**
      * Bootstrap for configured features used during data generation.
      */
-    public static void bootstrapConfigured(net.minecraft.registry.Registerable<ConfiguredFeature<?, ?>> ctx) {
-        ctx.register(ROAD_CONFIGURED_FEATURE_KEY, new ConfiguredFeature<>(ROAD_FEATURE, new RoadFeatureConfig(3)));
+    public static void bootstrapConfigured(Registerable<ConfiguredFeature<?, ?>> ctx) {
+        ctx.register(
+                ROAD_CONFIGURED_FEATURE_KEY,
+                new ConfiguredFeature<>(ROAD_FEATURE, new RoadFeatureConfig(3, 1)));
     }
 
     /**

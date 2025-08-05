@@ -1,6 +1,7 @@
 {
   "type": "roadarchitect:road",
   "config": {
-    "width": 3
+    "forward_length": 1,
+    "orth_width": 3
   }
 }

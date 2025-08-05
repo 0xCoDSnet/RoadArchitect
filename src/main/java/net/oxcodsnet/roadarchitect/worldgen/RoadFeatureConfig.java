@@ -7,13 +7,15 @@ import net.minecraft.world.gen.feature.FeatureConfig;
 /**
  * Configuration for {@link RoadFeature}.
  */
-public record RoadFeatureConfig(int width) implements FeatureConfig {
+public record RoadFeatureConfig(int orthWidth, int forwardLength) implements FeatureConfig {
+
     /**
      * Codec for serialising the configuration.
      */
     public static final Codec<RoadFeatureConfig> CODEC = RecordCodecBuilder.create(
-            instance -> instance.group(
-                    Codec.INT.fieldOf("width").forGetter(RoadFeatureConfig::width)
-            ).apply(instance, RoadFeatureConfig::new)
+            i -> i.group(
+                    Codec.INT.fieldOf("orth_width").forGetter(RoadFeatureConfig::orthWidth),
+                    Codec.INT.fieldOf("forward_length").forGetter(RoadFeatureConfig::forwardLength)
+            ).apply(i, RoadFeatureConfig::new)
     );
 }
