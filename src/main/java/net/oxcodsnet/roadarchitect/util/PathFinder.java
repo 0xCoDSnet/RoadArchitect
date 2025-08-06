@@ -37,9 +37,9 @@ public class PathFinder {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinder");
 
     /* ================ USER‑TUNABLE PARAMS ================ */
-    public static final int GRID_STEP = 3;
+    public static final int GRID_STEP = 4;
     /** Inflation factor ε for ARA* (Weighted A*) */
-    public static final double HEURISTIC_WEIGHT = 2;
+    public static final double HEURISTIC_WEIGHT = 3;
     private static final int[][] OFFSETS = generateOffsets();
     private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(
             BiomeTags.IS_RIVER, 400.0,
@@ -208,7 +208,7 @@ public class PathFinder {
     }
 
     private static double yLevelCost(int y) {
-        return y <= 63 ? 160 : 0.0;
+        return y <= 63 ? 240 : 0.0;
     }
 
     private double terrainStabilityCost(int x, int z, int y) {

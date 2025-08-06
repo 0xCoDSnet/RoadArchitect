@@ -8,12 +8,17 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.util.FeatureContext;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.PathStorage;
 import net.oxcodsnet.roadarchitect.storage.RoadBuilderStorage;
+import net.oxcodsnet.roadarchitect.worldgen.style.RoadStyle;
+import net.oxcodsnet.roadarchitect.worldgen.style.RoadStyles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,9 +60,9 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
             return false;
         }
 
-        int        halfWidth = Math.max(0, ctx.getConfig().orthWidth() / 2);
-        BlockState roadState = Blocks.COBBLESTONE.getDefaultState();
-        boolean    placedAny = false;
+        int     halfWidth = Math.max(0, ctx.getConfig().orthWidth() / 2);
+        Random  random    = world.getRandom();
+        boolean placedAny = false;
 
         // ─── Проходим все сегменты, привязанные к текущему чанку ───
         for (RoadBuilderStorage.SegmentEntry entry : queue) {
@@ -119,8 +124,28 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
 
                         if (insideStrip || makeChunkier) {
                             BlockPos roadPos = p.add(dx, -1, dz);
+                            RegistryEntry<Biome> biome = world.getBiome(roadPos);
+                            RoadStyle style = RoadStyles.forBiome(biome);
+                            BlockState roadState = style.palette().pick(random);
                             placeRoad(world, roadPos, roadState);
                         }
+                    }
+                }
+
+                // ─── Decorations every ~10 blocks ───
+                if (random.nextInt(10) == 0) {
+                    RegistryEntry<Biome> biome = world.getBiome(p);
+                    RoadStyle style = RoadStyles.forBiome(biome);
+                    int length = 1 + random.nextInt(3);
+                    int side   = random.nextBoolean() ? 1 : -1;
+                    int sx     = (int) Math.round(-nz * side);
+                    int sz     = (int) Math.round(nx * side);
+                    int fx     = (int) Math.round(nx);
+                    int fz     = (int) Math.round(nz);
+                    for (int j = 0; j < length; j++) {
+                        BlockPos base = p.add(sx * (halfWidth + 1) + fx * j, -1,
+                                sz * (halfWidth + 1) + fz * j);
+                        style.decoration().place(world, base, random);
                     }
                 }
             }
