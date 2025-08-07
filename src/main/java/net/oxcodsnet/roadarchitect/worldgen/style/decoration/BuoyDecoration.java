@@ -14,7 +14,7 @@ import net.minecraft.world.StructureWorldAccess;
  * без “ноги” до дна — как просили.
  */
 public final class BuoyDecoration implements Decoration {
-    private static final BlockState LOG   = Blocks.SPRUCE_LOG.getDefaultState();
+    private static final BlockState LOG = Blocks.SPRUCE_LOG.getDefaultState();
     private static final BlockState FENCE = Blocks.SPRUCE_FENCE.getDefaultState();
     private static final BlockState TORCH = Blocks.TORCH.getDefaultState();
 
@@ -24,9 +24,9 @@ public final class BuoyDecoration implements Decoration {
         //if (!world.getBlockState(basePos).getFluidState().isStill()) return;
 
         // Ставим бревно на уровень дороги-воды, fence и факел — выше
-        world.setBlockState(basePos,             LOG,   Block.NOTIFY_NEIGHBORS);
-        world.setBlockState(basePos.up(),        FENCE, Block.NOTIFY_NEIGHBORS);
-        world.setBlockState(basePos.up(2),       TORCH, Block.NOTIFY_NEIGHBORS);
+        world.setBlockState(basePos, LOG, Block.NOTIFY_NEIGHBORS);
+        world.setBlockState(basePos.up(), FENCE, Block.NOTIFY_NEIGHBORS);
+        world.setBlockState(basePos.up(2), TORCH, Block.NOTIFY_NEIGHBORS);
     }
 }
 

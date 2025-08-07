@@ -13,9 +13,8 @@ import net.minecraft.world.StructureWorldAccess;
  * floating posts.
  */
 public final class FenceDecoration implements Decoration {
-    private final BlockState fenceState;
-
     private static final int MAX_SUPPORT_DEPTH = 3;   // макс. «воздуха» под столбом
+    private final BlockState fenceState;
 
     public FenceDecoration(BlockState fenceState) {
         this.fenceState = fenceState;

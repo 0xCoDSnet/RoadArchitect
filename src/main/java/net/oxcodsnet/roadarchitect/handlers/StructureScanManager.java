@@ -20,6 +20,7 @@ public class StructureScanManager {
     static void scan(ServerWorld world, String approach, BlockPos center) {
         scan(world, approach, center, 1);
     }
+
     static void scan(ServerWorld world, String approach, BlockPos center, int overallRadius) {
         int scanRadius = 1;
         List<String> selectors = RoadArchitect.CONFIG.structureSelectors();

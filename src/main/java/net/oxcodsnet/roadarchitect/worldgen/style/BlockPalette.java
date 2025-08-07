@@ -18,6 +18,10 @@ public final class BlockPalette {
         this.totalWeight = totalWeight;
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public BlockState pick(Random random) {
         int r = random.nextInt(this.totalWeight);
         for (Entry e : this.entries) {
@@ -27,10 +31,6 @@ public final class BlockPalette {
             r -= e.weight;
         }
         return this.entries.getFirst().state;
-    }
-
-    public static Builder builder() {
-        return new Builder();
     }
 
     public static final class Builder {

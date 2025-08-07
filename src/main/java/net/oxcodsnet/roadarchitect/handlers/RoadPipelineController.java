@@ -8,13 +8,13 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.gen.structure.Structure;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import org.slf4j.Logger;
@@ -38,14 +38,14 @@ public final class RoadPipelineController {
      * Cleared on server stop to allow fresh initialization next run.
      */
     private static final Set<RegistryKey<World>> INITIALIZED = ConcurrentHashMap.newKeySet();
-    private static int tickCounter = 0;
     private static final int INTERVAL_TICKS = RoadArchitect.CONFIG.pipelineIntervalSeconds() * 20;
-
     // Cached selectors for fast matching
     private static final Set<Identifier> TARGET_IDS = new HashSet<>();
     private static final Set<TagKey<Structure>> TARGET_TAGS = new HashSet<>();
+    private static int tickCounter = 0;
 
-    private RoadPipelineController() {}
+    private RoadPipelineController() {
+    }
 
     /**
      * Registers event hooks for pipeline triggers.

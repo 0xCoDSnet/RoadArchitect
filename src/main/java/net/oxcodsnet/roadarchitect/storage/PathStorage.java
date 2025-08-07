@@ -7,18 +7,18 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtLong;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
+import net.oxcodsnet.roadarchitect.util.KeyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import net.oxcodsnet.roadarchitect.util.KeyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import net.minecraft.util.math.ChunkPos;
 
 /**
  * Хранит просчитанные пути между узлами как {@link PersistentState}.
@@ -34,17 +34,8 @@ public class PathStorage extends PersistentState {
     private static final String STATUS_KEY = "status";
 
     public static final Type<PathStorage> TYPE = new Type<>(PathStorage::new, PathStorage::fromNbt, DataFixTypes.SAVED_DATA_SCOREBOARD);
-
-    public enum Status {
-        PENDING,
-        PROCESSING,
-        READY,
-        FAILED
-    }
-
     private final Map<String, List<BlockPos>> paths = new ConcurrentHashMap<>();
     private final Map<String, Status> statuses = new ConcurrentHashMap<>();
-
 
     /**
      * Возвращает экземпляр хранилища путей для указанного мира.
@@ -181,5 +172,12 @@ public class PathStorage extends PersistentState {
             }
         }
         return out;
+    }
+
+    public enum Status {
+        PENDING,
+        PROCESSING,
+        READY,
+        FAILED
     }
 }

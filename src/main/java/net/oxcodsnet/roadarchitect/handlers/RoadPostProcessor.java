@@ -8,9 +8,9 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.PathStorage;
+import net.oxcodsnet.roadarchitect.util.AsyncExecutor;
 import net.oxcodsnet.roadarchitect.util.CacheManager;
 import net.oxcodsnet.roadarchitect.util.PathFinder;
-import net.oxcodsnet.roadarchitect.util.AsyncExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +27,9 @@ public final class RoadPostProcessor {
     private RoadPostProcessor() {
     }
 
-    /** Registers event hooks for asynchronous processing. */
+    /**
+     * Registers event hooks for asynchronous processing.
+     */
     public static void register() {
         ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
             if (world.isClient()) return;
@@ -75,7 +77,9 @@ public final class RoadPostProcessor {
         }
     }
 
-    /** Schedules processing of all pending paths for the world. */
+    /**
+     * Schedules processing of all pending paths for the world.
+     */
     public static void processPending(ServerWorld world) {
         PathStorage storage = PathStorage.get(world);
         for (Map.Entry<String, PathStorage.Status> e : storage.allStatuses().entrySet()) {
@@ -86,7 +90,9 @@ public final class RoadPostProcessor {
         }
     }
 
-    /** Processes pending paths intersecting the given chunk. */
+    /**
+     * Processes pending paths intersecting the given chunk.
+     */
     private static void processChunk(ServerWorld world, ChunkPos chunk) {
         PathStorage storage = PathStorage.get(world);
         for (String key : storage.getPendingForChunk(chunk)) {

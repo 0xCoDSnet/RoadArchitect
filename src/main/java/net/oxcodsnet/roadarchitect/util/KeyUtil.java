@@ -1,6 +1,8 @@
 package net.oxcodsnet.roadarchitect.util;
 
-/** Utility methods for building deterministic keys for edges and paths. */
+/**
+ * Utility methods for building deterministic keys for edges and paths.
+ */
 public final class KeyUtil {
     private KeyUtil() {
     }

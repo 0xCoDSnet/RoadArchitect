@@ -6,9 +6,8 @@ import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.PathStorage;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
-import net.oxcodsnet.roadarchitect.util.CacheManager;
-import net.oxcodsnet.roadarchitect.util.PathFinder;
 import net.oxcodsnet.roadarchitect.util.AsyncExecutor;
+import net.oxcodsnet.roadarchitect.util.PathFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
 
 /**
  * Управляет вычислением путей между узлами при различных событиях сервера.
@@ -27,10 +25,6 @@ public class PathFinderManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             RoadArchitect.MOD_ID + "/PathFinderManager"
     );
-
-    private record PathJob(
-            String edgeId, String from, String to, List<BlockPos> path, double durationMs
-    ) {}
 
     public static void computePaths(ServerWorld world, int preFillCacheZone, int maxSteps) {
         RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
@@ -102,5 +96,10 @@ public class PathFinderManager {
             ServerWorld world, int preFillCacheZone
     ) {
         computePaths(world, preFillCacheZone, 10480 * 2);
+    }
+
+    private record PathJob(
+            String edgeId, String from, String to, List<BlockPos> path, double durationMs
+    ) {
     }
 }

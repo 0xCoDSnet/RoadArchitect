@@ -9,7 +9,8 @@ import net.minecraft.world.StructureWorldAccess;
  */
 @FunctionalInterface
 public interface Decoration {
-    Decoration NONE = (world, pos, random) -> {};
+    Decoration NONE = (world, pos, random) -> {
+    };
 
     void place(StructureWorldAccess world, BlockPos basePos, Random random);
 }

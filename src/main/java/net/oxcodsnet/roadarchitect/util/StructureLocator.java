@@ -18,15 +18,10 @@ import net.minecraft.world.gen.structure.Structure;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
-import net.oxcodsnet.roadarchitect.util.AsyncExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -59,8 +54,8 @@ public final class StructureLocator {
      * Вернёт {@link CompletableFuture}, который завершится, когда скан и последующая
      * сериализация узлов будут полностью обработаны.
      *
-     * @param overallRadius   радиус (в чанках) всей области поиска
-     * @param scanRadius      радиус (в чанках) одного locate-запроса
+     * @param overallRadius радиус (в чанках) всей области поиска
+     * @param scanRadius    радиус (в чанках) одного locate-запроса
      */
     public static List<Pair<BlockPos, String>> scanGridAsync(ServerWorld world, BlockPos origin, int overallRadius, int scanRadius, List<String> structureSelectors) {
         List<Pair<BlockPos, String>> list = performGridScan(world, origin, overallRadius, scanRadius, structureSelectors);

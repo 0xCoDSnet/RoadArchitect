@@ -6,11 +6,7 @@ import net.oxcodsnet.roadarchitect.util.KeyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -26,118 +22,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EdgeStorage {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdgeStorage.class);
 
-    /** Радиус, внутри которого допускается соединение узлов. */
+    /**
+     * Радиус, внутри которого допускается соединение узлов.
+     */
     private final double radius;
 
-    /** Все рёбра по edge‑id. */
+    /**
+     * Все рёбра по edge‑id.
+     */
     private final Map<String, Edge> edges = new ConcurrentHashMap<>();
 
     public EdgeStorage(double radius) {
         this.radius = radius;
-    }
-
-    public double radius() {
-        return radius;
-    }
-
-    /* ───────────────────────────── Edge API ───────────────────────────── */
-
-    /** Статус, используемый алгоритмом поиска пути. */
-    public enum Status {
-        NEW,
-        SUCCESS,
-        FAILURE
-    }
-
-    /** Единственная запись, представляющая ребро между двумя узлами. */
-    public record Edge(String nodeA, String nodeB, Status status) {
-        public String id() {
-            return KeyUtil.edgeKey(nodeA, nodeB);
-        }
-
-        public boolean connects(String nodeId) {
-            return nodeA.equals(nodeId) || nodeB.equals(nodeId);
-        }
-
-        public String other(String nodeId) {
-            return nodeA.equals(nodeId) ? nodeB : nodeA;
-        }
-    }
-
-    /* ───────────────────────────── CRUD ───────────────────────────── */
-
-    /**
-     * Пытается добавить ребро между двумя узлами. Возвращает <code>true</code>,
-     * если ребро было создано (или уже существовало).
-     */
-    public boolean add(Node a, Node b) {
-        if (a.id().equals(b.id())) return false; // нельзя соединять узел сам с собой
-
-        String edgeId = KeyUtil.edgeKey(a.id(), b.id());
-        edges.put(edgeId, new Edge(a.id(), b.id(), Status.NEW));
-        return true;
-    }
-
-    /** Удаляет ребро по его edge‑id. */
-    public boolean remove(String edgeId) {
-        return edges.remove(edgeId) != null;
-    }
-
-    /** Возвращает статус ребра или <code>null</code>, если ребра нет. */
-    public Status getStatus(String edgeId) {
-        Edge edge = edges.get(edgeId);
-        return edge == null ? null : edge.status();
-    }
-
-    /** Обновляет статус существующего ребра. */
-    public void setStatus(String edgeId, Status status) {
-        Edge old = edges.get(edgeId);
-        if (old != null) {
-            edges.put(edgeId, new Edge(old.nodeA(), old.nodeB(), status));
-        }
-    }
-
-    /* ───────────────────────────── Query helpers ───────────────────────────── */
-
-    /**
-     * Возвращает неизменяемое множество соседей указанного узла.
-     */
-    public Set<String> neighbors(String nodeId) {
-        Set<String> set = new HashSet<>();
-        for (Edge edge : edges.values()) {
-            if (edge.connects(nodeId)) {
-                set.add(edge.other(nodeId));
-            }
-        }
-        return Collections.unmodifiableSet(set);
-    }
-
-    /** Карта edgeId → Edge (неизменяемая копия). */
-    public Map<String, Edge> all() {
-        return Collections.unmodifiableMap(new HashMap<>(edges));
-    }
-
-    /** Карта edgeId → Status (неизменяемая копия). */
-    public Map<String, Status> allWithStatus() {
-        Map<String, Status> map = new HashMap<>();
-        for (Map.Entry<String, Edge> e : edges.entrySet()) {
-            map.put(e.getKey(), e.getValue().status());
-        }
-        return Collections.unmodifiableMap(map);
-    }
-
-    /* ───────────────────────────── Persistence ───────────────────────────── */
-
-    public NbtCompound toNbt() {
-        NbtCompound tag = new NbtCompound();
-        for (Edge edge : edges.values()) {
-            NbtCompound entry = new NbtCompound();
-            entry.putString("a", edge.nodeA());
-            entry.putString("b", edge.nodeB());
-            entry.putString("status", edge.status().name());
-            tag.put(edge.id(), entry);
-        }
-        return tag;
     }
 
     public static EdgeStorage fromNbt(NbtCompound tag, double radius) {
@@ -152,9 +48,127 @@ public class EdgeStorage {
         return storage;
     }
 
-    /* ───────────────────────────── Internals ───────────────────────────── */
+    /* ───────────────────────────── Edge API ───────────────────────────── */
+
+    public double radius() {
+        return radius;
+    }
+
+    /**
+     * Пытается добавить ребро между двумя узлами. Возвращает <code>true</code>,
+     * если ребро было создано (или уже существовало).
+     */
+    public boolean add(Node a, Node b) {
+        if (a.id().equals(b.id())) return false; // нельзя соединять узел сам с собой
+
+        String edgeId = KeyUtil.edgeKey(a.id(), b.id());
+        edges.put(edgeId, new Edge(a.id(), b.id(), Status.NEW));
+        return true;
+    }
+
+    /* ───────────────────────────── CRUD ───────────────────────────── */
+
+    /**
+     * Удаляет ребро по его edge‑id.
+     */
+    public boolean remove(String edgeId) {
+        return edges.remove(edgeId) != null;
+    }
+
+    /**
+     * Возвращает статус ребра или <code>null</code>, если ребра нет.
+     */
+    public Status getStatus(String edgeId) {
+        Edge edge = edges.get(edgeId);
+        return edge == null ? null : edge.status();
+    }
+
+    /**
+     * Обновляет статус существующего ребра.
+     */
+    public void setStatus(String edgeId, Status status) {
+        Edge old = edges.get(edgeId);
+        if (old != null) {
+            edges.put(edgeId, new Edge(old.nodeA(), old.nodeB(), status));
+        }
+    }
+
+    /**
+     * Возвращает неизменяемое множество соседей указанного узла.
+     */
+    public Set<String> neighbors(String nodeId) {
+        Set<String> set = new HashSet<>();
+        for (Edge edge : edges.values()) {
+            if (edge.connects(nodeId)) {
+                set.add(edge.other(nodeId));
+            }
+        }
+        return Collections.unmodifiableSet(set);
+    }
+
+    /* ───────────────────────────── Query helpers ───────────────────────────── */
+
+    /**
+     * Карта edgeId → Edge (неизменяемая копия).
+     */
+    public Map<String, Edge> all() {
+        return Collections.unmodifiableMap(new HashMap<>(edges));
+    }
+
+    /**
+     * Карта edgeId → Status (неизменяемая копия).
+     */
+    public Map<String, Status> allWithStatus() {
+        Map<String, Status> map = new HashMap<>();
+        for (Map.Entry<String, Edge> e : edges.entrySet()) {
+            map.put(e.getKey(), e.getValue().status());
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    public NbtCompound toNbt() {
+        NbtCompound tag = new NbtCompound();
+        for (Edge edge : edges.values()) {
+            NbtCompound entry = new NbtCompound();
+            entry.putString("a", edge.nodeA());
+            entry.putString("b", edge.nodeB());
+            entry.putString("status", edge.status().name());
+            tag.put(edge.id(), entry);
+        }
+        return tag;
+    }
+
+    /* ───────────────────────────── Persistence ───────────────────────────── */
 
     public void clear() {
         edges.clear();
+    }
+
+    /**
+     * Статус, используемый алгоритмом поиска пути.
+     */
+    public enum Status {
+        NEW,
+        SUCCESS,
+        FAILURE
+    }
+
+    /* ───────────────────────────── Internals ───────────────────────────── */
+
+    /**
+     * Единственная запись, представляющая ребро между двумя узлами.
+     */
+    public record Edge(String nodeA, String nodeB, Status status) {
+        public String id() {
+            return KeyUtil.edgeKey(nodeA, nodeB);
+        }
+
+        public boolean connects(String nodeId) {
+            return nodeA.equals(nodeId) || nodeB.equals(nodeId);
+        }
+
+        public String other(String nodeId) {
+            return nodeA.equals(nodeId) ? nodeB : nodeA;
+        }
     }
 }
