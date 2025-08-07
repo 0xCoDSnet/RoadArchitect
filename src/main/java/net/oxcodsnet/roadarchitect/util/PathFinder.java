@@ -166,7 +166,7 @@ public class PathFinder {
     private int sampleHeight(int x, int z) {
         long key = hash(x, z);
         return CacheManager.getHeight(world, key, () ->
-                generator.getHeight(x, z, Heightmap.Type.WORLD_SURFACE, world, noiseConfig)
+                generator.getHeight(x, z, Heightmap.Type.WORLD_SURFACE_WG, world, noiseConfig)
         );
     }
 
