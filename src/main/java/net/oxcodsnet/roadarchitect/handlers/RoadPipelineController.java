@@ -61,7 +61,7 @@ public final class RoadPipelineController {
         // Запуск при генерации чанка, содержащего требуемую структуру
         ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
             if (world.getRegistryKey() != World.OVERWORLD) return;
-            if (!containsTargetStructure((ServerWorld) world, chunk)) return;
+            if (!containsTargetStructure(world, chunk)) return;
             LOGGER.info("Chunk {} generated with target structure, starting pipeline", chunk.getPos());
             startPipeline(world, chunk, "chunk_structure_trigger");
         });

@@ -13,7 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Управляет вычислением путей между узлами при различных событиях сервера.
@@ -40,7 +43,7 @@ public class PathFinderManager {
         PathFinder finder = new PathFinder(graph.nodes(), world, maxSteps);
 
         List<CompletableFuture<PathJob>> futures = new ArrayList<>();
-        for (var entry : graph.edges().allWithStatus().entrySet()) {
+        for (Map.Entry<String, EdgeStorage.Status> entry : graph.edges().allWithStatus().entrySet()) {
             if (entry.getValue() != EdgeStorage.Status.NEW) continue;
             String edgeId = entry.getKey();
             String[] nodes = edgeId.split("\\+", 2);
@@ -61,7 +64,7 @@ public class PathFinderManager {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-        for (var future : futures) {
+        for (CompletableFuture<PathJob> future : futures) {
             try {
                 PathJob job = future.get();
                 PathStorage.Status st = job.path().isEmpty() ? PathStorage.Status.FAILED : PathStorage.Status.PENDING;
