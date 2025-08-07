@@ -6,11 +6,11 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
 import net.oxcodsnet.roadarchitect.util.GeometryUtils;
 import net.oxcodsnet.roadarchitect.util.KeyUtil;
+import net.oxcodsnet.roadarchitect.util.PersistentStateUtil;
 
 /**
  * Сохраняет узлы и рёбра дорог как {@link PersistentState}.
@@ -54,8 +54,7 @@ public class RoadGraphState extends PersistentState {
      * <p>Gets or creates the road graph state for the given world.</p>
      */
     public static RoadGraphState get(ServerWorld world, double radius) {
-        PersistentStateManager manager = world.getPersistentStateManager();
-        return manager.getOrCreate(TYPE, KEY);
+        return PersistentStateUtil.get(world, TYPE, KEY);
     }
 
     /*========== helpers ==========*/

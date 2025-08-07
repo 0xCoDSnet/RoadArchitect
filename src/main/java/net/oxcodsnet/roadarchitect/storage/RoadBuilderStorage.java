@@ -7,7 +7,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
+import net.oxcodsnet.roadarchitect.util.PersistentStateUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -34,8 +34,7 @@ public class RoadBuilderStorage extends PersistentState {
      * <p>Retrieves the storage of building tasks for the given world.</p>
      */
     public static RoadBuilderStorage get(ServerWorld world) {
-        PersistentStateManager manager = world.getPersistentStateManager();
-        return manager.getOrCreate(TYPE, KEY);
+        return PersistentStateUtil.get(world, TYPE, KEY);
     }
 
     /**

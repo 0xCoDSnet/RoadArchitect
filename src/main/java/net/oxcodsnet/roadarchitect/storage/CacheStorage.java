@@ -11,8 +11,8 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.biome.Biome;
+import net.oxcodsnet.roadarchitect.util.PersistentStateUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,8 +33,7 @@ public class CacheStorage extends PersistentState {
     private final ConcurrentMap<Long, RegistryEntry<Biome>> biomes = new ConcurrentHashMap<>();
 
     public static CacheStorage get(ServerWorld world) {
-        PersistentStateManager manager = world.getPersistentStateManager();
-        return manager.getOrCreate(TYPE, KEY);
+        return PersistentStateUtil.get(world, TYPE, KEY);
     }
 
     public static CacheStorage fromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {

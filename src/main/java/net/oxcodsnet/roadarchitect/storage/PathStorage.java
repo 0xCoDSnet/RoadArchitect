@@ -9,9 +9,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.util.KeyUtil;
+import net.oxcodsnet.roadarchitect.util.PersistentStateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,8 +45,7 @@ public class PathStorage extends PersistentState {
      * @return хранилище путей / path storage instance
      */
     public static PathStorage get(ServerWorld world) {
-        PersistentStateManager manager = world.getPersistentStateManager();
-        return manager.getOrCreate(TYPE, KEY);
+        return PersistentStateUtil.get(world, TYPE, KEY);
     }
 
     /**
