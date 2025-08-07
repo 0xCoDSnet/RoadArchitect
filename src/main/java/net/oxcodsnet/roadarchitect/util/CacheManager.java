@@ -100,7 +100,7 @@ public final class CacheManager {
                     int finalX = x;
                     int finalZ = z;
                     ForkJoinPool.commonPool().execute(() -> {
-                        int h = gen.getHeight(finalX, finalZ, Heightmap.Type.WORLD_SURFACE,
+                        int h = gen.getHeight(finalX, finalZ, Heightmap.Type.WORLD_SURFACE_WG,
                                 world, cfg);
                         storage.heights().put(key, h);
                     });
@@ -125,7 +125,7 @@ public final class CacheManager {
         ChunkGenerator gen = world.getChunkManager().getChunkGenerator();
         NoiseConfig cfg = world.getChunkManager().getNoiseConfig();
         long key = hash(x, z);
-        return getHeight(world, key, () -> gen.getHeight(x, z, Heightmap.Type.WORLD_SURFACE, world, cfg));
+        return getHeight(world, key, () -> gen.getHeight(x, z, Heightmap.Type.WORLD_SURFACE_WG, world, cfg));
     }
 
     public static double getStability(ServerWorld world, long key, DoubleSupplier loader) {
