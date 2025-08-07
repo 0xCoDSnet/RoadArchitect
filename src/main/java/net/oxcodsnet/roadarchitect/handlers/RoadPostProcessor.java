@@ -10,20 +10,19 @@ import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.PathStorage;
 import net.oxcodsnet.roadarchitect.util.CacheManager;
 import net.oxcodsnet.roadarchitect.util.PathFinder;
+import net.oxcodsnet.roadarchitect.util.AsyncExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ForkJoinPool;
 
 /**
  * Post-processes raw A* paths into detailed block sequences.
  */
 public final class RoadPostProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadPostProcessor");
-    private static final ForkJoinPool EXECUTOR = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
 
     private RoadPostProcessor() {
     }
@@ -100,7 +99,7 @@ public final class RoadPostProcessor {
             return;
         }
         List<BlockPos> raw = storage.getPath(key);
-        EXECUTOR.submit(() -> {
+        AsyncExecutor.execute(() -> {
             try {
                 List<BlockPos> refined = refine(world, raw);
                 storage.updatePath(key, refined, PathStorage.Status.READY);

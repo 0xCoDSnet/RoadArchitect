@@ -2,7 +2,6 @@ package net.oxcodsnet.roadarchitect.util;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ForkJoinPool;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
@@ -14,6 +13,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.CacheStorage;
+import net.oxcodsnet.roadarchitect.util.AsyncExecutor;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
@@ -87,7 +87,7 @@ public final class CacheManager {
     public static void prefill(ServerWorld world, int minX, int minZ, int maxX, int maxZ) {
         int step = PathFinder.GRID_STEP;
         CacheStorage storage = state(world);
-        ForkJoinPool.commonPool().submit(() -> {
+        AsyncExecutor.execute(() -> {
             ChunkGenerator gen = world.getChunkManager().getChunkGenerator();
             NoiseConfig cfg = world.getChunkManager().getNoiseConfig();
             MultiNoiseUtil.MultiNoiseSampler sampler = cfg.getMultiNoiseSampler();
@@ -98,15 +98,12 @@ public final class CacheManager {
                     long key = hash(x, z);
                     int finalX = x;
                     int finalZ = z;
-                    ForkJoinPool.commonPool().execute(() -> {
-                        int h = gen.getHeight(finalX, finalZ, Heightmap.Type.WORLD_SURFACE_WG,
-                                world, cfg);
-                        storage.heights().put(key, h);
-                    });
-                    ForkJoinPool.commonPool().execute(() -> {
+                    AsyncExecutor.execute(() -> {
+                        int h = gen.getHeight(finalX, finalZ, Heightmap.Type.WORLD_SURFACE_WG, world, cfg);
                         RegistryEntry<Biome> biome = bsrc.getBiome(
                                 BiomeCoords.fromBlock(finalX), 316,
                                 BiomeCoords.fromBlock(finalZ), sampler);
+                        storage.heights().put(key, h);
                         storage.biomes().put(key, biome);
                     });
                 }

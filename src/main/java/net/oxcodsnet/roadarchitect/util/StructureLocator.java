@@ -18,6 +18,7 @@ import net.minecraft.world.gen.structure.Structure;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
+import net.oxcodsnet.roadarchitect.util.AsyncExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ForkJoinPool;
 
 /**
  * Улучшенный локатор структур.
@@ -37,7 +37,7 @@ import java.util.concurrent.ForkJoinPool;
  * <ul>
  *   <li>Вся сетка <strong>обрабатывается одним</strong> асинхронным заданием вместо тысяч мелких тасков –
  *   это снижает накладные расходы планировщика и упрощает ожидание завершения.</li>
- *   <li>По‑прежнему выполняется <em>вне тика сервера</em> (через {@link #EXECUTOR}), а результаты
+ *   <li>По‑прежнему выполняется <em>вне тика сервера</em> (через {@link AsyncExecutor}), а результаты
  *   сохраняются на главном потоке через {@code world.getServer().execute(...)}.</li>
  *   <li>Продолжает переиспользовать {@link Mutable} для минимизации выделений памяти.</li>
  * </ul>
@@ -47,11 +47,6 @@ public final class StructureLocator {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + StructureLocator.class.getSimpleName());
 
     private static final DynamicCommandExceptionType INVALID_STRUCTURE_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("commands.locate.structure.invalid", id));
-
-    /**
-     * Общий пул потоков (не блокируем основной поток сервера).
-     */
-    private static final ForkJoinPool EXECUTOR = new ForkJoinPool(Math.max(2, Runtime.getRuntime().availableProcessors() - 1));
 
     private StructureLocator() {
     }

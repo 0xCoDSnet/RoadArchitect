@@ -8,6 +8,7 @@ import net.oxcodsnet.roadarchitect.storage.PathStorage;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import net.oxcodsnet.roadarchitect.util.CacheManager;
 import net.oxcodsnet.roadarchitect.util.PathFinder;
+import net.oxcodsnet.roadarchitect.util.AsyncExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,9 +27,6 @@ public class PathFinderManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             RoadArchitect.MOD_ID + "/PathFinderManager"
     );
-
-    private static final int CORES = Runtime.getRuntime().availableProcessors();
-    private static final ForkJoinPool PATH_EXECUTOR = new ForkJoinPool(CORES);
 
     private record PathJob(
             String edgeId, String from, String to, List<BlockPos> path, double durationMs
@@ -53,12 +51,12 @@ public class PathFinderManager {
             }
             String from = nodes[0], to = nodes[1];
 
-            CompletableFuture<PathJob> job = CompletableFuture.supplyAsync(() -> {
+            CompletableFuture<PathJob> job = AsyncExecutor.submit(() -> {
                 long start = System.nanoTime();
                 List<BlockPos> path = finder.findPath(from, to);
                 double ms = (System.nanoTime() - start) / 1_000_000.0;
                 return new PathJob(edgeId, from, to, path, ms);
-            }, PATH_EXECUTOR);
+            });
             futures.add(job);
         }
 
