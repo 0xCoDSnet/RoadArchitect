@@ -75,7 +75,7 @@
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.41.0/8be6df7f1e9bccb19f8f351b3651f0bac2f5e0c/checker-qual-3.41.0.jar" />
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.errorprone/error_prone_annotations/2.23.0/43a27853b6c7d54893e0b1997c2c778c347179eb/error_prone_annotations-2.23.0.jar" />
         </processorPath>
-        <module name="RoadArchitect.client" />
+        <module name="RoadArchitect-1.client" />
       </profile>
       <profile name="Gradle Imported" enabled="true">
         <outputRelativeToContentRoot value="true" />
@@ -150,7 +150,7 @@
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.41.0/8be6df7f1e9bccb19f8f351b3651f0bac2f5e0c/checker-qual-3.41.0.jar" />
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.errorprone/error_prone_annotations/2.23.0/43a27853b6c7d54893e0b1997c2c778c347179eb/error_prone_annotations-2.23.0.jar" />
         </processorPath>
-        <module name="RoadArchitect.main" />
+        <module name="RoadArchitect-1.main" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="21" />
@@ -158,6 +158,8 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_STRING" value="-AoutRefMapFile=$PROJECT_DIR$/build/classes/java/client/client-roadarchitect-refmap.json -AdefaultObfuscationEnv=named:intermediary -Aquiet=true -AoutMapFileNamedIntermediary=$PROJECT_DIR$/build/loom-cache/mixin-map-net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2.client.tiny -AinMapFileNamedIntermediary=$USER_HOME$/.gradle/caches/fabric-loom/1.21.1/net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2/mappings.tiny" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="RoadArchitect-1.main" options="-AoutRefMapFile=$PROJECT_DIR$/build/classes/java/main/roadarchitect-refmap.json -AdefaultObfuscationEnv=named:intermediary -Aquiet=true -AoutMapFileNamedIntermediary=$PROJECT_DIR$/build/loom-cache/mixin-map-net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2.main.tiny -AinMapFileNamedIntermediary=$USER_HOME$/.gradle/caches/fabric-loom/1.21.1/net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2/mappings.tiny" />
+      <module name="RoadArchitect-1.test" options="-AoutRefMapFile=$PROJECT_DIR$/build/classes/java/test/test-roadarchitect-refmap.json -AdefaultObfuscationEnv=named:intermediary -Aquiet=true -AoutMapFileNamedIntermediary=$PROJECT_DIR$/build/loom-cache/mixin-map-net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2.test.tiny -AinMapFileNamedIntermediary=$USER_HOME$/.gradle/caches/fabric-loom/1.21.1/net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2/mappings.tiny" />
       <module name="RoadArchitect.main" options="-AoutRefMapFile=$PROJECT_DIR$/build/classes/java/main/roadarchitect-refmap.json -AdefaultObfuscationEnv=named:intermediary -Aquiet=true -AoutMapFileNamedIntermediary=$PROJECT_DIR$/build/loom-cache/mixin-map-net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2.main.tiny -AinMapFileNamedIntermediary=$USER_HOME$/.gradle/caches/fabric-loom/1.21.1/net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2/mappings.tiny" />
       <module name="RoadArchitect.test" options="-AoutRefMapFile=$PROJECT_DIR$/build/classes/java/test/test-roadarchitect-refmap.json -AdefaultObfuscationEnv=named:intermediary -Aquiet=true -AoutMapFileNamedIntermediary=$PROJECT_DIR$/build/loom-cache/mixin-map-net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2.test.tiny -AinMapFileNamedIntermediary=$USER_HOME$/.gradle/caches/fabric-loom/1.21.1/net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2/mappings.tiny" />
     </option>
