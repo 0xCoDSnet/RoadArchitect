@@ -5,6 +5,8 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
+import net.oxcodsnet.roadarchitect.worldgen.style.decoration.Decoration;
+import net.oxcodsnet.roadarchitect.worldgen.style.decoration.FenceDecoration;
 
 import java.util.Map;
 
@@ -50,7 +52,7 @@ public final class RoadStyles {
             ),
             Map.entry(BiomeKeys.OLD_GROWTH_PINE_TAIGA, new RoadStyle(
                     BlockPalette.builder()
-                            .add(Blocks.GRASS_BLOCK.getDefaultState(), 7)
+                            .add(Blocks.PODZOL.getDefaultState(), 7)
                             .add(Blocks.COBBLESTONE.getDefaultState(), 2)
                             .add(Blocks.MOSSY_COBBLESTONE.getDefaultState(), 1)
                             .add(Blocks.GRAVEL.getDefaultState(), 1)
@@ -61,7 +63,7 @@ public final class RoadStyles {
             ),
             Map.entry(BiomeKeys.OLD_GROWTH_SPRUCE_TAIGA, new RoadStyle(
                     BlockPalette.builder()
-                            .add(Blocks.GRASS_BLOCK.getDefaultState(), 7)
+                            .add(Blocks.PODZOL.getDefaultState(), 7)
                             .add(Blocks.COBBLESTONE.getDefaultState(), 2)
                             .add(Blocks.MOSSY_COBBLESTONE.getDefaultState(), 1)
                             .add(Blocks.GRAVEL.getDefaultState(), 1)
