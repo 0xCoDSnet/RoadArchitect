@@ -3,6 +3,7 @@ package net.oxcodsnet.roadarchitect.handlers;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -13,6 +14,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.structure.Structure;
@@ -51,48 +53,75 @@ public final class RoadPipelineController {
     public static void register() {
         cacheStructureSelectors();
 
-        //TODO: Нужна оптимизация Pipline
-
-        // Первичная инициализация при первом загруженном чанке
+        // ───── First‑chunk generation trigger ────────────────────────────────────
+        // Fires only when the spawn chunk is generated for the first time.
         ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
-            RegistryKey<World> key = world.getRegistryKey();
-            if (key == World.OVERWORLD && INITIALIZED.add(key)) {
-                LOGGER.debug("First chunk generate in {}, starting pipeline", key.getValue());
+            if (world.getRegistryKey() != World.OVERWORLD) {
+                return;
+            }
+
+            ChunkPos spawnChunk = new ChunkPos(world.getSpawnPos());
+            if (!chunk.getPos().equals(spawnChunk)) {
+                return; // Not the spawn chunk – ignore.
+            }
+
+            if (INITIALIZED.add(world.getRegistryKey())) {
+                LOGGER.debug("Spawn chunk {} generated in {}, starting pipeline", chunk.getPos(),
+                        world.getRegistryKey().getValue());
                 PipelineRunner.runPipeline(world, world.getSpawnPos(), PipelineRunner.PipelineMode.INIT);
             }
         });
 
-
-        // Запуск при генерации чанка, содержащего требуемую структуру
+        // ───── Chunk generation containing a target structure ───────────────────
         ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
-            if (world.getRegistryKey() != World.OVERWORLD) return;
-            if (!containsTargetStructure(world, chunk)) return;
+            if (world.getRegistryKey() != World.OVERWORLD) {
+                return;
+            }
+            if (!containsTargetStructure(world, chunk)) {
+                return;
+            }
             LOGGER.debug("Chunk {} generated with target structure, starting pipeline", chunk.getPos());
-            PipelineRunner.runPipeline(world, chunk.getPos().getCenterAtY(0), PipelineRunner.PipelineMode.CHUNK);
+            PipelineRunner.runPipeline(world, chunk.getPos().getCenterAtY(0),
+                    PipelineRunner.PipelineMode.CHUNK);
         });
 
-        // Периодический запуск каждый INTERVAL_TICKS на позиции игрока
+        // ───── Player‑join trigger – run as early as possible for the player ────
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            ServerPlayerEntity player = handler.getPlayer();
+            ServerWorld world = (ServerWorld) player.getWorld();
+            if (world.getRegistryKey() != World.OVERWORLD) {
+                return;
+            }
+            BlockPos pos = player.getBlockPos();
+            LOGGER.debug("Player {} joined at {}, starting pipeline", player.getName().getString(), pos);
+            // Using PERIODIC mode as the closest existing mode; it uses small scan radius.
+            PipelineRunner.runPipeline(world, pos, PipelineRunner.PipelineMode.PERIODIC);
+        });
+
+        // ───── Periodic trigger every INTERVAL_TICKS ────────────────────────────
         ServerTickEvents.START_SERVER_TICK.register(server -> {
             tickCounter++;
-            if (tickCounter < INTERVAL_TICKS) return;
+            if (tickCounter < INTERVAL_TICKS) {
+                return;
+            }
             tickCounter = 0;
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                 World world = player.getWorld();
-                if (world.getRegistryKey() != World.OVERWORLD) continue;
+                if (world.getRegistryKey() != World.OVERWORLD) {
+                    continue;
+                }
                 BlockPos pos = player.getBlockPos();
                 LOGGER.debug("Periodic trigger at player {} pos {}, starting pipeline", player.getName().getString(), pos);
                 PipelineRunner.runPipeline((ServerWorld) world, pos, PipelineRunner.PipelineMode.PERIODIC);
             }
         });
 
-        // Очистка списка инициализированных миров при остановке сервера
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            INITIALIZED.clear();
-        });
+        // ───── Clear state on server stop ───────────────────────────────────────
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> INITIALIZED.clear());
     }
 
     /**
-     * Pre-caches identifiers and tags from config for O(1) matching.
+     * Pre‑caches identifiers and tags from config for O(1) matching.
      */
     private static void cacheStructureSelectors() {
         TARGET_IDS.clear();
@@ -107,10 +136,12 @@ public final class RoadPipelineController {
         }
     }
 
-    /* ───────────────────────────── Structure matching ───────────────────────────── */
+    /* ─────────────────────────── Structure matching ─────────────────────────── */
 
     private static boolean containsTargetStructure(ServerWorld world, Chunk chunk) {
-        if (!chunk.hasStructureReferences()) return false;
+        if (!chunk.hasStructureReferences()) {
+            return false;
+        }
 
         Registry<Structure> registry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
         for (StructureStart start : chunk.getStructureStarts().values()) {
@@ -122,12 +153,13 @@ public final class RoadPipelineController {
             RegistryEntry<Structure> entry = registry.getEntry(structure);
             if (entry != null) {
                 for (TagKey<Structure> tag : TARGET_TAGS) {
-                    if (entry.isIn(tag)) return true;
+                    if (entry.isIn(tag)) {
+                        return true;
+                    }
                 }
             }
         }
         return false;
     }
-
-
 }
+

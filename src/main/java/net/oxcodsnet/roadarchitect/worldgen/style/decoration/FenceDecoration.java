@@ -7,6 +7,10 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 
+import java.util.List;
+
+import static net.minecraft.world.gen.feature.PlacedFeatures.isAir;
+
 /**
  * Decoration that places a fence post. If the target position is occupied, the
  * post is shifted upwards until free space is found. After placement the fence
@@ -51,28 +55,56 @@ public final class FenceDecoration implements Decoration {
         /* ─────────────────────────────────────────────────────
          * 3. Поставить основной столб и вытянуть вниз до опоры
          * ───────────────────────────────────────────────────── */
-        setFence(world, top);
+        setFenceSmart(world, top);
 
         BlockPos current = top.down();
         while (current.getY() >= world.getBottomY() && !world.getBlockState(current).isSolidBlock(world, current)) {
-            setFence(world, current);
+            setFenceSmart(world, current);
             current = current.down();
         }
     }
 
     /**
-     * Ставим блок забора и сразу обновляем соседей, чтобы клиент отрисовал
-     * соединения без задержки.
+     * Ставит забор, не заменяя твёрдые блоки и не оставляя его в воздухе.
+     * @param world  StructureWorldAccess (во время world-гена) :contentReference[oaicite:4]{index=4}
+     * @param pos    «базовая» точка, от которой считаем ±3 блока
      */
-    private void setFence(StructureWorldAccess world, BlockPos pos) {
-        BlockState state = this.fenceState;
-        for (Direction direction : Direction.values()) {
-            BlockPos neighborPos = pos.offset(direction);
-            BlockState neighborState = world.getBlockState(neighborPos);
-            state = state.getStateForNeighborUpdate(direction, neighborState, world, pos, neighborPos);
+    private void setFenceSmart(StructureWorldAccess world, BlockPos pos) {
+
+        // ── ШАГ 1. ищем первый заменяемый блок ↑ до +3 ──
+        BlockPos head = pos;
+        for (int i = 0; i < 3 && !world.getBlockState(head).isReplaceable(); i++) {
+            head = head.up();
         }
-        world.setBlockState(pos, state, Block.NOTIFY_ALL_AND_REDRAW);
-        world.updateNeighbors(pos, state.getBlock());
+
+        if (!world.getBlockState(head).isReplaceable()) return;
+
+        // ── ШАГ 2. ставим «верхушку» ──
+        world.setBlockState(head, this.fenceState, Block.NO_REDRAW);
+
+        // ── ШАГ 3. тянем ножку вниз до первого твёрдого или −3 ──
+        BlockPos leg = head.down();
+        for (int i = 0; i < 3 && world.getBlockState(leg).isReplaceable(); i++, leg = leg.down()) {
+            world.setBlockState(leg, this.fenceState, Block.NO_REDRAW);
+        }
+    }
+
+    public void placeFenceStripe(StructureWorldAccess world, List<BlockPos> stripe) {
+
+        // 1-й проход – «сырые» столбики, но уже с вертикальной логикой
+        for (BlockPos p : stripe) {
+            setFenceSmart(world, p);
+        }
+
+        // 2-й проход – пересчитываем формы (как раньше)
+        for (BlockPos p : stripe) {
+            BlockState st = world.getBlockState(p);
+            for (Direction d : Direction.Type.HORIZONTAL) {
+                BlockPos n = p.offset(d);
+                st = st.getStateForNeighborUpdate(d, world.getBlockState(n), world, p, n);  // соединения забора
+            }
+            world.setBlockState(p, st, Block.NO_REDRAW);
+        }
     }
 }
 

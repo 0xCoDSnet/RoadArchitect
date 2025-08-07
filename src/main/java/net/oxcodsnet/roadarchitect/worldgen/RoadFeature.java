@@ -22,6 +22,8 @@ import net.oxcodsnet.roadarchitect.storage.RoadBuilderStorage;
 import net.oxcodsnet.roadarchitect.worldgen.style.RoadStyle;
 import net.oxcodsnet.roadarchitect.worldgen.style.RoadStyles;
 import net.oxcodsnet.roadarchitect.worldgen.style.decoration.BuoyDecoration;
+import net.oxcodsnet.roadarchitect.worldgen.style.decoration.Decoration;
+import net.oxcodsnet.roadarchitect.worldgen.style.decoration.FenceDecoration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +41,7 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadFeature");
 
     private static final BuoyDecoration BUOY = new BuoyDecoration();
-    private static final int BUOY_INTERVAL = 10;
+    private static final int BUOY_INTERVAL = 12;
 
     public RoadFeature(Codec<RoadFeatureConfig> codec) {
         super(codec);
@@ -95,9 +97,18 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
         RegistryEntry<Biome> biome = world.getBiome(center);
         RoadStyle style = RoadStyles.forBiome(biome);
         int length = 1 + random.nextInt(3);
-        for (int j = 0; j < length; j++) {
-            BlockPos base = center.add(sx * (halfWidth + 1) + fx * j, 0, sz * (halfWidth + 1) + fz * j);
-            style.decoration().place(world, base, random);
+
+        Decoration deco = style.decoration();
+        if (deco instanceof FenceDecoration fence) {
+            List<BlockPos> stripe = new ArrayList<>();
+            for (int j = 0; j < length; j++) {
+                stripe.add(center.add(sx * (halfWidth + 1) + fx * j, 0, sz * (halfWidth + 1) + fz * j));
+            }
+            fence.placeFenceStripe(world, stripe);
+        } else {
+            for (int j = 0; j < length; j++) {
+                deco.place(world,  center.add(sx * (halfWidth + 1) + fx * j, 0, sz * (halfWidth + 1) + fz * j), random);
+            }
         }
     }
 
