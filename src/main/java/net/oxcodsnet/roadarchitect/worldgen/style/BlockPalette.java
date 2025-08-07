@@ -26,7 +26,7 @@ public final class BlockPalette {
             }
             r -= e.weight;
         }
-        return this.entries.get(0).state;
+        return this.entries.getFirst().state;
     }
 
     public static Builder builder() {
