@@ -1,8 +1,10 @@
 package net.oxcodsnet.roadarchitect.handlers;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
@@ -31,7 +33,11 @@ public final class RoadPipelineController {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadPipelineController");
 
     private static final AtomicBoolean RUNNING = new AtomicBoolean(false);
-    private static final Set<World> INITIALIZED = ConcurrentHashMap.newKeySet();
+    /**
+     * Tracks worlds that have completed initial pipeline setup.
+     * Cleared on server stop to allow fresh initialization next run.
+     */
+    private static final Set<RegistryKey<World>> INITIALIZED = ConcurrentHashMap.newKeySet();
     private static int tickCounter = 0;
     private static final int INTERVAL_TICKS = RoadArchitect.CONFIG.pipelineIntervalSeconds() * 20;
 
@@ -51,8 +57,9 @@ public final class RoadPipelineController {
 
         // Первичная инициализация при первом загруженном чанке
         ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
-            if (world.getRegistryKey() == World.OVERWORLD && INITIALIZED.add(world)) {
-                LOGGER.info("First chunk generate in {}, starting pipeline", world.getRegistryKey().getValue());
+            RegistryKey<World> key = world.getRegistryKey();
+            if (key == World.OVERWORLD && INITIALIZED.add(key)) {
+                LOGGER.info("First chunk generate in {}, starting pipeline", key.getValue());
                 startPipelineInit(world, "initial_chunk");
             }
         });
@@ -78,6 +85,11 @@ public final class RoadPipelineController {
                 LOGGER.info("Periodic trigger at player {} pos {}, starting pipeline", player.getName().getString(), pos);
                 startPipelineAtPos((ServerWorld) world, pos, "player_periodic_trigger");
             }
+        });
+
+        // Очистка списка инициализированных миров при остановке сервера
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            INITIALIZED.clear();
         });
     }
 
