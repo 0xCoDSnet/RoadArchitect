@@ -14,8 +14,8 @@ import java.util.List;
 @Modmenu(modId = RoadArchitect.MOD_ID)
 @Config(name = "roadarchitect", wrapperName = "RoadArchitectConfig")
 public class RoadArchitectConfigModel {
-    public int initScanRadius = 100;
-    public int chunkGenerateScanRadius = 25;
+    public int initScanRadius = 125;
+    public int chunkGenerateScanRadius = 20;
     public int maxConnectionDistance = 715;
     public int pipelineIntervalSeconds = 120;
     public List<String> structureSelectors = List.of(
