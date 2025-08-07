@@ -1,10 +1,8 @@
 package net.oxcodsnet.roadarchitect.storage;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.util.math.BlockPos;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
+import net.oxcodsnet.roadarchitect.util.KeyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +52,7 @@ public class EdgeStorage {
     /** Единственная запись, представляющая ребро между двумя узлами. */
     public record Edge(String nodeA, String nodeB, Status status) {
         public String id() {
-            return edgeId(nodeA, nodeB);
+            return KeyUtil.edgeKey(nodeA, nodeB);
         }
 
         public boolean connects(String nodeId) {
@@ -75,7 +73,7 @@ public class EdgeStorage {
     public boolean add(Node a, Node b) {
         if (a.id().equals(b.id())) return false; // нельзя соединять узел сам с собой
 
-        String edgeId = edgeId(a.id(), b.id());
+        String edgeId = KeyUtil.edgeKey(a.id(), b.id());
         edges.put(edgeId, new Edge(a.id(), b.id(), Status.NEW));
         return true;
     }
@@ -155,10 +153,6 @@ public class EdgeStorage {
     }
 
     /* ───────────────────────────── Internals ───────────────────────────── */
-
-    private static String edgeId(String idA, String idB) {
-        return idA.compareTo(idB) < 0 ? idA + "+" + idB : idB + "+" + idA;
-    }
 
     public void clear() {
         edges.clear();

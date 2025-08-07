@@ -9,6 +9,7 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
+import net.oxcodsnet.roadarchitect.util.KeyUtil;
 
 /**
  * Сохраняет узлы и рёбра дорог как {@link PersistentState}.
@@ -111,7 +112,7 @@ public class RoadGraphState extends PersistentState {
         }
 
         // 2) уже существует?
-        if (edgeStorage.all().containsKey(edgeId(idNodeA, idNodeB))) {
+        if (edgeStorage.all().containsKey(KeyUtil.edgeKey(idNodeA, idNodeB))) {
             return;
         }
 
@@ -133,10 +134,6 @@ public class RoadGraphState extends PersistentState {
     }
 
     /*========== helpers ==========*/
-
-    private static String edgeId(String idA, String idB) {
-        return idA.compareTo(idB) < 0 ? idA + "+" + idB : idB + "+" + idA;
-    }
 
     private static boolean segmentsIntersect2D(BlockPos p1, BlockPos p2,
                                                BlockPos p3, BlockPos p4) {

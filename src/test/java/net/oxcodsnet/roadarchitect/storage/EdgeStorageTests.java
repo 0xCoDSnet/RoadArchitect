@@ -2,6 +2,7 @@ package net.oxcodsnet.roadarchitect.storage;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
+import net.oxcodsnet.roadarchitect.util.KeyUtil;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -13,10 +14,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * Набор тестов для {@link EdgeStorage} после перехода на хранение рёбер по edgeId.
  */
 public class EdgeStorageTests {
-
-    private static String edgeId(String id1, String id2) {
-        return id1.compareTo(id2) < 0 ? id1 + "+" + id2 : id2 + "+" + id1;
-    }
 
     /**
      * Проверяет добавление рёбер и соседей.
@@ -30,7 +27,7 @@ public class EdgeStorageTests {
         assertTrue(storage.add(a, b));
         assertEquals(Set.of("b"), storage.neighbors("a"));
         assertEquals(Set.of("a"), storage.neighbors("b"));
-        assertEquals(EdgeStorage.Status.NEW, storage.getStatus(edgeId("a", "b")));
+        assertEquals(EdgeStorage.Status.NEW, storage.getStatus(KeyUtil.edgeKey("a", "b")));
     }
 
     /**
@@ -56,7 +53,7 @@ public class EdgeStorageTests {
         Node b = new Node("b", new BlockPos(9, 64, 0), "test");
         storage.add(a, b);
 
-        assertTrue(storage.remove(edgeId("a", "b")));
+        assertTrue(storage.remove(KeyUtil.edgeKey("a", "b")));
         assertTrue(storage.all().isEmpty());
     }
 

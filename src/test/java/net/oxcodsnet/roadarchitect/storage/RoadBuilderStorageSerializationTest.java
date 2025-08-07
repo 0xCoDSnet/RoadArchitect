@@ -3,6 +3,7 @@ package net.oxcodsnet.roadarchitect.storage;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.ChunkPos;
 import org.junit.jupiter.api.Test;
+import net.oxcodsnet.roadarchitect.util.KeyUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,7 +15,7 @@ class RoadBuilderStorageSerializationTest {
     void roundTrip() {
         RoadBuilderStorage storage = new RoadBuilderStorage();
         ChunkPos chunk = new ChunkPos(0, 0);
-        String key = RoadBuilderStorage.makeKey("a", "b");
+        String key = KeyUtil.pathKey("a", "b");
         storage.addSegment(chunk, key, 1, 5);
 
         NbtCompound tag = storage.writeNbt(new NbtCompound(), null);

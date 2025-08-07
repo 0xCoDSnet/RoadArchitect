@@ -58,14 +58,6 @@ public class RoadBuilderStorage extends PersistentState {
     }
 
     /**
-     * Утилита для построения детерминированного ключа из идентификаторов узлов.
-     * <p>Utility to build deterministic keys from node ids.</p>
-     */
-    public static String makeKey(String a, String b) {
-        return a.compareTo(b) <= 0 ? a + "|" + b : b + "|" + a;
-    }
-
-    /**
      * Сохраняет все сегменты в NBT.
      * <p>Serializes all segments into an NBT compound.</p>
      */

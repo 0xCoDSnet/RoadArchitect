@@ -12,6 +12,7 @@ import net.minecraft.world.PersistentStateManager;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.oxcodsnet.roadarchitect.util.KeyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +69,7 @@ public class PathStorage extends PersistentState {
             NbtCompound entry = list.getCompound(i);
             String from = entry.getString(FROM_KEY);
             String to = entry.getString(TO_KEY);
-            String key = makeKey(from, to);
+            String key = KeyUtil.pathKey(from, to);
             NbtList posList = entry.getList(POS_KEY, NbtElement.LONG_TYPE);
             List<BlockPos> positions = new ArrayList<>();
             for (NbtElement nbtElement : posList) {
@@ -86,14 +87,6 @@ public class PathStorage extends PersistentState {
             storage.statuses.put(key, status);
         }
         return storage;
-    }
-
-    /**
-     * Создает уникальный ключ для пары узлов.
-     * <p>Creates a deterministic key for a pair of nodes.</p>
-     */
-    private static String makeKey(String a, String b) {
-        return a.compareTo(b) <= 0 ? a + "|" + b : b + "|" + a;
     }
 
     /**
@@ -127,7 +120,7 @@ public class PathStorage extends PersistentState {
      * <p>Stores a path connecting two nodes.</p>
      */
     public void putPath(String from, String to, List<BlockPos> path, Status status) {
-        String key = makeKey(from, to);
+        String key = KeyUtil.pathKey(from, to);
         paths.put(key, List.copyOf(path));
         statuses.put(key, status);
         markDirty();
@@ -144,7 +137,7 @@ public class PathStorage extends PersistentState {
      * <p>Returns the stored path between the two nodes.</p>
      */
     public List<BlockPos> getPath(String from, String to) {
-        return paths.getOrDefault(makeKey(from, to), List.of());
+        return paths.getOrDefault(KeyUtil.pathKey(from, to), List.of());
     }
 
     public List<BlockPos> getPath(String key) {
