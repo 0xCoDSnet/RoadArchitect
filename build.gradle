@@ -66,6 +66,8 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
     options.release = 21
+    // Suppress warnings from Gradle's TimeTrackingProcessor which only supports up to Java 17
+    options.compilerArgs += ['-Xlint:-processing', '-nowarn']
 }
 
 java {

@@ -14,7 +14,6 @@ import net.minecraft.text.Text;
 import net.oxcodsnet.roadarchitect.handlers.RoadPipelineController;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
 
 
 /**
@@ -56,21 +55,26 @@ public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
                 .padding(Insets.of(8));
 
         // Подпись стадии
-        this.stageLabel = Components.label(Text.literal("Инициализация...")).horizontalTextAlignment(HorizontalAlignment.CENTER);
+        this.stageLabel = Components.label(Text.literal(RoadPipelineController.PipelineStage.INITIALISATION.toString()))
+                .horizontalTextAlignment(HorizontalAlignment.CENTER);
 
-        // Индетерминированный прогресс‑бар (ширина изменяется в tick())
-        this.progressBar = (BoxComponent) Components.box(Sizing.fixed(0), Sizing.fixed(4)).margins(Insets.vertical(4));
+        // Индетерминированный прогресс‑бар. Его ширина
+        // изменяется в {@link #render(DrawContext, int, int, float)}
+        this.progressBar = (BoxComponent) Components.box(Sizing.fixed(0), Sizing.fixed(4))
+                .fill(true)
+                .color(Color.ofRgb(0xFFFFFF))
+                .margins(Insets.vertical(4));
 
         root.child(stageLabel);
         root.child(progressBar);
     }
 
     // ---------------------------------------------------------------------
-    // Logic / Updates
+    // Rendering & Updates
     // ---------------------------------------------------------------------
 
     @Override
-    public void tick() {
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         // Обновляем надпись стадии
         RoadPipelineController.PipelineStage stage = RoadPipelineController.getCurrentStage();
         this.stageLabel.text(stage.label());
@@ -85,14 +89,7 @@ public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
         int maxWidth = Math.max(this.width - 40, 100); // запас на края
         this.barProgress = (this.barProgress + 4) % maxWidth;
         this.progressBar.horizontalSizing(Sizing.fixed(this.barProgress));
-    }
 
-    // ---------------------------------------------------------------------
-    // Rendering & Input delegation to vanilla screen
-    // ---------------------------------------------------------------------
-
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         parent.render(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
     }
