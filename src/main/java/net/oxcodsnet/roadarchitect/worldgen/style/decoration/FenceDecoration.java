@@ -3,6 +3,7 @@ package net.oxcodsnet.roadarchitect.worldgen.style.decoration;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 
@@ -64,8 +65,14 @@ public final class FenceDecoration implements Decoration {
      * соединения без задержки.
      */
     private void setFence(StructureWorldAccess world, BlockPos pos) {
-        world.setBlockState(pos, this.fenceState, Block.NOTIFY_ALL_AND_REDRAW);
-        world.updateNeighbors(pos, this.fenceState.getBlock());
+        BlockState state = this.fenceState;
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = pos.offset(direction);
+            BlockState neighborState = world.getBlockState(neighborPos);
+            state = state.getStateForNeighborUpdate(direction, neighborState, world, pos, neighborPos);
+        }
+        world.setBlockState(pos, state, Block.NOTIFY_ALL_AND_REDRAW);
+        world.updateNeighbors(pos, state.getBlock());
     }
 }
 

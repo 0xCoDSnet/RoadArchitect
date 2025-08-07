@@ -27,7 +27,9 @@ public final class RoadStyles {
 
             Map.entry(BiomeKeys.RIVER, new RoadStyle(
                     BlockPalette.builder()
-                            .add(Blocks.REDSTONE_BLOCK.getDefaultState(), 1)
+                            .add(Blocks.GRASS_BLOCK.getDefaultState(), 1)
+                            .add(Blocks.SAND.getDefaultState(), 1)
+                            .add(Blocks.GRAVEL.getDefaultState(), 1)
                             .build(),
                     Decoration.NONE)
             ),

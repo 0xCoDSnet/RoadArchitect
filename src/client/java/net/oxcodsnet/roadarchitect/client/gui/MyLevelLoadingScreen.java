@@ -82,7 +82,6 @@ public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
 
         // Если пайплайн завершён — закрываем экран
         if (stage == PipelineStage.COMPLETE) {
-            this.client.setScreen(null);
             return;
         }
 
