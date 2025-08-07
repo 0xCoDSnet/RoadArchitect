@@ -11,14 +11,15 @@ import io.wispforest.owo.ui.core.Insets;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.world.LevelLoadingScreen;
 import net.minecraft.text.Text;
-import net.oxcodsnet.roadarchitect.handlers.RoadPipelineController;
+import net.oxcodsnet.roadarchitect.handlers.PipelineRunner;
+import net.oxcodsnet.roadarchitect.handlers.PipelineStage;
 import org.jetbrains.annotations.NotNull;
 
 
 
 /**
  * Настраиваемый экран загрузки мира.
- * Отображает текущую стадию пайплайна {@link RoadPipelineController} и
+ * Отображает текущую стадию пайплайна {@link PipelineStage} и
  * индетерминированный прогресс-бар вместо прежней кнопки.
  */
 public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
@@ -55,7 +56,7 @@ public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
                 .padding(Insets.of(8));
 
         // Подпись стадии
-        this.stageLabel = Components.label(Text.literal(RoadPipelineController.PipelineStage.INITIALISATION.toString()))
+        this.stageLabel = Components.label(Text.literal(PipelineStage.INITIALISATION.toString()))
                 .horizontalTextAlignment(HorizontalAlignment.CENTER);
 
         // Индетерминированный прогресс‑бар. Его ширина
@@ -76,11 +77,11 @@ public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         // Обновляем надпись стадии
-        RoadPipelineController.PipelineStage stage = RoadPipelineController.getCurrentStage();
+        PipelineStage stage = PipelineRunner.getCurrentStage();
         this.stageLabel.text(stage.label());
 
         // Если пайплайн завершён — закрываем экран
-        if (stage == RoadPipelineController.PipelineStage.COMPLETE) {
+        if (stage == PipelineStage.COMPLETE) {
             this.client.setScreen(null);
             return;
         }

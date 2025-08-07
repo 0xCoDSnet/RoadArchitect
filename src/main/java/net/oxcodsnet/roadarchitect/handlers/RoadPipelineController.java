@@ -11,7 +11,6 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureStart;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -25,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Controls execution of the road generation pipeline.
@@ -33,7 +31,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class RoadPipelineController {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadPipelineController");
 
-    private static final AtomicBoolean RUNNING = new AtomicBoolean(false);
     /**
      * Tracks worlds that have completed initial pipeline setup.
      * Cleared on server stop to allow fresh initialization next run.
@@ -44,10 +41,6 @@ public final class RoadPipelineController {
     private static final Set<Identifier> TARGET_IDS = new HashSet<>();
     private static final Set<TagKey<Structure>> TARGET_TAGS = new HashSet<>();
     private static int tickCounter = 0;
-
-    private static volatile PipelineStage currentStage = PipelineStage.SCANNING_STRUCTURES;
-    public static PipelineStage getCurrentStage()       { return currentStage; }
-    private static void setStage(PipelineStage stage)   { currentStage = stage; }
 
     private RoadPipelineController() {
     }
@@ -64,8 +57,8 @@ public final class RoadPipelineController {
         ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
             RegistryKey<World> key = world.getRegistryKey();
             if (key == World.OVERWORLD && INITIALIZED.add(key)) {
-                LOGGER.info("First chunk generate in {}, starting pipeline", key.getValue());
-                startPipelineInit(world, "initial_chunk");
+                LOGGER.debug("First chunk generate in {}, starting pipeline", key.getValue());
+                PipelineRunner.runPipeline(world, world.getSpawnPos(), PipelineRunner.PipelineMode.INIT);
             }
         });
 
@@ -74,8 +67,8 @@ public final class RoadPipelineController {
         ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
             if (world.getRegistryKey() != World.OVERWORLD) return;
             if (!containsTargetStructure(world, chunk)) return;
-            LOGGER.info("Chunk {} generated with target structure, starting pipeline", chunk.getPos());
-            startPipeline(world, chunk, "chunk_structure_trigger");
+            LOGGER.debug("Chunk {} generated with target structure, starting pipeline", chunk.getPos());
+            PipelineRunner.runPipeline(world, chunk.getPos().getCenterAtY(0), PipelineRunner.PipelineMode.CHUNK);
         });
 
         // Периодический запуск каждый INTERVAL_TICKS на позиции игрока
@@ -87,8 +80,8 @@ public final class RoadPipelineController {
                 World world = player.getWorld();
                 if (world.getRegistryKey() != World.OVERWORLD) continue;
                 BlockPos pos = player.getBlockPos();
-                LOGGER.info("Periodic trigger at player {} pos {}, starting pipeline", player.getName().getString(), pos);
-                startPipelineAtPos((ServerWorld) world, pos, "player_periodic_trigger");
+                LOGGER.debug("Periodic trigger at player {} pos {}, starting pipeline", player.getName().getString(), pos);
+                PipelineRunner.runPipeline((ServerWorld) world, pos, PipelineRunner.PipelineMode.PERIODIC);
             }
         });
 
@@ -114,59 +107,6 @@ public final class RoadPipelineController {
         }
     }
 
-    /* ───────────────────────────── Pipeline helpers ───────────────────────────── */
-
-    private static void startPipeline(ServerWorld world, Chunk chunk, String reason) {
-        startPipelineAtPos(world, chunk.getPos().getCenterAtY(0), reason);
-    }
-
-    /**
-     * Запускает пайплайн от заданной позиции.
-     */
-    private static void startPipelineAtPos(ServerWorld world, BlockPos center, String reason) {
-        if (!RUNNING.compareAndSet(false, true)) {
-            return;
-        }
-        try {
-            LOGGER.info("Pipeline start: {}", reason);
-            StructureScanManager.scan(world, reason, center, RoadArchitect.CONFIG.chunkGenerateScanRadius());
-            PathFinderManager.computePaths(world, 50, RoadArchitect.CONFIG.maxConnectionDistance() * 5);
-        } catch (Exception e) {
-            LOGGER.error("Pipeline failure", e);
-        } finally {
-            RUNNING.set(false);
-            LOGGER.info("Pipeline finished: {}", reason);
-        }
-    }
-
-    private static void startPipelineInit(ServerWorld world, String reason) {
-        if (!RUNNING.compareAndSet(false, true)) {
-            return;
-        }
-        try {
-            LOGGER.info("Pipeline start: {}", reason);
-            long start1 = System.nanoTime();
-            BlockPos center = world.getSpawnPos();
-            setStage(PipelineStage.SCANNING_STRUCTURES);
-            StructureScanManager.scan(world, reason, center, RoadArchitect.CONFIG.initScanRadius());
-            double ms1 = (System.nanoTime() - start1) / 1_000_000.0;
-            LOGGER.info("StructureScanManager finished in {} ms", ms1);
-            long start2 = System.nanoTime();
-            setStage(PipelineStage.PATH_FINDING);
-            PathFinderManager.computePaths(world, 1000);
-            double ms2 = (System.nanoTime() - start2) / 1_000_000.0;
-            LOGGER.info("PathFinderManager finished in {} ms", ms2);
-            setStage(PipelineStage.POST_PROCESSING);
-            RoadPostProcessor.processPending(world);
-        } catch (Exception e) {
-            LOGGER.error("Pipeline failure", e);
-        } finally {
-            RUNNING.set(false);
-            LOGGER.info("Pipeline finished: {}", reason);
-            setStage(PipelineStage.COMPLETE);
-        }
-    }
-
     /* ───────────────────────────── Structure matching ───────────────────────────── */
 
     private static boolean containsTargetStructure(ServerWorld world, Chunk chunk) {
@@ -189,17 +129,5 @@ public final class RoadPipelineController {
         return false;
     }
 
-
-    public enum PipelineStage {
-        INITIALISATION(Text.translatable("roadarchitect.stage.intialisation")),
-        SCANNING_STRUCTURES(Text.translatable("roadarchitect.stage.scanning")),
-        PATH_FINDING(Text.translatable("roadarchitect.stage.pathfinding")),
-        POST_PROCESSING(Text.translatable("roadarchitect.stage.postprocess")),
-        COMPLETE(Text.translatable("roadarchitect.stage.complete"));
-
-        private final Text label;
-        PipelineStage(Text label) { this.label = label; }
-        public Text label()       { return label; }
-    }
 
 }
