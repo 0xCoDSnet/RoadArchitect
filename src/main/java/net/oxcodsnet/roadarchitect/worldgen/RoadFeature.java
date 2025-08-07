@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * Feature that places road segments stored in {@link RoadBuilderStorage}.
- *
+ * <p>
  * Толстая линия реализована через проверку расстояния от клетки до центральной
  * прямой (|dx · dir.z − dz · dir.x| ≤ halfWidth). Такой подход избегает
  * «шахматных» дыр на диагоналях :contentReference[oaicite:2]{index=2}.
