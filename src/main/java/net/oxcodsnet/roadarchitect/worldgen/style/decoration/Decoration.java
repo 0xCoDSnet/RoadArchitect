@@ -1,4 +1,4 @@
-package net.oxcodsnet.roadarchitect.worldgen.style;
+package net.oxcodsnet.roadarchitect.worldgen.style.decoration;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
