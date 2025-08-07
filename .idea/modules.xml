@@ -5,6 +5,8 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect-1.client.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect-1.client.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect-1.main.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect-1.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect-1.test.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect-1.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect.client.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect.client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect.main.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect.test.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect.test.iml" />
     </modules>
   </component>
