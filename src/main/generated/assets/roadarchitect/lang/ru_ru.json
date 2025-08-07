@@ -1,0 +1,9 @@
+{
+  "category.roadarchitect": "Архитектор дорог",
+  "key.roadarchitect.debug": "Отладка графа дорог",
+  "roadarchitect.stage.complete": "Завершено",
+  "roadarchitect.stage.intialisation": "Инициализация",
+  "roadarchitect.stage.pathfinding": "Поиск пути",
+  "roadarchitect.stage.postprocess": "Постобработка",
+  "roadarchitect.stage.scanning": "Сканирование структур"
+}

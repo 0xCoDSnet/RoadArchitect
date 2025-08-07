@@ -1,0 +1,9 @@
+{
+  "category.roadarchitect": "Arquitecto de Carreteras",
+  "key.roadarchitect.debug": "Depuración del grafo de carreteras",
+  "roadarchitect.stage.complete": "Completado",
+  "roadarchitect.stage.intialisation": "Inicialización",
+  "roadarchitect.stage.pathfinding": "Búsqueda de rutas",
+  "roadarchitect.stage.postprocess": "Postprocesamiento",
+  "roadarchitect.stage.scanning": "Escaneando estructuras"
+}

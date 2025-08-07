@@ -4,8 +4,12 @@ import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.minecraft.registry.RegistryBuilder;
 import net.minecraft.registry.RegistryKeys;
+import net.oxcodsnet.roadarchitect.datagen.RoadLanguageProvider;
 import net.oxcodsnet.roadarchitect.worldgen.RoadFeatureRegistry;
 import net.oxcodsnet.roadarchitect.worldgen.RoadWorldgenProvider;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.minecraft.registry.RegistryWrapper;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Генератор данных для мода.
@@ -27,5 +31,29 @@ public class RoadArchitectDataGenerator implements DataGeneratorEntrypoint {
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
         pack.addProvider(RoadWorldgenProvider::new);
+        pack.addProvider(
+                (FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registries) ->
+                        new RoadLanguageProvider(output, registries, "en_us")
+        );
+        pack.addProvider(
+                (FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registries) ->
+                        new RoadLanguageProvider(output, registries, "ru_ru")
+        );
+        pack.addProvider(
+                (FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registries) ->
+                        new RoadLanguageProvider(output, registries, "es_es")
+        );
+        pack.addProvider(
+                (FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registries) ->
+                        new RoadLanguageProvider(output, registries, "fr_fr")
+        );
+        pack.addProvider(
+                (FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registries) ->
+                        new RoadLanguageProvider(output, registries, "de_de")
+        );
+        pack.addProvider(
+                (FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registries) ->
+                        new RoadLanguageProvider(output, registries, "zh_cn")
+        );
     }
 }

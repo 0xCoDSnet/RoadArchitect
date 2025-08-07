@@ -1,0 +1,9 @@
+{
+  "category.roadarchitect": "道路架构师",
+  "key.roadarchitect.debug": "道路网络调试",
+  "roadarchitect.stage.complete": "完成",
+  "roadarchitect.stage.intialisation": "初始化",
+  "roadarchitect.stage.pathfinding": "路径搜索",
+  "roadarchitect.stage.postprocess": "后期处理",
+  "roadarchitect.stage.scanning": "扫描结构"
+}
