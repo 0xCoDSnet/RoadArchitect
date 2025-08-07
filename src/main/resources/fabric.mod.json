@@ -25,13 +25,6 @@
       "net.oxcodsnet.roadarchitect.RoadArchitectDataGenerator"
     ]
   },
-  "mixins": [
-    "roadarchitect.mixins.json",
-    {
-      "config": "roadarchitect.client.mixins.json",
-      "environment": "client"
-    }
-  ],
   "depends": {
     "fabricloader": ">=0.16.14",
     "minecraft": "~1.21.1",
