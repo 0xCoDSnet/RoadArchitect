@@ -9,6 +9,7 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
+import net.oxcodsnet.roadarchitect.util.GeometryUtils;
 import net.oxcodsnet.roadarchitect.util.KeyUtil;
 
 /**
@@ -57,38 +58,6 @@ public class RoadGraphState extends PersistentState {
         return manager.getOrCreate(TYPE, KEY);
     }
 
-    private static boolean segmentsIntersect2D(BlockPos p1, BlockPos p2,
-                                               BlockPos p3, BlockPos p4) {
-        return linesIntersect(
-                p1.getX(), p1.getZ(), p2.getX(), p2.getZ(),
-                p3.getX(), p3.getZ(), p4.getX(), p4.getZ());
-    }
-
-    /**
-     * Классический O(1) тест пересечения двух отрезков на плоскости.
-     */
-    private static boolean linesIntersect(int x1, int y1, int x2, int y2,
-                                          int x3, int y3, int x4, int y4) {
-        long d1 = direction(x3, y3, x4, y4, x1, y1);
-        long d2 = direction(x3, y3, x4, y4, x2, y2);
-        long d3 = direction(x1, y1, x2, y2, x3, y3);
-        long d4 = direction(x1, y1, x2, y2, x4, y4);
-        if (d1 * d2 < 0 && d3 * d4 < 0) return true;
-        return (d1 == 0 && onSeg(x3, y3, x4, y4, x1, y1)) ||
-                (d2 == 0 && onSeg(x3, y3, x4, y4, x2, y2)) ||
-                (d3 == 0 && onSeg(x1, y1, x2, y2, x3, y3)) ||
-                (d4 == 0 && onSeg(x1, y1, x2, y2, x4, y4));
-    }
-
-    private static long direction(int ax, int ay, int bx, int by, int cx, int cy) {
-        return (long) (cx - ax) * (by - ay) - (long) (cy - ay) * (bx - ax);
-    }
-
-    private static boolean onSeg(int ax, int ay, int bx, int by, int cx, int cy) {
-        return Math.min(ax, bx) <= cx && cx <= Math.max(ax, bx) &&
-                Math.min(ay, by) <= cy && cy <= Math.max(ay, by);
-    }
-
     /*========== helpers ==========*/
 
     /**
@@ -107,7 +76,6 @@ public class RoadGraphState extends PersistentState {
      * <p>Returns the node storage.</p>
      */
     public NodeStorage nodes() {
-
         return nodeStorage;
     }
 
@@ -167,7 +135,7 @@ public class RoadGraphState extends PersistentState {
             Node n2 = nodeStorage.all().get(e.nodeB());
             if (n1 == null || n2 == null) continue;
 
-            if (segmentsIntersect2D(NodeA.pos(), NodeB.pos(), n1.pos(), n2.pos())) {
+            if (GeometryUtils.segmentsIntersect2D(NodeA.pos(), NodeB.pos(), n1.pos(), n2.pos())) {
                 return;
             }
         }
