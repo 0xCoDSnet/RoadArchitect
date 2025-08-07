@@ -11,6 +11,7 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureStart;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -43,6 +44,10 @@ public final class RoadPipelineController {
     private static final Set<Identifier> TARGET_IDS = new HashSet<>();
     private static final Set<TagKey<Structure>> TARGET_TAGS = new HashSet<>();
     private static int tickCounter = 0;
+
+    private static volatile PipelineStage currentStage = PipelineStage.SCANNING_STRUCTURES;
+    public static PipelineStage getCurrentStage()       { return currentStage; }
+    private static void setStage(PipelineStage stage)   { currentStage = stage; }
 
     private RoadPipelineController() {
     }
@@ -142,19 +147,23 @@ public final class RoadPipelineController {
             LOGGER.info("Pipeline start: {}", reason);
             long start1 = System.nanoTime();
             BlockPos center = world.getSpawnPos();
+            setStage(PipelineStage.SCANNING_STRUCTURES);
             StructureScanManager.scan(world, reason, center, RoadArchitect.CONFIG.initScanRadius());
             double ms1 = (System.nanoTime() - start1) / 1_000_000.0;
             LOGGER.info("StructureScanManager finished in {} ms", ms1);
             long start2 = System.nanoTime();
+            setStage(PipelineStage.PATH_FINDING);
             PathFinderManager.computePaths(world, 1000);
             double ms2 = (System.nanoTime() - start2) / 1_000_000.0;
             LOGGER.info("PathFinderManager finished in {} ms", ms2);
+            setStage(PipelineStage.POST_PROCESSING);
             RoadPostProcessor.processPending(world);
         } catch (Exception e) {
             LOGGER.error("Pipeline failure", e);
         } finally {
             RUNNING.set(false);
             LOGGER.info("Pipeline finished: {}", reason);
+            setStage(PipelineStage.COMPLETE);
         }
     }
 
@@ -179,4 +188,18 @@ public final class RoadPipelineController {
         }
         return false;
     }
+
+
+    public enum PipelineStage {
+        INITIALISATION(Text.translatable("roadarchitect.stage.intialisation")),
+        SCANNING_STRUCTURES(Text.translatable("roadarchitect.stage.scanning")),
+        PATH_FINDING(Text.translatable("roadarchitect.stage.pathfinding")),
+        POST_PROCESSING(Text.translatable("roadarchitect.stage.postprocess")),
+        COMPLETE(Text.translatable("roadarchitect.stage.complete"));
+
+        private final Text label;
+        PipelineStage(Text label) { this.label = label; }
+        public Text label()       { return label; }
+    }
+
 }

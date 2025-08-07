@@ -1,27 +1,45 @@
 package net.oxcodsnet.roadarchitect.client.gui;
 
 import io.wispforest.owo.ui.base.BaseOwoScreen;
+import io.wispforest.owo.ui.component.BoxComponent;
 import io.wispforest.owo.ui.component.Components;
+import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
-import io.wispforest.owo.ui.core.HorizontalAlignment;
-import io.wispforest.owo.ui.core.OwoUIAdapter;
-import io.wispforest.owo.ui.core.Surface;
-import io.wispforest.owo.ui.core.VerticalAlignment;
+import io.wispforest.owo.ui.core.*;
+import io.wispforest.owo.ui.core.Insets;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.world.LevelLoadingScreen;
 import net.minecraft.text.Text;
-import net.oxcodsnet.roadarchitect.RoadArchitect;
+import net.oxcodsnet.roadarchitect.handlers.RoadPipelineController;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.*;
+
+
+/**
+ * Настраиваемый экран загрузки мира.
+ * Отображает текущую стадию пайплайна {@link RoadPipelineController} и
+ * индетерминированный прогресс-бар вместо прежней кнопки.
+ */
 public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
+
     private final LevelLoadingScreen parent;
     private OwoUIAdapter<FlowLayout> adapter;
 
+    private LabelComponent stageLabel;
+    private BoxComponent progressBar;
+
+    private int barProgress;
+
     public MyLevelLoadingScreen(LevelLoadingScreen parent) {
-        super(Text.literal("Custom WorldGen"));
+        super(Text.literal("Road Architect – worldgen"));
         this.parent = parent;
     }
+
+    // ---------------------------------------------------------------------
+    // UI Construction
+    // ---------------------------------------------------------------------
 
     @Override
     protected @NotNull OwoUIAdapter<FlowLayout> createAdapter() {
@@ -31,14 +49,47 @@ public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
 
     @Override
     protected void build(FlowLayout root) {
+        // Настройки корневого контейнера
         root.surface(Surface.VANILLA_TRANSLUCENT)
                 .horizontalAlignment(HorizontalAlignment.CENTER)
-                .verticalAlignment(VerticalAlignment.CENTER);
+                .verticalAlignment(VerticalAlignment.BOTTOM)
+                .padding(Insets.of(8));
 
-        root.child(Components.button(Text.literal("My Owo Button"), b ->
-                RoadArchitect.LOGGER.info("Clicked owo button in world gen!")
-        ));
+        // Подпись стадии
+        this.stageLabel = Components.label(Text.literal("Инициализация...")).horizontalTextAlignment(HorizontalAlignment.CENTER);
+
+        // Индетерминированный прогресс‑бар (ширина изменяется в tick())
+        this.progressBar = (BoxComponent) Components.box(Sizing.fixed(0), Sizing.fixed(4)).margins(Insets.vertical(4));
+
+        root.child(stageLabel);
+        root.child(progressBar);
     }
+
+    // ---------------------------------------------------------------------
+    // Logic / Updates
+    // ---------------------------------------------------------------------
+
+    @Override
+    public void tick() {
+        // Обновляем надпись стадии
+        RoadPipelineController.PipelineStage stage = RoadPipelineController.getCurrentStage();
+        this.stageLabel.text(stage.label());
+
+        // Если пайплайн завершён — закрываем экран
+        if (stage == RoadPipelineController.PipelineStage.COMPLETE) {
+            this.client.setScreen(null);
+            return;
+        }
+
+        // Анимация "бегущей" полосы
+        int maxWidth = Math.max(this.width - 40, 100); // запас на края
+        this.barProgress = (this.barProgress + 4) % maxWidth;
+        this.progressBar.horizontalSizing(Sizing.fixed(this.barProgress));
+    }
+
+    // ---------------------------------------------------------------------
+    // Rendering & Input delegation to vanilla screen
+    // ---------------------------------------------------------------------
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
