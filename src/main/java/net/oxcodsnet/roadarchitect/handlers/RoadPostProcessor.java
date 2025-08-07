@@ -57,10 +57,10 @@ public final class RoadPostProcessor {
         for (int i = 0; i < verts.size() - 1; i++) {
             BlockPos a = verts.get(i);
             BlockPos b = verts.get(i + 1);
-            out.add(a);
+            out.add(a.down());
             interpolate(world, a, b, out);
         }
-        out.add(verts.getLast());
+        out.add(verts.getLast().down());
         return out;
     }
 
@@ -71,7 +71,7 @@ public final class RoadPostProcessor {
         for (int i = 1; i < steps; i++) {
             int nx = a.getX() + dx * i;
             int nz = a.getZ() + dz * i;
-            int ny = CacheManager.getHeight(world, nx, nz);
+            int ny = CacheManager.getHeight(world, nx, nz) - 1;
             out.add(new BlockPos(nx, ny, nz));
         }
     }
