@@ -80,11 +80,6 @@ public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
         PipelineStage stage = PipelineRunner.getCurrentStage();
         this.stageLabel.text(stage.label());
 
-        // Если пайплайн завершён — закрываем экран
-        if (stage == PipelineStage.COMPLETE) {
-            return;
-        }
-
         // Анимация "бегущей" полосы
         int maxWidth = Math.max(this.width - 40, 100); // запас на края
         this.barProgress = (this.barProgress + 4) % maxWidth;

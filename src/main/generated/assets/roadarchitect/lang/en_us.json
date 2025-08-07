@@ -5,5 +5,15 @@
   "roadarchitect.stage.intialisation": "Initialising",
   "roadarchitect.stage.pathfinding": "Path Finding",
   "roadarchitect.stage.postprocess": "Post Processing",
-  "roadarchitect.stage.scanning": "Scanning Structures"
+  "roadarchitect.stage.scanning": "Scanning Structures",
+  "text.config.roadarchitect.option.chunkGenerateScanRadius": "Chunk Generation Scan Radius",
+  "text.config.roadarchitect.option.chunkGenerateScanRadius.tooltip": "Radius in chunks scanned when new chunks generate.",
+  "text.config.roadarchitect.option.initScanRadius": "Initial Scan Radius",
+  "text.config.roadarchitect.option.initScanRadius.tooltip": "Radius in blocks to scan for structures when the world is first loaded.",
+  "text.config.roadarchitect.option.maxConnectionDistance": "Max Connection Distance",
+  "text.config.roadarchitect.option.maxConnectionDistance.tooltip": "Maximum distance in blocks between two structures to connect them.",
+  "text.config.roadarchitect.option.pipelineIntervalSeconds": "Pipeline Interval Seconds",
+  "text.config.roadarchitect.option.pipelineIntervalSeconds.tooltip": "Delay in seconds between pipeline runs.",
+  "text.config.roadarchitect.option.structureSelectors": "Structure Selectors",
+  "text.config.roadarchitect.option.structureSelectors.tooltip": "List of structure selectors that roads will connect."
 }
