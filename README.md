@@ -23,7 +23,8 @@ Roads adapt their style to the biome, and the network is saved between game sess
 ## Features
 
 - 🏘 **Automatic detection** of villages and other structures
-- 🎨 **Biome-based road styles** for better immersion
+- 🎨 **Biome-oriented road styles** for better immersion
+- 🧭 **Smart pathfinding** using A* with terrain caching
 - 💾 **Persistent network** — roads remain between sessions
 - 🔄 Fully automated, minimal configuration required
 
