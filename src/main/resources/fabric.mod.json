@@ -8,10 +8,10 @@
     "0xCoDSnet"
   ],
   "contact": {
-    "homepage": "",
-    "sources": ""
+    "homepage": "https://github.com/0xCoDSnet",
+    "sources": "https://github.com/0xCoDSnet/RoadArchitect"
   },
-  "license": "GPL-3.0-or-later",
+  "license": "Apache-2.0",
   "icon": "assets/roadarchitect/icon3.png",
   "environment": "*",
   "entrypoints": {
