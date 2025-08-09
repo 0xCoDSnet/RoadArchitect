@@ -29,22 +29,24 @@ import static net.oxcodsnet.roadarchitect.util.CacheManager.hash;
 import static net.oxcodsnet.roadarchitect.util.CacheManager.keyToPos;
 
 /**
- * A* path‑finder working on a configurable X/Z grid.
+ * A* | ARA* поиск пути по настраиваемой X/Z-сети.
  * <ul>
- *   <li>Thread‑safe caches (FastUtil&nbsp;+ synchronize)</li>
- *   <li>Early <b>line‑of‑sight</b> shortcut: if the current vertex sees the goal without steep height changes, search stops early.</li>
- *   <li>Optional interpolation between grid vertices → returns every road block.</li>
+ *   <li>Потокобезопасные кэши (FastUtil + централизованный CacheManager)</li>
+ *   <li>Поддержка позиционного поиска (между произвольными BlockPos)</li>
+ *   <li>Регулируемый вес эвристики (ε), чтобы переключаться между A* (ε=1) и Weighted A*</li>
  * </ul>
  */
 public class PathFinder {
-    /* ================ USER‑TUNABLE PARAMS ================ */
+    /* ================ USER-TUNABLE PARAMS ================ */
     public static final int GRID_STEP = 4;
     /**
-     * Inflation factor ε for ARA* (Weighted A*)
+     * Inflation factor ε для ARA* (Weighted A*)
      */
-    public static final double HEURISTIC_WEIGHT = 3;
+    public static final double HEURISTIC_WEIGHT = 3.0;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinder");
     private static final int[][] OFFSETS = generateOffsets();
+
     private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(
             BiomeTags.IS_RIVER, 400.0,
             BiomeTags.IS_OCEAN, 999.0,
@@ -53,21 +55,27 @@ public class PathFinder {
             BiomeTags.IS_BEACH, 160.0
     );
     /* ===================================================== */
+
     private final NodeStorage nodes;
     private final ServerWorld world;
     private final int maxSteps;
+    private final double heuristicWeight;
 
-    /* ── hot references to world‑gen objects ── */
+    /* ── горячие ссылки на объекты генерации мира ── */
     private final ChunkGenerator generator;
     private final NoiseConfig noiseConfig;
     private final MultiNoiseUtil.MultiNoiseSampler noiseSampler;
     private final BiomeSource biomeSource;
 
-
     public PathFinder(NodeStorage nodes, ServerWorld world, int maxSteps) {
+        this(nodes, world, maxSteps, HEURISTIC_WEIGHT);
+    }
+
+    public PathFinder(NodeStorage nodes, ServerWorld world, int maxSteps, double heuristicWeight) {
         this.nodes = nodes;
         this.world = world;
         this.maxSteps = maxSteps;
+        this.heuristicWeight = heuristicWeight;
 
         this.generator = world.getChunkManager().getChunkGenerator();
         this.noiseConfig = world.getChunkManager().getNoiseConfig();
@@ -79,15 +87,9 @@ public class PathFinder {
         return (Math.abs(off[0]) == GRID_STEP && Math.abs(off[1]) == GRID_STEP) ? 1.5 : 1.0;
     }
 
-    // ───────────────────────────────────────────────────────────────────────
-    // A* core
-
     private static double elevationCost(int y1, int y2) {
         return Math.abs(y1 - y2) * 40.0;
     }
-
-    // ───────────────────────────────────────────────────────────────────────
-    // Caching helpers (ultrafast world‑gen API)
 
     private static double biomeCost(RegistryEntry<Biome> biome) {
         for (Map.Entry<TagKey<Biome>, Double> entry : BIOME_COSTS.entrySet()) {
@@ -99,15 +101,12 @@ public class PathFinder {
     }
 
     private static double yLevelCost(int y) {
-        return y <= 63 ? 240 : 0.0;
+        return y <= 63 ? 240.0 : 0.0;
     }
 
     private static boolean isSteep(int y1, int y2) {
         return Math.abs(y1 - y2) > 3;
     }
-
-    // ───────────────────────────────────────────────────────────────────────
-    // Cost functions and filters
 
     private static double heuristic(int x, int z, BlockPos goal) {
         int dx = Math.abs(x - goal.getX());
@@ -131,26 +130,34 @@ public class PathFinder {
         return new int[][]{{d, 0}, {-d, 0}, {0, d}, {0, -d}, {d, d}, {d, -d}, {-d, d}, {-d, -d}};
     }
 
+    /* ───────────────────────── Публичный API ───────────────────────── */
+
     /**
-     * Returns the list of {@link BlockPos} actually traversed by A*.
+     * Поиск по идентификаторам узлов (как и раньше).
      */
     public List<BlockPos> findPath(String fromId, String toId) {
-        return aStar(fromId, toId);
-    }
-
-    private List<BlockPos> aStar(String fromId, String toId) {
         Node startNode = nodes.all().get(fromId);
         Node endNode = nodes.all().get(toId);
         if (startNode == null || endNode == null) {
             LOGGER.debug("Missing node(s) {} or {}", fromId, toId);
             return List.of();
         }
+        return aStarPositions(snap(startNode.pos()), snap(endNode.pos()));
+    }
 
+    /**
+     * Новый метод: поиск между произвольными позициями (для локального реплана).
+     */
+    public List<BlockPos> findPath(BlockPos from, BlockPos to) {
+        return aStarPositions(snap(from), snap(to));
+    }
+
+    /* ───────────────────────── Реализация A* ───────────────────────── */
+
+    private List<BlockPos> aStarPositions(BlockPos startPos, BlockPos endPos) {
         record Rec(long key, double g, double f) {
         }
 
-        BlockPos startPos = snap(startNode.pos());
-        BlockPos endPos = snap(endNode.pos());
         long startKey = hash(startPos.getX(), startPos.getZ());
         long endKey = hash(endPos.getX(), endPos.getZ());
 
@@ -160,11 +167,7 @@ public class PathFinder {
         Long2LongMap parent = new Long2LongOpenHashMap();
 
         gScore.put(startKey, 0.0);
-        open.add(new Rec(
-                startKey,
-                0.0,
-                heuristic(startPos, endPos) * HEURISTIC_WEIGHT   // inflated h
-        ));
+        open.add(new Rec(startKey, 0.0, heuristic(startPos, endPos) * heuristicWeight));
 
         int iterations = 0;
         while (!open.isEmpty() && iterations++ < maxSteps) {
@@ -173,12 +176,10 @@ public class PathFinder {
             int curZ = (int) current.key;
             int curY = sampleHeight(curX, curZ);
 
-            // goal test
             if (current.key == endKey) {
                 return reconstructVertices(current.key, startKey, parent);
             }
 
-            // expand neighbours
             for (int[] off : OFFSETS) {
                 int nx = curX + off[0];
                 int nz = curZ + off[1];
@@ -209,17 +210,16 @@ public class PathFinder {
                 if (tentativeG < gScore.get(neighKey)) {
                     parent.put(neighKey, current.key);
                     gScore.put(neighKey, tentativeG);
-                    double f = tentativeG + heuristic(nx, nz, endPos) * HEURISTIC_WEIGHT;
+                    double f = tentativeG + heuristic(nx, nz, endPos) * heuristicWeight;
                     open.add(new Rec(neighKey, tentativeG, f));
                 }
             }
         }
-        LOGGER.debug("Path not found between {} and {} after {} iterations", fromId, toId, iterations);
+        LOGGER.debug("Path not found between {} and {} after {} iterations", startPos, endPos, iterations);
         return List.of();
     }
 
-    // ───────────────────────────────────────────────────────────────────────
-    // Heuristics
+    /* ───────────────────────── Быстрые семплеры ───────────────────────── */
 
     private int sampleHeight(int x, int z) {
         long key = hash(x, z);
@@ -233,9 +233,6 @@ public class PathFinder {
         return CacheManager.getStability(world, key, () -> terrainStabilityCost(x, z, y));
     }
 
-    // ───────────────────────────────────────────────────────────────────────
-    // Path reconstruction
-
     private RegistryEntry<Biome> sampleBiome(int x, int z, int y) {
         long key = hash(x, z);
         return CacheManager.getBiome(world, key, () ->
@@ -248,8 +245,7 @@ public class PathFinder {
         );
     }
 
-    // ───────────────────────────────────────────────────────────────────────
-    // Utility
+    /* ───────────────────────── Утилиты ───────────────────────── */
 
     private double terrainStabilityCost(int x, int z, int y) {
         int cost = 0;

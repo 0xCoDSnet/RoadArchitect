@@ -89,13 +89,13 @@ public class PathFinderManager {
 
     // overloads for backwards compatibility
     public static void computePaths(ServerWorld world) {
-        computePaths(world, 50, 10480 * 2);
+        computePaths(world, 50, 10480);
     }
 
     public static void computePaths(
             ServerWorld world, int preFillCacheZone
     ) {
-        computePaths(world, preFillCacheZone, 10480 * 2);
+        computePaths(world, preFillCacheZone, 10480);
     }
 
     private record PathJob(
