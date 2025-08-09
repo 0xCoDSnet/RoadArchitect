@@ -37,8 +37,10 @@ public final class PipelineRunner {
             return;
         }
         try {
+            setStage(PipelineStage.INITIALISATION);
             LOGGER.info("Pipeline start: {}", mode.reason());
             switch (mode) {
+
                 case INIT -> {
                     setStage(PipelineStage.SCANNING_STRUCTURES);
                     StructureScanManager.scan(world, mode.reason(), center, RoadArchitect.CONFIG.initScanRadius());
