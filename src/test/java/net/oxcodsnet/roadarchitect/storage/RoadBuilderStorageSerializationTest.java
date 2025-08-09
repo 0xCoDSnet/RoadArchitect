@@ -1,7 +1,9 @@
 package net.oxcodsnet.roadarchitect.storage;
 
+import net.minecraft.Bootstrap;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.ChunkPos;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import net.oxcodsnet.roadarchitect.util.KeyUtil;
 
@@ -11,8 +13,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Tests serialization of {@link RoadBuilderStorage}.
  */
 class RoadBuilderStorageSerializationTest {
+    @Disabled("Requires game bootstrap in Minecraft 1.21.3")
     @Test
     void roundTrip() {
+        Bootstrap.initialize();
         RoadBuilderStorage storage = new RoadBuilderStorage();
         ChunkPos chunk = new ChunkPos(0, 0);
         String key = KeyUtil.pathKey("a", "b");

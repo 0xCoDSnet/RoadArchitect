@@ -143,7 +143,7 @@ public final class RoadPipelineController {
             return false;
         }
 
-        Registry<Structure> registry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
+        Registry<Structure> registry = world.getRegistryManager().getOrThrow(RegistryKeys.STRUCTURE);
         for (StructureStart start : chunk.getStructureStarts().values()) {
             Structure structure = start.getStructure();
             Identifier id = registry.getId(structure);

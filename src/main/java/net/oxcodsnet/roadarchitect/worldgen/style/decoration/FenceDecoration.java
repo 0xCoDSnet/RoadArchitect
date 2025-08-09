@@ -101,7 +101,7 @@ public final class FenceDecoration implements Decoration {
             BlockState st = world.getBlockState(p);
             for (Direction d : Direction.Type.HORIZONTAL) {
                 BlockPos n = p.offset(d);
-                st = st.getStateForNeighborUpdate(d, world.getBlockState(n), world, p, n);  // соединения забора
+                st = st.getStateForNeighborUpdate(world, world, p, d, n, world.getBlockState(n), world.getRandom());  // соединения забора
             }
             world.setBlockState(p, st, Block.NO_REDRAW);
         }
