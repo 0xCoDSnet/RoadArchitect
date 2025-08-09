@@ -55,7 +55,7 @@ public final class RoadPipelineController {
 
         // ───── First‑chunk generation trigger ────────────────────────────────────
         // Fires only when the spawn chunk is generated for the first time.
-        ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
+        ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
             if (world.getRegistryKey() != World.OVERWORLD) {
                 return;
             }
@@ -73,7 +73,7 @@ public final class RoadPipelineController {
         });
 
         // ───── Chunk generation containing a target structure ───────────────────
-        ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
+        ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
             if (world.getRegistryKey() != World.OVERWORLD) {
                 return;
             }
@@ -143,7 +143,7 @@ public final class RoadPipelineController {
             return false;
         }
 
-        Registry<Structure> registry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
+        Registry<Structure> registry = world.getRegistryManager().getOrThrow(RegistryKeys.STRUCTURE);
         for (StructureStart start : chunk.getStructureStarts().values()) {
             Structure structure = start.getStructure();
             Identifier id = registry.getId(structure);
