@@ -38,7 +38,7 @@ public final class PipelineRunner {
         }
         try {
             setStage(PipelineStage.INITIALISATION);
-            LOGGER.info("Pipeline start: {}", mode.reason());
+            LOGGER.debug("Pipeline start: {}", mode.reason());
             switch (mode) {
 
                 case INIT -> {

@@ -23,7 +23,7 @@ public class RoadGraphStateManager {
         ServerWorldEvents.LOAD.register((server, world) -> {
             if (!world.isClient()) {
                 RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
-                LOGGER.info("RoadGraphState loaded for world {}", world.getRegistryKey().getValue());
+                LOGGER.debug("RoadGraphState loaded for world {}", world.getRegistryKey().getValue());
             }
         });
 
@@ -32,7 +32,7 @@ public class RoadGraphStateManager {
             if (!world.isClient()) {
                 RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
                 state.markDirty();
-                LOGGER.info("Saved RoadGraphState for world {} on unload", world.getRegistryKey().getValue());
+                LOGGER.debug("Saved RoadGraphState for world {} on unload", world.getRegistryKey().getValue());
             }
         });
 
@@ -42,7 +42,7 @@ public class RoadGraphStateManager {
                 RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
                 state.markDirty();
             }
-            LOGGER.info("Server stopping, all RoadGraphStates marked dirty");
+            LOGGER.debug("Server stopping, all RoadGraphStates marked dirty");
         });
     }
 }

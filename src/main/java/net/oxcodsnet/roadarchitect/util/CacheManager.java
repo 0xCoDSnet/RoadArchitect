@@ -70,14 +70,14 @@ public final class CacheManager {
     private static void load(ServerWorld world) {
         CacheStorage storage = CacheStorage.get(world);
         STATES.put(world.getRegistryKey(), storage);
-        LOGGER.info("Cache loaded for world {}", world.getRegistryKey().getValue());
+        LOGGER.debug("Cache loaded for world {}", world.getRegistryKey().getValue());
     }
 
     private static void save(ServerWorld world) {
         CacheStorage storage = STATES.remove(world.getRegistryKey());
         if (storage != null) {
             storage.markDirty();
-            LOGGER.info("Cache saved for world {}", world.getRegistryKey().getValue());
+            LOGGER.debug("Cache saved for world {}", world.getRegistryKey().getValue());
         }
     }
 

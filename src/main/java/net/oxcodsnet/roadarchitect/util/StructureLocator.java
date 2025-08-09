@@ -136,7 +136,7 @@ public final class StructureLocator {
         RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
         for (Pair<BlockPos, String> pair : found) {
             Node node = graph.addNodeWithEdges(pair.getFirst(), pair.getSecond());
-            LOGGER.info("Added node {} at {}", node.id(), node.pos());
+            LOGGER.debug("Added node {} at {}", node.id(), node.pos());
         }
         graph.markDirty();
     }

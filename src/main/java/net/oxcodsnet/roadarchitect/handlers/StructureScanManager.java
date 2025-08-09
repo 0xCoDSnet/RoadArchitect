@@ -24,8 +24,8 @@ public class StructureScanManager {
     static void scan(ServerWorld world, String approach, BlockPos center, int overallRadius) {
         int scanRadius = 1;
         List<String> selectors = RoadArchitect.CONFIG.structureSelectors();
-        LOGGER.info("[{}] Scan launch: overallRadius={}, scanRadius={}, selectors={}", approach, overallRadius, scanRadius, selectors);
+        LOGGER.debug("[{}] Scan launch: overallRadius={}, scanRadius={}, selectors={}", approach, overallRadius, scanRadius, selectors);
         List<Pair<BlockPos, String>> found = StructureLocator.scanGridAsync(world, center, overallRadius, scanRadius, selectors);
-        LOGGER.info("[{}] Scanning is completed. Found structures: {}", approach, found.size());
+        LOGGER.debug("[{}] Scanning is completed. Found structures: {}", approach, found.size());
     }
 }

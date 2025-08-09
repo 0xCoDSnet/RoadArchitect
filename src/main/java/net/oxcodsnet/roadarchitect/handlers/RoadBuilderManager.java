@@ -38,7 +38,7 @@ public class RoadBuilderManager {
                 } while (i < path.size() && new ChunkPos(path.get(i)).equals(chunk));
                 storage.addSegment(chunk, key, start, i);
             }
-            LOGGER.info("Queued road construction {} ({} steps)", key, path.size());
+            LOGGER.debug("Queued road construction {} ({} steps)", key, path.size());
         }
     }
 }

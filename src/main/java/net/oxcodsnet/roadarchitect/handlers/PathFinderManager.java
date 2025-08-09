@@ -63,13 +63,13 @@ public class PathFinderManager {
                 storage.putPath(job.from(), job.to(), job.path(), st);
                 if (!job.path().isEmpty()) {
                     graph.edges().setStatus(job.edgeId(), EdgeStorage.Status.SUCCESS);
-                    LOGGER.info(
+                    LOGGER.debug(
                             ">>> Computed path {} ({} ms)",
                             job.edgeId(), job.durationMs()
                     );
                 } else {
                     graph.edges().setStatus(job.edgeId(), EdgeStorage.Status.FAILURE);
-                    LOGGER.info(
+                    LOGGER.debug(
                             "! No path for {} ({} ms)",
                             job.edgeId(), job.durationMs()
                     );
