@@ -42,7 +42,7 @@ public class PathFinder {
     /**
      * Inflation factor ε для ARA* (Weighted A*)
      */
-    public static final double HEURISTIC_WEIGHT = 3.0;
+    public static final double HEURISTIC_WEIGHT = 1.8;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinder");
     private static final int[][] OFFSETS = generateOffsets();

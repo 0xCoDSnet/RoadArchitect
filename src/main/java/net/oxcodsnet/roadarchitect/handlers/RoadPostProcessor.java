@@ -1,6 +1,5 @@
 package net.oxcodsnet.roadarchitect.handlers;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -20,6 +19,7 @@ import java.util.Map.Entry;
 /**
  * Post-processes raw A* paths into detailed block sequences
  * and applies parallel-road Y-merge post-optimization.
+ * Дополнительно: нормализация высот + подробное логирование мест «иголок».
  */
 public final class RoadPostProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadPostProcessor");
@@ -27,22 +27,23 @@ public final class RoadPostProcessor {
     private RoadPostProcessor() {}
 
     // ====== ПАРАМЕТРЫ (можно вынести в конфиг позже) ======
-    private static final int TOLERANCE_BLOCKS = 30;         // близость, блоки
-    private static final int ANGLE_THRESHOLD_DEG = 35;     // почти параллельные
-    private static final int TAIL_ANGLE_MAX_DEG = 35;      // угол после схождения
-    private static final double AVG_DIST_FACTOR = 1.5;     // < tolerance * factor
-    private static final double SCORE_LIMIT = 50.0;        // угол + dist/10
-    private static final int MAX_ITER = 1;                 // N-циклы
-    private static final boolean UNTIL_STABLE = true;      // до стабилизации
+    private static final int TOLERANCE_BLOCKS = 30;          // близость, блоки
+    private static final int ANGLE_THRESHOLD_DEG = 35;       // почти параллельные
+    private static final int TAIL_ANGLE_MAX_DEG = 35;        // угол после схождения
+    private static final double AVG_DIST_FACTOR = 1.5;       // < tolerance * factor
+    private static final double SCORE_LIMIT = 50.0;          // угол + dist/10
+    private static final int MAX_ITER = 1;                   // N-циклы
+    private static final boolean UNTIL_STABLE = true;        // до стабилизации
 
-    // ====== Регистрация хуков (как в твоей версии) ======
+    // ====== Нормализация высот (профиль) ======
+    private static final int SMOOTH_MEDIAN_WINDOW = 5;       // нечётное: 3/5/7
+    private static final int SMOOTH_GRAD_MAX = 1;            // макс. разница Y между соседями
+    private static final int SMOOTH_PASSES = 2;              // число прогонов
+    private static final int DESPIKE_DELTA = 2;              // чувствительность «иголки»
+    private static final boolean LOG_GRAD_CLAMP = true;     // включить подробный лог клампа
+
+    // ====== Регистрация хуков ======
     public static void register() {
-//        ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
-//            if (world.isClient()) return;
-//            if (world.getRegistryKey() != World.OVERWORLD) return;
-//            processChunk(world, chunk.getPos());
-//        });
-
         ServerTickEvents.START_WORLD_TICK.register(world -> {
             if (world.isClient()) return;
             if (world.getRegistryKey() != World.OVERWORLD) return;
@@ -77,6 +78,95 @@ public final class RoadPostProcessor {
         }
     }
 
+    // ====== Нормализация высот с логированием ======
+    private record NormalizeResult(List<BlockPos> path, int spikesCut, int gradClamped) {}
+
+    private static NormalizeResult normalizeHeights(List<BlockPos> refined) {
+        if (refined.size() < 3) {
+            return new NormalizeResult(refined, 0, 0);
+        }
+
+        int n = refined.size();
+        int[] y = new int[n];
+        for (int i = 0; i < n; i++) y[i] = refined.get(i).getY();
+
+        int spikes = 0;
+        int clamps = 0;
+
+        for (int pass = 0; pass < SMOOTH_PASSES; pass++) {
+            // 1) Медианный фильтр
+            if (SMOOTH_MEDIAN_WINDOW >= 3 && (SMOOTH_MEDIAN_WINDOW & 1) == 1) {
+                int r = SMOOTH_MEDIAN_WINDOW / 2;
+                int[] tmp = Arrays.copyOf(y, n);
+                int[] win = new int[SMOOTH_MEDIAN_WINDOW];
+                for (int i = 0; i < n; i++) {
+                    int s = Math.max(0, i - r);
+                    int e = Math.min(n - 1, i + r);
+                    int k = 0;
+                    for (int j = s; j <= e; j++) win[k++] = y[j];
+                    for (; k < win.length; k++) win[k] = (i < r) ? y[0] : y[n - 1];
+                    Arrays.sort(win);
+                    tmp[i] = win[win.length / 2];
+                }
+                y = tmp;
+            }
+
+            // 2) Ограничение градиента: вперёд
+            for (int i = 1; i < n; i++) {
+                int old = y[i];
+                int lo = y[i - 1] - SMOOTH_GRAD_MAX;
+                int hi = y[i - 1] + SMOOTH_GRAD_MAX;
+                int clamped = Math.max(lo, Math.min(hi, old));
+                if (clamped != old) {
+                    clamps++;
+                    if (LOG_GRAD_CLAMP) {
+                        BlockPos p = refined.get(i);
+                        LOGGER.info("[PostProcess] Clamp↑ at {}: {} -> {} (ref={})", p, old, clamped, y[i - 1]);
+                    }
+                    y[i] = clamped;
+                }
+            }
+            // 2b) Ограничение градиента: назад
+            for (int i = n - 2; i >= 0; i--) {
+                int old = y[i];
+                int lo = y[i + 1] - SMOOTH_GRAD_MAX;
+                int hi = y[i + 1] + SMOOTH_GRAD_MAX;
+                int clamped = Math.max(lo, Math.min(hi, old));
+                if (clamped != old) {
+                    clamps++;
+                    if (LOG_GRAD_CLAMP) {
+                        BlockPos p = refined.get(i);
+                        LOGGER.info("[PostProcess] Clamp↓ at {}: {} -> {} (ref={})", p, old, clamped, y[i + 1]);
+                    }
+                    y[i] = clamped;
+                }
+            }
+
+            // 3) Срез одиночных «иголок» (пик над обоими соседями)
+            for (int i = 1; i < n - 1; i++) {
+                int a = y[i - 1];
+                int b = y[i + 1];
+                int m = Math.max(a, b);
+                if (y[i] - m >= DESPIKE_DELTA) {
+                    BlockPos p = refined.get(i);
+                    int old = y[i];
+                    int neu = (a + b) / 2;
+                    y[i] = neu;
+                    spikes++;
+                    LOGGER.warn("[PostProcess] Срезан пик высоты в {}: {} -> {} (соседи: {}/{})",
+                            p, old, neu, a, b);
+                }
+            }
+        }
+
+        List<BlockPos> out = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            BlockPos p = refined.get(i);
+            out.add(new BlockPos(p.getX(), y[i], p.getZ()));
+        }
+        return new NormalizeResult(out, spikes, clamps);
+    }
+
     // ====== Планирование как у тебя: по одному ключу ======
     public static void processPending(ServerWorld world) {
         PathStorage storage = PathStorage.get(world);
@@ -106,16 +196,11 @@ public final class RoadPostProcessor {
         final List<BlockPos> baseRawInitial = storage.getPath(baseKey);
 
         AsyncExecutor.execute(() -> {
-            // ключ, который сейчас «активен» в N-цикле
             String activeKey = baseKey;
             List<BlockPos> activeRaw = new ArrayList<>(baseRawInitial);
 
-            // какие партнёры мы помечали PROCESSING, но ещё не сделали READY
             final Set<String> partnersMarked = new HashSet<>();
-            // какие ключи мы точно довели до READY через updatePath
             final Set<String> becameReady = new HashSet<>();
-
-            // что реально отдаём строителю (refined-данные)
             final Map<String, List<BlockPos>> toBuild = new HashMap<>();
 
             try {
@@ -132,7 +217,6 @@ public final class RoadPostProcessor {
 
                     // 2) Пытаемся пометить соседа как PROCESSING
                     if (!storage.tryMarkProcessing(cand.otherKey)) {
-                        // сосед уже не PENDING — пробуем дальше на этой же итерации
                         continue;
                     }
                     partnersMarked.add(cand.otherKey);
@@ -141,7 +225,6 @@ public final class RoadPostProcessor {
                     List<BlockPos> otherRaw = storage.getPath(cand.otherKey);
                     Convergence conv = findConvergence(activeRaw, otherRaw);
                     if (conv == null) {
-                        // схождения нет — ОБЯЗАТЕЛЬНО вернуть статус
                         storage.setStatus(cand.otherKey, PathStorage.Status.PENDING);
                         partnersMarked.remove(cand.otherKey);
                         continue;
@@ -150,18 +233,38 @@ public final class RoadPostProcessor {
                     // 4) Строим Y
                     BuildResult br = buildY(world, activeKey, activeRaw, cand.otherKey, otherRaw, conv);
 
-                    // 4.1) Ноги → READY
+                    // 4.1) Ноги → refine → normalize → READY
                     for (Entry<String, List<BlockPos>> leg : br.legsRaw.entrySet()) {
                         List<BlockPos> refined = refine(world, leg.getValue());
-                        storage.updatePath(leg.getKey(), refined, PathStorage.Status.READY);
-                        toBuild.put(leg.getKey(), refined);
+                        NormalizeResult nr = normalizeHeights(refined);
+                        storage.updatePath(leg.getKey(), nr.path(), PathStorage.Status.READY);
+                        toBuild.put(leg.getKey(), nr.path());
+
+                        if (!nr.path().isEmpty()) {
+                            BlockPos s = nr.path().get(0);
+                            BlockPos t = nr.path().get(nr.path().size() - 1);
+                            LOGGER.info(
+                                    "[PostProcess] READY (leg) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
+                                    leg.getKey(), nr.path().size(), nr.spikesCut(), nr.gradClamped(), s, t
+                            );
+                        }
                         becameReady.add(leg.getKey());
                     }
 
-                    // 4.2) Ствол (persist) → READY
+                    // 4.2) Ствол (persist) → refine → normalize → READY
                     List<BlockPos> trunkRefined = refine(world, br.trunkRaw.path);
-                    storage.updatePath(br.trunkRaw.key, trunkRefined, PathStorage.Status.READY);
-                    toBuild.put(br.trunkRaw.key, trunkRefined);
+                    NormalizeResult trunkNR = normalizeHeights(trunkRefined);
+                    storage.updatePath(br.trunkRaw.key, trunkNR.path(), PathStorage.Status.READY);
+                    toBuild.put(br.trunkRaw.key, trunkNR.path());
+
+                    if (!trunkNR.path().isEmpty()) {
+                        BlockPos s = trunkNR.path().get(0);
+                        BlockPos t = trunkNR.path().get(trunkNR.path().size() - 1);
+                        LOGGER.info(
+                                "[PostProcess] READY (trunk) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
+                                br.trunkRaw.key, trunkNR.path().size(), trunkNR.spikesCut(), trunkNR.gradClamped(), s, t
+                        );
+                    }
                     becameReady.add(br.trunkRaw.key);
 
                     // 4.3) Следующая итерация — уже по стволу
@@ -174,33 +277,41 @@ public final class RoadPostProcessor {
                 // Если ничего не объединили — просто дорисовываем исходный путь
                 if (toBuild.isEmpty()) {
                     List<BlockPos> refined = refine(world, activeRaw);
-                    storage.updatePath(activeKey, refined, PathStorage.Status.READY);
-                    toBuild.put(activeKey, refined);
+                    NormalizeResult nr = normalizeHeights(refined);
+                    storage.updatePath(activeKey, nr.path(), PathStorage.Status.READY);
+                    toBuild.put(activeKey, nr.path());
+
+                    if (!nr.path().isEmpty()) {
+                        BlockPos s = nr.path().get(0);
+                        BlockPos t = nr.path().get(nr.path().size() - 1);
+                        LOGGER.info(
+                                "[PostProcess] READY (single) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
+                                activeKey, nr.path().size(), nr.spikesCut(), nr.gradClamped(), s, t
+                        );
+                    }
                     becameReady.add(activeKey);
                 }
 
-                // Разом ставим задачи строителю (несколько ключей)
+                // Разом ставим задачи строителю
                 RoadBuilderManager.queueSegments(world, toBuild);
 
             } catch (Exception ex) {
                 LOGGER.error("Post-processing failed for {}", baseKey, ex);
                 storage.setStatus(baseKey, PathStorage.Status.FAILED);
-                // партнёров, которых мы пометили PROCESSING, но не довели до READY — откатим
                 for (String p : partnersMarked) {
                     if (!becameReady.contains(p)) {
                         storage.setStatus(p, PathStorage.Status.PENDING);
                     }
                 }
-                return; // важно выйти, чтобы не падать в finally
+                return;
             }
 
-            // Гарантируем, что «помеченные» партнёры либо стали READY, либо возвращены в PENDING
+            // Гарантируем возврат статусов партнёров
             for (String p : partnersMarked) {
                 if (!becameReady.contains(p) && storage.getStatus(p) == PathStorage.Status.PROCESSING) {
                     storage.setStatus(p, PathStorage.Status.PENDING);
                 }
             }
-
         });
     }
 
@@ -279,8 +390,8 @@ public final class RoadPostProcessor {
         BlockPos pa = a.get(conv.i);
         BlockPos pb = b.get(conv.j);
 
-        int jx = (int)Math.round((pa.getX() + pb.getX()) / 2.0);
-        int jz = (int)Math.round((pa.getZ() + pb.getZ()) / 2.0);
+        int jx = (int) Math.round((pa.getX() + pb.getX()) / 2.0);
+        int jz = (int) Math.round((pa.getZ() + pb.getZ()) / 2.0);
         int jy = CacheManager.getHeight(world, jx, jz); // refine потом даст .down()
         BlockPos J = new BlockPos(jx, jy, jz);
 
