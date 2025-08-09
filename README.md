@@ -40,8 +40,40 @@ Roads adapt their style to the biome, and the network is saved between game sess
 ---
 
 ## 📷 Screenshots
+### Savanna
+<p align="left">
+  <img src="https://github.com/0xCoDSnet/RoadArchitect/blob/51e5b21f5d078032070cbacdeca041b8960049ec/screenshots/2025-08-10_01.26.13.png" width="512" height="512" alt="RoadArchitect icon">
+</p>
 
-*O_O*
+### Desert
+<p align="left">
+  <img src="https://github.com/0xCoDSnet/RoadArchitect/blob/51e5b21f5d078032070cbacdeca041b8960049ec/screenshots/2025-08-10_01.42.17.png" width="512" height="512" alt="RoadArchitect icon">
+</p>
+
+### Forest
+<p align="left">
+  <img src="https://github.com/0xCoDSnet/RoadArchitect/blob/51e5b21f5d078032070cbacdeca041b8960049ec/screenshots/2025-08-10_01.26.38.png" width="512" height="512" alt="RoadArchitect icon">
+</p>
+
+### Taiga
+<p align="left">
+  <img src="https://github.com/0xCoDSnet/RoadArchitect/blob/51e5b21f5d078032070cbacdeca041b8960049ec/screenshots/2025-08-10_01.27.17.png" width="512" height="512" alt="RoadArchitect icon">
+</p>
+
+### Old growth spruce taiga
+<p align="left">
+  <img src="https://github.com/0xCoDSnet/RoadArchitect/blob/51e5b21f5d078032070cbacdeca041b8960049ec/screenshots/2025-08-10_01.28.20.png" width="512" height="512" alt="RoadArchitect icon">
+</p>
+
+### Plains
+<p align="left">
+  <img src="https://github.com/0xCoDSnet/RoadArchitect/blob/51e5b21f5d078032070cbacdeca041b8960049ec/screenshots/2025-08-10_01.29.15.png" width="512" height="512" alt="RoadArchitect icon">
+</p>
+
+### River
+<p align="left">
+  <img src="https://github.com/0xCoDSnet/RoadArchitect/blob/51e5b21f5d078032070cbacdeca041b8960049ec/screenshots/2025-08-10_01.29.50.png" width="512" height="512" alt="RoadArchitect icon">
+</p>
 
 ---
 
