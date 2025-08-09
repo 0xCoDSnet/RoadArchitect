@@ -3,21 +3,54 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/modrinth/dt/roadarchitect.svg" alt="Modrinth downloads">
-  <img src="https://img.shields.io/github/v/release/oxcodsnet/RoadArchitect" alt="GitHub release">
+  <a href="https://modrinth.com/mod/roadarchitect">
+    <img src="https://img.shields.io/modrinth/dt/roadarchitect.svg?color=00AF5C&label=Modrinth%20downloads" alt="Modrinth downloads">
+  </a>
+  <a href="https://github.com/oxcodsnet/RoadArchitect/releases">
+    <img src="https://img.shields.io/github/v/release/oxcodsnet/RoadArchitect?color=blue&label=Latest%20Release" alt="GitHub release">
+  </a>
 </p>
 
-# RoadArchitect
+---
 
-RoadArchitect is a Fabric mod for Minecraft 1.21.1 that automatically scans the world for villages and other structures, then connects them with roads to create a persistent travel network. Road style adjusts to the biome and progress is saved between sessions.
+#  RoadArchitect
+
+**RoadArchitect** is a **Fabric** mod for **Minecraft 1.21.1** that automatically scans the world for villages and other structures, connecting them with roads to form a persistent travel network.  
+Roads adapt their style to the biome, and the network is saved between game sessions.
+
+---
 
 ## Features
 
-- Automatic detection of villages and other structures
-- Biome-based road styles
-- Persistent network across game sessions
+- 🏘 **Automatic detection** of villages and other structures
+- 🎨 **Biome-based road styles** for better immersion
+- 💾 **Persistent network** — roads remain between sessions
+- 🔄 Fully automated, minimal configuration required
 
-## Installation
+---
 
-1. Install Fabric Loader 0.16.14 for Minecraft 1.21.1.
-2. Download the mod from [Modrinth](https://modrinth.com/mod/roadarchitect) or [GitHub Releases](https://github.com/oxcodsnet/RoadArchitect/releases) and place the JAR in your `mods` folder.
+## 📥 Installation
+
+1. Install **[Fabric Loader](https://fabricmc.net/use/installer/)** `0.16.14` for **Minecraft 1.21.1**
+2. Download the mod:
+    - From **[Modrinth](https://modrinth.com/mod/roadarchitect)**
+3. Place the `.jar` file in your `mods` folder
+
+---
+
+## 📷 Screenshots
+
+*O_O*
+
+---
+
+## 📜 License
+
+This project is licensed under the **Apache License 2.0** — see the [LICENSE](LICENSE) file for details.  
+You can also read the full license text here: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+---
+
+<p align="center">
+  <sub>Crafted with ❤️ for the Minecraft community</sub>
+</p>
