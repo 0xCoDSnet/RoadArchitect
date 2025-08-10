@@ -39,10 +39,11 @@ public class EdgeStorage {
     public static EdgeStorage fromNbt(NbtCompound tag, double radius) {
         EdgeStorage storage = new EdgeStorage(radius);
         for (String edgeId : tag.getKeys()) {
-            NbtCompound entry = tag.getCompound(edgeId);
-            String a = entry.getString("a");
-            String b = entry.getString("b");
-            Status status = Status.valueOf(entry.getString("status"));
+            NbtCompound entry = tag.getCompoundOrEmpty(edgeId);
+            String a = entry.getString("a", "");
+            String b = entry.getString("b", "");
+            String s = entry.getString("status", Status.NEW.name());
+            Status status = Status.valueOf(s);
             storage.edges.put(edgeId, new Edge(a, b, status));
         }
         return storage;
