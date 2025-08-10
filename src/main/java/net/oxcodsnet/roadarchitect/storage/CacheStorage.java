@@ -49,7 +49,7 @@ public class CacheStorage extends PersistentState {
             storage.stabilities.put(entry.getLong(ENTRY_KEY), entry.getDouble(ENTRY_VALUE));
         }
         NbtList bList = tag.getList(BIOMES_KEY, NbtElement.COMPOUND_TYPE);
-        RegistryWrapper.Impl<Biome> registry = lookup.getWrapperOrThrow(RegistryKeys.BIOME);
+        RegistryWrapper.Impl<Biome> registry = lookup.getOrThrow(RegistryKeys.BIOME);
         for (int i = 0; i < bList.size(); i++) {
             NbtCompound entry = bList.getCompound(i);
             Identifier id = Identifier.tryParse(entry.getString(ENTRY_VALUE));

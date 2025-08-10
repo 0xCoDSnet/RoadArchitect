@@ -104,19 +104,16 @@ public final class StructureLocator {
      */
     private static List<Pair<BlockPos, String>> findStructures(ServerWorld world, BlockPos origin, int radius, List<String> structureSelectors) {
         List<Pair<BlockPos, String>> foundPositions = new ArrayList<>();
-        Registry<Structure> registry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
+        Registry<Structure> registry = world.getRegistryManager().getOrThrow(RegistryKeys.STRUCTURE);
 
         for (String selector : structureSelectors) {
             try {
                 RegistryPredicateArgumentType<Structure> argType = new RegistryPredicateArgumentType<>(RegistryKeys.STRUCTURE);
                 RegistryPredicateArgumentType.RegistryPredicate<Structure> predicate = argType.parse(new StringReader(selector));
 
-                RegistryEntryList<Structure> structList = getStructureList(predicate, registry)
-                        .orElseThrow(() -> INVALID_STRUCTURE_EXCEPTION.create(selector));
+                RegistryEntryList<Structure> structList = getStructureList(predicate, registry).orElseThrow(() -> INVALID_STRUCTURE_EXCEPTION.create(selector));
 
-                Pair<BlockPos, RegistryEntry<Structure>> located = world.getChunkManager()
-                        .getChunkGenerator()
-                        .locateStructure(world, structList, origin, radius, true);
+                Pair<BlockPos, RegistryEntry<Structure>> located = world.getChunkManager().getChunkGenerator().locateStructure(world, structList, origin, radius, true);
 
                 if (located != null) {
                     Identifier id = registry.getId(located.getSecond().value());
@@ -142,6 +139,12 @@ public final class StructureLocator {
     }
 
     private static Optional<? extends RegistryEntryList<Structure>> getStructureList(RegistryPredicateArgumentType.RegistryPredicate<Structure> predicate, Registry<Structure> registry) {
-        return predicate.getKey().map(key -> registry.getEntry(key).map(RegistryEntryList::of), registry::getEntryList);
+        return predicate.getKey().map(
+                key -> registry.getOptionalValue(key).map(registry::getEntry).map(RegistryEntryList::of),
+                tag -> registry.streamTags()
+                        .filter(named -> named.getTag().equals(tag))
+                        .findFirst()
+                        .map(named -> (RegistryEntryList<Structure>) named)
+        );
     }
 }
