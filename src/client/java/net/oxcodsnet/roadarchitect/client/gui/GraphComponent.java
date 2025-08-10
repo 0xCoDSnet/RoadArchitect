@@ -138,6 +138,10 @@ public class GraphComponent extends BaseComponent {
     @Override
     public boolean onMouseDown(double mouseX, double mouseY, int button) {
         if (button != 0) return false;
+
+        if (clickOnNode(mouseX, mouseY))
+            return true;
+
         dragging = true;
         dragPrevX = mouseX;
         dragPrevY = mouseY;
