@@ -118,7 +118,9 @@ public class GraphComponent extends BaseComponent {
     public void draw(OwoUIDrawContext context, int mouseX, int mouseY, float delta, float tickDelta) {
         computeLayout();
 
+        // Работает штатно
         context.drawPanel(this.x(), this.y(), this.width(), this.height(), true);
+        // Работает штатно
         context.drawRectOutline(this.x(), this.y(), this.width(), this.height(), 0xFFFFFFFF);
 
         drawGrid(context);
@@ -130,6 +132,7 @@ public class GraphComponent extends BaseComponent {
             if (a == null || b == null) continue;
 
             Color col = statusColors.getOrDefault(edge.status(), Color.WHITE);
+            //Работает нормально
             context.drawLine(a.x, a.y, b.x, b.y, 1, col);
         }
 
@@ -139,10 +142,11 @@ public class GraphComponent extends BaseComponent {
             if (p == null) continue;
 
             Color col = typeColors.getOrDefault(node.type(), Color.WHITE);
-            context.drawCircle(p.x, p.y, 16, RADIUS, col);
-            context.drawCircle(p.x, p.y, 16, RADIUS - 1, Color.BLACK);
+            //context.drawCircle(p.x, p.y, 16, RADIUS, col);
+            //context.drawCircle(p.x, p.y, 16, RADIUS - 1, Color.BLACK);
 
             if (distance(p.x, p.y, mouseX, mouseY) <= RADIUS) {
+                // Работает нормально
                 context.drawTooltip(
                         MinecraftClient.getInstance().textRenderer,
                         Text.literal(node.pos().toShortString() + " • " + node.type()),
@@ -300,6 +304,7 @@ public class GraphComponent extends BaseComponent {
         ctx.drawLine(x, y, x + lengthPx, y, 2, Color.WHITE);
         ctx.drawLine(x, y - 3, x, y + 3, 2, Color.WHITE);
         ctx.drawLine(x + lengthPx, y - 3, x + lengthPx, y + 3, 2, Color.WHITE);
+        // НЕ работает текст остальное отображается
         ctx.drawText(Text.literal(spacing + "m"), x, y - 10, .7f, 0xFFFFFF);
     }
 
@@ -313,6 +318,7 @@ public class GraphComponent extends BaseComponent {
         for (Map.Entry<String, Color> entry : typeColors.entrySet()) {
             context.fill(x, y, x + 8, y + 8, entry.getValue().argb());
             context.drawRectOutline(x, y, 8, 8, 0xFFFFFFFF);
+            // НЕ работает текст, остальное отображается
             context.drawText(Text.literal(entry.getKey()), x + 10, y, 0.7f, 0xFFFFFF);
             y += 12;
         }

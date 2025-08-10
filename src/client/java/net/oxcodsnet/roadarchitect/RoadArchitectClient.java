@@ -39,11 +39,23 @@ public class RoadArchitectClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
 
-        ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+//        ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+//            if (screen instanceof LevelLoadingScreen vanilla) {
+//                MyLevelLoadingScreen owoScreen = new MyLevelLoadingScreen(vanilla);
+//                owoScreen.init(client, scaledWidth, scaledHeight);
+//                client.setScreen(owoScreen);
+//            }
+//        });
+
+        ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
+            // 1) Не трогаем наш же экран
+            if (screen instanceof MyLevelLoadingScreen) return;
+
+            // 2) Подменяем только ванильный загрузочный
             if (screen instanceof LevelLoadingScreen vanilla) {
-                MyLevelLoadingScreen owoScreen = new MyLevelLoadingScreen(vanilla);
-                owoScreen.init(client, scaledWidth, scaledHeight);
-                client.setScreen(owoScreen);
+                // ВАЖНО: не вызываем init() вручную — setScreen сам всё сделает
+                // Дополнительно завернём в client.execute, чтобы выйти из текущего init-колбэка
+                client.execute(() -> client.setScreen(new MyLevelLoadingScreen(vanilla)));
             }
         });
 
