@@ -2,7 +2,7 @@
 
 ## 1. Mission
 
-Generate and maintain clean, reliable code that builds and manages road networks connecting natural structures in **Minecraft 1.21.1** using the Fabric modding toolchain.
+Generate and maintain clean, reliable code that builds and manages road networks connecting natural structures in **Minecraft 1.21.7** using the Fabric modding toolchain.
 
 ## 2. Coding Guidelines
 

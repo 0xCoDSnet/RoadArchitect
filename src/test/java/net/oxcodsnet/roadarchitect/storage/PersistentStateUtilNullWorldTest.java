@@ -30,7 +30,7 @@ class PersistentStateUtilNullWorldTest {
 
     @Test
     void roadGraphStateDelegates() {
-        NullPointerException ex = assertThrows(NullPointerException.class, () -> RoadGraphState.get(null, 1.0));
+        NullPointerException ex = assertThrows(NullPointerException.class, () -> RoadGraphState.get(null));
         assertTrue(stackContainsUtil(ex));
     }
 

@@ -9,6 +9,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateType;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.util.KeyUtil;
 import net.oxcodsnet.roadarchitect.util.PersistentStateUtil;
@@ -33,7 +34,15 @@ public class PathStorage extends PersistentState {
     private static final String POS_KEY = "pos";
     private static final String STATUS_KEY = "status";
 
-    public static final Type<PathStorage> TYPE = new Type<>(PathStorage::new, PathStorage::fromNbt, DataFixTypes.SAVED_DATA_SCOREBOARD);
+    public static final PersistentStateType<PathStorage> TYPE = new PersistentStateType<>(
+            KEY,
+            ctx -> new PathStorage(),
+            ctx -> NbtCompound.CODEC.xmap(
+                    tag -> fromNbt(tag, ctx.world().getRegistryManager()),
+                    storage -> storage.writeNbt(new NbtCompound(), ctx.world().getRegistryManager())
+            ),
+            DataFixTypes.SAVED_DATA_SCOREBOARD
+    );
     private final Map<String, List<BlockPos>> paths = new ConcurrentHashMap<>();
     private final Map<String, Status> statuses = new ConcurrentHashMap<>();
 
@@ -45,7 +54,7 @@ public class PathStorage extends PersistentState {
      * @return хранилище путей / path storage instance
      */
     public static PathStorage get(ServerWorld world) {
-        return PersistentStateUtil.get(world, TYPE, KEY);
+        return PersistentStateUtil.get(world, TYPE);
     }
 
     /**
@@ -54,25 +63,27 @@ public class PathStorage extends PersistentState {
      */
     public static PathStorage fromNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         PathStorage storage = new PathStorage();
-        NbtList list = tag.getList(PATHS_KEY, NbtElement.COMPOUND_TYPE);
+        NbtList list = tag.getListOrEmpty(PATHS_KEY);
         for (int i = 0; i < list.size(); i++) {
-            NbtCompound entry = list.getCompound(i);
-            String from = entry.getString(FROM_KEY);
-            String to = entry.getString(TO_KEY);
+            NbtCompound entry = list.getCompoundOrEmpty(i);
+            String from = entry.getString(FROM_KEY, "");
+            String to = entry.getString(TO_KEY, "");
             String key = KeyUtil.pathKey(from, to);
-            NbtList posList = entry.getList(POS_KEY, NbtElement.LONG_TYPE);
+            NbtList posList = entry.getListOrEmpty(POS_KEY);
             List<BlockPos> positions = new ArrayList<>();
-            for (NbtElement nbtElement : posList) {
-                positions.add(BlockPos.fromLong(((NbtLong) nbtElement).longValue()));
+            for (int j = 0; j < posList.size(); j++) {
+                NbtElement elem = posList.get(j);
+                if (elem instanceof NbtLong l) {
+                    positions.add(BlockPos.fromLong(l.longValue()));
+                }
             }
             storage.paths.put(key, positions);
-            Status status = Status.READY;
-            if (entry.contains(STATUS_KEY, NbtElement.STRING_TYPE)) {
-                try {
-                    status = Status.valueOf(entry.getString(STATUS_KEY));
-                } catch (IllegalArgumentException ignore) {
-                    // keep READY
-                }
+            String statusStr = entry.getString(STATUS_KEY, Status.READY.name());
+            Status status;
+            try {
+                status = Status.valueOf(statusStr);
+            } catch (IllegalArgumentException ignore) {
+                status = Status.READY;
             }
             storage.statuses.put(key, status);
         }
@@ -83,7 +94,6 @@ public class PathStorage extends PersistentState {
      * Сохраняет все пути в NBT.
      * <p>Serializes all paths into an NBT compound.</p>
      */
-    @Override
     public NbtCompound writeNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         NbtList list = new NbtList();
         for (Map.Entry<String, List<BlockPos>> entry : paths.entrySet()) {

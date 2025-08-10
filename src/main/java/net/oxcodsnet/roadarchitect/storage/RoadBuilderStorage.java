@@ -2,11 +2,11 @@ package net.oxcodsnet.roadarchitect.storage;
 
 import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateType;
 import net.oxcodsnet.roadarchitect.util.PersistentStateUtil;
 
 import java.util.List;
@@ -26,7 +26,15 @@ public class RoadBuilderStorage extends PersistentState {
     private static final String START_KEY = "start";
     private static final String END_KEY = "end";
 
-    public static final Type<RoadBuilderStorage> TYPE = new Type<>(RoadBuilderStorage::new, RoadBuilderStorage::fromNbt, DataFixTypes.SAVED_DATA_SCOREBOARD);
+    public static final PersistentStateType<RoadBuilderStorage> TYPE = new PersistentStateType<>(
+            KEY,
+            ctx -> new RoadBuilderStorage(),
+            ctx -> NbtCompound.CODEC.xmap(
+                    tag -> fromNbt(tag, ctx.world().getRegistryManager()),
+                    storage -> storage.writeNbt(new NbtCompound(), ctx.world().getRegistryManager())
+            ),
+            DataFixTypes.SAVED_DATA_SCOREBOARD
+    );
     private final Map<ChunkPos, List<SegmentEntry>> segments = new ConcurrentHashMap<>();
 
     /**
@@ -34,7 +42,7 @@ public class RoadBuilderStorage extends PersistentState {
      * <p>Retrieves the storage of building tasks for the given world.</p>
      */
     public static RoadBuilderStorage get(ServerWorld world) {
-        return PersistentStateUtil.get(world, TYPE, KEY);
+        return PersistentStateUtil.get(world, TYPE);
     }
 
     /**
@@ -43,13 +51,13 @@ public class RoadBuilderStorage extends PersistentState {
      */
     public static RoadBuilderStorage fromNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         RoadBuilderStorage storage = new RoadBuilderStorage();
-        NbtList list = tag.getList(SEGMENTS_KEY, NbtElement.COMPOUND_TYPE);
+        NbtList list = tag.getListOrEmpty(SEGMENTS_KEY);
         for (int i = 0; i < list.size(); i++) {
-            NbtCompound entry = list.getCompound(i);
-            ChunkPos chunk = new ChunkPos(entry.getLong(CHUNK_KEY));
-            String path = entry.getString(PATH_KEY);
-            int start = entry.getInt(START_KEY);
-            int end = entry.getInt(END_KEY);
+            NbtCompound entry = list.getCompoundOrEmpty(i);
+            ChunkPos chunk = new ChunkPos(entry.getLong(CHUNK_KEY, 0L));
+            String path = entry.getString(PATH_KEY, "");
+            int start = entry.getInt(START_KEY, 0);
+            int end = entry.getInt(END_KEY, 0);
             storage.segments.computeIfAbsent(chunk, c -> new CopyOnWriteArrayList<>())
                     .add(new SegmentEntry(path, start, end));
         }
@@ -60,7 +68,6 @@ public class RoadBuilderStorage extends PersistentState {
      * Сохраняет все сегменты в NBT.
      * <p>Serializes all segments into an NBT compound.</p>
      */
-    @Override
     public NbtCompound writeNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         NbtList list = new NbtList();
         for (Map.Entry<ChunkPos, List<SegmentEntry>> entry : segments.entrySet()) {
