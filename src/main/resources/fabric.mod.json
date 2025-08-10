@@ -30,7 +30,7 @@
     "minecraft": "~1.21.7",
     "java": ">=21",
     "fabric-api": "*",
-    "owo-lib": "0.12.22+1.21.8"
+    "owo-lib": "0.12.21+1.21.6"
   },
   "suggests": {
     "modmenu": "15.0.0-beta.3"
