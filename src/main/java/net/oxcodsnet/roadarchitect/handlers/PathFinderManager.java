@@ -27,7 +27,7 @@ public class PathFinderManager {
     );
 
     public static void computePaths(ServerWorld world, int preFillCacheZone, int maxSteps) {
-        RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+        RoadGraphState graph = RoadGraphState.get(world);
         PathStorage storage = PathStorage.get(world);
 
         // warm up caches once

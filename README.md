@@ -15,7 +15,7 @@
 
 #  RoadArchitect
 
-**RoadArchitect** is a **Fabric** mod for **Minecraft 1.21.1** that automatically scans the world for villages and other structures, connecting them with roads to form a persistent travel network.  
+**RoadArchitect** is a **Fabric** mod for **Minecraft 1.21.5** that automatically scans the world for villages and other structures, connecting them with roads to form a persistent travel network.  
 Roads adapt their style to the biome, and the network is saved between game sessions.
 
 ---
@@ -32,7 +32,7 @@ Roads adapt their style to the biome, and the network is saved between game sess
 
 ## 📥 Installation
 
-1. Install **[Fabric Loader](https://fabricmc.net/use/installer/)** `0.16.14` for **Minecraft 1.21.1**
+1. Install **[Fabric Loader](https://fabricmc.net/use/installer/)** `0.17.2` for **Minecraft 1.21.5**
 2. Download the mod:
     - From **[Modrinth](https://modrinth.com/mod/roadarchitect)**
 3. Place the `.jar` file in your `mods` folder

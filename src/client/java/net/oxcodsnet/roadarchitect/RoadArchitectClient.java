@@ -66,7 +66,7 @@ public class RoadArchitectClient implements ClientModInitializer {
                 ServerWorld world = client.getServer() == null ? null : client.getServer().getOverworld();
                 if (world == null) continue;
 
-                RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+                RoadGraphState state = RoadGraphState.get(world);
 
                 List<Node> nodes  = new ArrayList<>(state.nodes().all().values());
                 Collection<EdgeStorage.Edge> edges = state.edges().all().values();
