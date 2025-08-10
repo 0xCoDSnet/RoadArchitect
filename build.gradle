@@ -117,7 +117,7 @@ modrinth {
 
     if (!resolvedToken) {
         throw new GradleException(
-                "Не найден MODRINTH_TOKEN. Укажите его в .env (MODRINTH_TOKEN=...) " + "или как переменную окружения."
+                "Modrinth_token did not find it in .env (modrinth_token = ...)" + "or as a variable of the environment."
         )
     }
 
@@ -126,6 +126,6 @@ modrinth {
     versionName = "RoadArchitect v${version}"
     versionNumber = version
     uploadFile = remapJar
-    gameVersions = ["1.21.6"]
+    gameVersions = [minecraft_version]
     loaders = ["fabric"]
 }
