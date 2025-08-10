@@ -4,6 +4,8 @@
 # against bad commits.
 
 name: build
+permissions:
+  contents: read
 on: [pull_request, push]
 
 jobs:
