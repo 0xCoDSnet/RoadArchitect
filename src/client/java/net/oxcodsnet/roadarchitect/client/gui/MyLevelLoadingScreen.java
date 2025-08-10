@@ -65,7 +65,7 @@ public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
     // ───────────────────────── build ─────────────────────────
     @Override
     protected void build(FlowLayout root) {
-        root.surface(Surface.VANILLA_TRANSLUCENT)
+        root.surface(Surface.BLANK)
                 .horizontalAlignment(HorizontalAlignment.CENTER)
                 .verticalAlignment(VerticalAlignment.BOTTOM)
                 .padding(Insets.of(8));
@@ -113,8 +113,16 @@ public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
 
     // ───────────────────────── render ─────────────────────────
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // Обновляем название стадии
+    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
+
+        this.renderPanoramaBackground(ctx, delta);
+
+        this.applyBlur(ctx);
+
+        // 1) сначала ванильная «карта чанков» + процент
+        parent.render(ctx, mouseX, mouseY, delta);
+
+        // 2) обновляем текст стадии и анимацию бара
         this.stageLabel.text(PipelineRunner.getCurrentStage().label());
 
         final long now = System.currentTimeMillis();
@@ -130,8 +138,8 @@ public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
         this.barGlow.positioning(Positioning.absolute(left, 0));
         this.barGlow.horizontalSizing(Sizing.fixed(visible));
 
-        parent.render(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
+        // 3) рисуем owo-компоненты поверх ванилы
+        super.render(ctx, mouseX, mouseY, delta);
     }
 
 
