@@ -2,17 +2,11 @@
   <img src="src/main/resources/assets/roadarchitect/icon.png" width="128" height="128" alt="RoadArchitect icon">
 </p>
 
-<p align="center">
-  <a href="https://modrinth.com/mod/roadarchitect">
-    <img src="https://img.shields.io/modrinth/dt/roadarchitect.svg?color=00AF5C&label=Modrinth%20downloads" alt="Modrinth downloads">
-  </a>
-  <a href="https://github.com/oxcodsnet/RoadArchitect/releases">
-    <img src="https://img.shields.io/github/v/release/oxcodsnet/RoadArchitect?color=blue&label=Latest%20Release" alt="GitHub release">
-  </a>
-</p>
+<a href="https://modrinth.com/mod/roadarchitect/versions?l=fabric">
+   <img src="https://cdn.modrinth.com/data/cached_images/513035d1231a86dff137c74e04a5e64633593f10.png" alt="Available on Fabric">
+</a>
 
 ---
-
 #  RoadArchitect
 
 **RoadArchitect** is a **Fabric** mod for **Minecraft 1.21.1-1.21.4** that automatically scans the world for villages and other structures, connecting them with roads to form a persistent travel network.  
@@ -31,7 +25,6 @@ Roads adapt their style to the biome, and the network is saved between game sess
 ---
 
 ## 📥 Installation
-
 1. Install **[Fabric Loader](https://fabricmc.net/use/installer/)** `0.16.14` for **Minecraft 1.21.1**
 2. Download the mod:
     - From **[Modrinth](https://modrinth.com/mod/roadarchitect)**
