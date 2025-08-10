@@ -130,7 +130,7 @@ public final class StructureLocator {
      * Сохраняем найденные узлы и рёбра на главном потоке.
      */
     private static void schedulePersistence(ServerWorld world, List<Pair<BlockPos, String>> found) {
-        RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+        RoadGraphState graph = RoadGraphState.get(world);
         for (Pair<BlockPos, String> pair : found) {
             Node node = graph.addNodeWithEdges(pair.getFirst(), pair.getSecond());
             LOGGER.debug("Added node {} at {}", node.id(), node.pos());

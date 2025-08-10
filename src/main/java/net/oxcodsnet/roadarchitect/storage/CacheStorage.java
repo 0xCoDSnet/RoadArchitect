@@ -2,7 +2,6 @@ package net.oxcodsnet.roadarchitect.storage;
 
 import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -11,6 +10,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateType;
 import net.minecraft.world.biome.Biome;
 import net.oxcodsnet.roadarchitect.util.PersistentStateUtil;
 
@@ -26,43 +26,54 @@ public class CacheStorage extends PersistentState {
     private static final String ENTRY_KEY = "k";
     private static final String ENTRY_VALUE = "v";
 
-    public static final Type<CacheStorage> TYPE = new Type<>(CacheStorage::new, CacheStorage::fromNbt, DataFixTypes.SAVED_DATA_SCOREBOARD);
+    public static final PersistentStateType<CacheStorage> TYPE = new PersistentStateType<>(
+            KEY,
+            ctx -> new CacheStorage(),
+            ctx -> NbtCompound.CODEC.xmap(
+                    tag -> fromNbt(tag, ctx.world().getRegistryManager()),
+                    storage -> storage.writeNbt(new NbtCompound(), ctx.world().getRegistryManager())
+            ),
+            DataFixTypes.SAVED_DATA_SCOREBOARD
+    );
 
     private final ConcurrentMap<Long, Integer> heights = new ConcurrentHashMap<>();
     private final ConcurrentMap<Long, Double> stabilities = new ConcurrentHashMap<>();
     private final ConcurrentMap<Long, RegistryEntry<Biome>> biomes = new ConcurrentHashMap<>();
 
     public static CacheStorage get(ServerWorld world) {
-        return PersistentStateUtil.get(world, TYPE, KEY);
+        return PersistentStateUtil.get(world, TYPE);
     }
 
     public static CacheStorage fromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         CacheStorage storage = new CacheStorage();
-        NbtList hList = tag.getList(HEIGHTS_KEY, NbtElement.COMPOUND_TYPE);
+        NbtList hList = tag.getListOrEmpty(HEIGHTS_KEY);
         for (int i = 0; i < hList.size(); i++) {
-            NbtCompound entry = hList.getCompound(i);
-            storage.heights.put(entry.getLong(ENTRY_KEY), entry.getInt(ENTRY_VALUE));
+            NbtCompound entry = hList.getCompoundOrEmpty(i);
+            long k = entry.getLong(ENTRY_KEY, 0L);
+            int v = entry.getInt(ENTRY_VALUE, 0);
+            storage.heights.put(k, v);
         }
-        NbtList sList = tag.getList(STABILITIES_KEY, NbtElement.COMPOUND_TYPE);
+        NbtList sList = tag.getListOrEmpty(STABILITIES_KEY);
         for (int i = 0; i < sList.size(); i++) {
-            NbtCompound entry = sList.getCompound(i);
-            storage.stabilities.put(entry.getLong(ENTRY_KEY), entry.getDouble(ENTRY_VALUE));
+            NbtCompound entry = sList.getCompoundOrEmpty(i);
+            long k = entry.getLong(ENTRY_KEY, 0L);
+            double v = entry.getDouble(ENTRY_VALUE, 0.0);
+            storage.stabilities.put(k, v);
         }
-        NbtList bList = tag.getList(BIOMES_KEY, NbtElement.COMPOUND_TYPE);
-        RegistryWrapper.Impl<Biome> registry = lookup.getOrThrow(RegistryKeys.BIOME);
+        NbtList bList = tag.getListOrEmpty(BIOMES_KEY);
+        RegistryWrapper.Impl<Biome> registry = lookup == null ? null : lookup.getOrThrow(RegistryKeys.BIOME);
         for (int i = 0; i < bList.size(); i++) {
-            NbtCompound entry = bList.getCompound(i);
-            Identifier id = Identifier.tryParse(entry.getString(ENTRY_VALUE));
-            if (id == null) {
+            NbtCompound entry = bList.getCompoundOrEmpty(i);
+            Identifier id = Identifier.tryParse(entry.getString(ENTRY_VALUE, ""));
+            if (id == null || registry == null) {
                 continue;
             }
             RegistryKey<Biome> key = RegistryKey.of(RegistryKeys.BIOME, id);
-            registry.getOptional(key).ifPresent(e -> storage.biomes.put(entry.getLong(ENTRY_KEY), e));
+            registry.getOptional(key).ifPresent(e -> storage.biomes.put(entry.getLong(ENTRY_KEY, 0L), e));
         }
         return storage;
     }
 
-    @Override
     public NbtCompound writeNbt(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         NbtList hList = new NbtList();
         for (Map.Entry<Long, Integer> entry : heights.entrySet()) {

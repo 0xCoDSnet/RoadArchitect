@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class RoadBuilderStorageSerializationTest {
     @Test
-    @Disabled("Requires game bootstrap in Minecraft 1.21.4")
+    @Disabled("Requires game bootstrap in Minecraft 1.21.5")
     void roundTrip() {
         Bootstrap.initialize();
         RoadBuilderStorage storage = new RoadBuilderStorage();

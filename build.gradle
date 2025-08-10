@@ -127,6 +127,6 @@ modrinth {
     versionName = "RoadArchitect v${version}"
     versionNumber = version
     uploadFile = remapJar
-    gameVersions = ["1.21.4"]
+    gameVersions = ["1.21.5"]
     loaders = ["fabric"]
 }
