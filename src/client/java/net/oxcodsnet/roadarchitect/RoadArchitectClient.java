@@ -41,9 +41,7 @@ public class RoadArchitectClient implements ClientModInitializer {
 
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof LevelLoadingScreen vanilla) {
-                MyLevelLoadingScreen owoScreen = new MyLevelLoadingScreen(vanilla);
-                owoScreen.init(client, scaledWidth, scaledHeight);
-                client.setScreen(owoScreen);
+                client.execute(() -> client.setScreen(new MyLevelLoadingScreen(vanilla)));
             }
         });
 
