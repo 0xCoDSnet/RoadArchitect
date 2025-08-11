@@ -97,6 +97,10 @@ public class PathFinder {
         int stallIters = 0;          // итераций без улучшения bestL1
         double bestF = Double.POSITIVE_INFINITY;
 
+        // ── динамический лимит шагов ──
+        int stepCap = 0;
+        boolean hitCap = false;
+
         ProfileSession(BlockPos start, BlockPos goal) {
             this.start = start;
             this.goal = goal;
@@ -109,7 +113,7 @@ public class PathFinder {
 
     private final NodeStorage nodes;
     private final ServerWorld world;
-    private final int maxSteps;
+    private final int maxSteps; // глобальный потолок (сохранён для обратной совместимости)
     private final double heuristicWeight;
 
     /* ── горячие ссылки на объекты генерации мира ── */
@@ -185,7 +189,7 @@ public class PathFinder {
     }
 
     /**
-     * (1) Непрерывная подстройка масштаба эвристики по L1‑длине запроса.
+     * Непрерывная подстройка масштаба эвристики по L1‑длине запроса.
      * Плавно интерполируем [L0..L1] → [80..120] через smoothstep.
      */
     private static double selectHeuristicScale(BlockPos start, BlockPos goal) {
@@ -193,14 +197,28 @@ public class PathFinder {
         final double L0 = 200.0;   // «короткий» запрос
         final double L1 = 1200.0;  // «дальний» запрос
         double t = (l1 - L0) / (L1 - L0);
-        // clamp01
         if (t < 0.0) t = 0.0;
         else if (t > 1.0) t = 1.0;
-        // smoothstep
-        double s = t * t * (3.0 - 2.0 * t);
+        double s = t * t * (3.0 - 2.0 * t); // smoothstep
         double scale = 80.0 + s * (120.0 - 80.0);
-        // чуть притягиваем к базовому значению на средних дистанциях
         return Math.max(80.0, Math.min(120.0, scale));
+    }
+
+    /* ───────────────────────── Динамический лимит шагов ───────────────────────── */
+
+    /**
+     * Выбор локального лимита шагов на запуск исходя из L1‑дистанции.
+     * Нормализует усилие под длину, чтобы дальние маршруты не «капались» преждевременно.
+     */
+    private static int selectMaxSteps(BlockPos start, BlockPos goal) {
+        int l1 = Math.abs(start.getX() - goal.getX()) + Math.abs(start.getZ() - goal.getZ());
+        double k = 14.0;      // коэффициент усилия на один блок L1
+        int min = 512;        // защитный минимум (убирает кейсы iterations=1–4)
+        int max = 120_000;    // жёсткий максимум на запуск (страховка)
+        long est = Math.round((k * l1) / GRID_STEP);
+        if (est < min) return min;
+        if (est > max) return max;
+        return (int) est;
     }
 
     /* ───────────────────────── Вспомогательное ───────────────────────── */
@@ -254,10 +272,12 @@ public class PathFinder {
         long startKey = hash(startPos.getX(), startPos.getZ());
         long endKey = hash(endPos.getX(), endPos.getZ());
 
-        // ── адаптивный масштаб эвристики для этого запуска ──
+        // ── адаптивный масштаб эвристики и локальный лимит шагов ──
         final double localScale = selectHeuristicScale(startPos, endPos);
+        final int localStepCap = Math.min(selectMaxSteps(startPos, endPos), this.maxSteps);
         if (ps != null) {
             ps.localScale = localScale;
+            ps.stepCap = localStepCap;
         }
 
         PriorityQueue<Rec> open = new PriorityQueue<>(Comparator.comparingDouble(r -> r.f));
@@ -269,7 +289,7 @@ public class PathFinder {
         open.add(new Rec(startKey, 0.0, heuristic(startPos, endPos, localScale) * heuristicWeight));
 
         int iterations = 0;
-        while (!open.isEmpty() && iterations++ < maxSteps) {
+        while (!open.isEmpty() && iterations++ < localStepCap) {
             if (ps != null) {
                 ps.iterations++;
             }
@@ -350,7 +370,11 @@ public class PathFinder {
             }
         }
 
-        LOGGER.debug("Path not found between {} and {} after {} iterations", startPos, endPos, iterations);
+        if (ps != null) {
+            ps.hitCap = !open.isEmpty();
+        }
+        LOGGER.debug("Path not found between {} and {} after {} iterations (cap={})",
+                startPos, endPos, Math.min(iterations, localStepCap), localStepCap);
         return List.of();
     }
 
@@ -454,7 +478,7 @@ public class PathFinder {
                 ? ps.sumStepCosts / (double) ps.relaxationsAccepted
                 : 0.0;
 
-        // (2) совет даём ТОЛЬКО если путь найден
+        // совет даём ТОЛЬКО если путь найден
         double suggested = 0.0;
         boolean suggestable = ps.pathFound && ps.avgStepOnPath > 0.0;
         if (suggestable) {
@@ -462,7 +486,7 @@ public class PathFinder {
             suggested = Math.max(80.0, Math.min(120.0, base));
         }
 
-        // (5) метрики сходимости
+        // метрики сходимости
         double progress = ps.initialL1 > 0
                 ? (double) (ps.initialL1 - Math.min(ps.bestL1, ps.initialL1)) / (double) ps.initialL1
                 : 0.0;
@@ -474,7 +498,7 @@ public class PathFinder {
                   calls: height={}  biome={}  stability={}
                   avg-step: path={}  all-relaxations={}
                   localScale={}
-                  convergence: L1_start={}  L1_best={}  progress={}%  stallIters={}  bestF={}
+                  convergence: L1_start={}  L1_best={}  progress={}%  stallIters={}  bestF={}  stepCap={}  hitCap={}
                   {}
                 """,
                 ps.start.toShortString(), ps.goal.toShortString(),
@@ -487,6 +511,7 @@ public class PathFinder {
                 String.format(Locale.ROOT, "%.1f", progress * 100.0),
                 ps.stallIters,
                 String.format(Locale.ROOT, "%.1f", ps.bestF),
+                ps.stepCap, ps.hitCap,
                 suggestable
                         ? ("suggest HEURISTIC_SCALE ≈ " + String.format(Locale.ROOT, "%.1f", suggested))
                         : "no suggestion (path not found)"
