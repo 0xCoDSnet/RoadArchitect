@@ -75,6 +75,7 @@ public class PathFinder {
         final BlockPos start;
         final BlockPos goal;
 
+        // основная статистика
         int iterations = 0;
         long neighborsChecked = 0L;
         long relaxationsAccepted = 0L;
@@ -89,9 +90,18 @@ public class PathFinder {
         /** Фактически использованный масштаб эвристики в этом запуске */
         double localScale = HEURISTIC_SCALE;
 
+        // ── метрики сходимости ──
+        int initialL1 = 0;
+        int bestL1 = Integer.MAX_VALUE;
+        int lastL1 = 0;
+        int stallIters = 0;          // итераций без улучшения bestL1
+        double bestF = Double.POSITIVE_INFINITY;
+
         ProfileSession(BlockPos start, BlockPos goal) {
             this.start = start;
             this.goal = goal;
+            this.initialL1 = Math.abs(start.getX() - goal.getX()) + Math.abs(start.getZ() - goal.getZ());
+            this.lastL1 = this.initialL1;
         }
     }
 
@@ -175,21 +185,22 @@ public class PathFinder {
     }
 
     /**
-     * Простая адаптация масштаба эвристики под длину запроса (L1 в блоках).
-     * Диапазон намеренно ограничен [80; 120], чтобы не «пережимать» короткие запросы.
+     * (1) Непрерывная подстройка масштаба эвристики по L1‑длине запроса.
+     * Плавно интерполируем [L0..L1] → [80..120] через smoothstep.
      */
     private static double selectHeuristicScale(BlockPos start, BlockPos goal) {
         int l1 = Math.abs(start.getX() - goal.getX()) + Math.abs(start.getZ() - goal.getZ());
-        double scale = HEURISTIC_SCALE;
-
-        if (l1 >= 1200) {
-            scale = Math.min(120.0, HEURISTIC_SCALE + 20.0); // дальние маршруты
-        } else if (l1 >= 400) {
-            scale = Math.min(110.0, HEURISTIC_SCALE + 10.0); // средние
-        } else if (l1 <= 200) {
-            scale = Math.max(80.0, HEURISTIC_SCALE - 15.0);  // короткие
-        }
-        return scale;
+        final double L0 = 200.0;   // «короткий» запрос
+        final double L1 = 1200.0;  // «дальний» запрос
+        double t = (l1 - L0) / (L1 - L0);
+        // clamp01
+        if (t < 0.0) t = 0.0;
+        else if (t > 1.0) t = 1.0;
+        // smoothstep
+        double s = t * t * (3.0 - 2.0 * t);
+        double scale = 80.0 + s * (120.0 - 80.0);
+        // чуть притягиваем к базовому значению на средних дистанциях
+        return Math.max(80.0, Math.min(120.0, scale));
     }
 
     /* ───────────────────────── Вспомогательное ───────────────────────── */
@@ -272,12 +283,25 @@ public class PathFinder {
             int curZ = (int) current.key;
             int curY = sampleHeight(curX, curZ);
 
+            // ── метрики сходимости ──
             int md = Math.abs(curX - endPos.getX()) + Math.abs(curZ - endPos.getZ());
+            if (ps != null) {
+                ps.lastL1 = md;
+                if (current.f() < ps.bestF) ps.bestF = current.f();
+                if (md < ps.bestL1) {
+                    ps.bestL1 = md;
+                    ps.stallIters = 0;
+                } else {
+                    ps.stallIters++;
+                }
+            }
+
             if (md <= EARLY_STOP_L1 || current.key == endKey) {
                 List<BlockPos> path = reconstructVertices(current.key, startKey, parent);
                 if (ps != null) {
                     ps.avgStepOnPath = computeAvgCostOfPathVertices(path);
                     ps.pathFound = true;
+                    ps.bestL1 = Math.min(ps.bestL1, md);
                 }
                 return path;
             }
@@ -430,8 +454,18 @@ public class PathFinder {
                 ? ps.sumStepCosts / (double) ps.relaxationsAccepted
                 : 0.0;
 
-        double base = (ps.pathFound && ps.avgStepOnPath > 0.0) ? ps.avgStepOnPath : avgStepAll;
-        double suggested = base > 0.0 ? Math.max(80.0, Math.min(120.0, base)) : 0.0;
+        // (2) совет даём ТОЛЬКО если путь найден
+        double suggested = 0.0;
+        boolean suggestable = ps.pathFound && ps.avgStepOnPath > 0.0;
+        if (suggestable) {
+            double base = ps.avgStepOnPath;
+            suggested = Math.max(80.0, Math.min(120.0, base));
+        }
+
+        // (5) метрики сходимости
+        double progress = ps.initialL1 > 0
+                ? (double) (ps.initialL1 - Math.min(ps.bestL1, ps.initialL1)) / (double) ps.initialL1
+                : 0.0;
 
         LOGGER.info(
                 """
@@ -440,7 +474,8 @@ public class PathFinder {
                   calls: height={}  biome={}  stability={}
                   avg-step: path={}  all-relaxations={}
                   localScale={}
-                  suggest HEURISTIC_SCALE ≈ {}
+                  convergence: L1_start={}  L1_best={}  progress={}%  stallIters={}  bestF={}
+                  {}
                 """,
                 ps.start.toShortString(), ps.goal.toShortString(),
                 ps.iterations, ps.neighborsChecked, ps.relaxationsAccepted,
@@ -448,7 +483,13 @@ public class PathFinder {
                 String.format(Locale.ROOT, "%.2f", ps.avgStepOnPath),
                 String.format(Locale.ROOT, "%.2f", avgStepAll),
                 String.format(Locale.ROOT, "%.1f", ps.localScale),
-                String.format(Locale.ROOT, "%.1f", suggested)
+                ps.initialL1, (ps.bestL1 == Integer.MAX_VALUE ? -1 : ps.bestL1),
+                String.format(Locale.ROOT, "%.1f", progress * 100.0),
+                ps.stallIters,
+                String.format(Locale.ROOT, "%.1f", ps.bestF),
+                suggestable
+                        ? ("suggest HEURISTIC_SCALE ≈ " + String.format(Locale.ROOT, "%.1f", suggested))
+                        : "no suggestion (path not found)"
         );
     }
 }
