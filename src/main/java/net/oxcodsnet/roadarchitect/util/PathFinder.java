@@ -44,8 +44,8 @@ public class PathFinder {
     /** Inflation factor ε для ARA* (Weighted A*) */
     public static final double HEURISTIC_WEIGHT = 1.8;
 
-    /** Масштаб эвристики (будет предложен профайлером) */
-    public static final double HEURISTIC_SCALE = 95;
+    /** Базовый масштаб эвристики (адаптируется per-run через selectHeuristicScale) */
+    public static final double HEURISTIC_SCALE = 95.0;
 
     /** Раннее завершение по манхэттену (радиус в блоках) */
     private static final int EARLY_STOP_L1 = 65;
@@ -86,6 +86,9 @@ public class PathFinder {
         double avgStepOnPath = 0.0;
         boolean pathFound = false;
 
+        /** Фактически использованный масштаб эвристики в этом запуске */
+        double localScale = HEURISTIC_SCALE;
+
         ProfileSession(BlockPos start, BlockPos goal) {
             this.start = start;
             this.goal = goal;
@@ -121,6 +124,8 @@ public class PathFinder {
         this.biomeSource = generator.getBiomeSource();
     }
 
+    /* ───────────────────────── Стоимости ───────────────────────── */
+
     private static double stepCost(int[] off) {
         return (Math.abs(off[0]) == GRID_STEP && Math.abs(off[1]) == GRID_STEP) ? 1.5 : 1.0;
     }
@@ -146,16 +151,48 @@ public class PathFinder {
         return Math.abs(y1 - y2) > 3;
     }
 
-    private static double heuristic(int x, int z, BlockPos goal) {
+    /* ───────────────────────── Эвристика ───────────────────────── */
+
+    /** Октильная эвристика с явным scale. */
+    private static double heuristic(int x, int z, BlockPos goal, double scale) {
         int dx = Math.abs(x - goal.getX());
         int dz = Math.abs(z - goal.getZ());
-        double a = dx + dz - 0.5 * Math.min(dx, dz); // октильная эвристика
-        return a * HEURISTIC_SCALE;
+        double a = dx + dz - 0.5 * Math.min(dx, dz);
+        return a * scale;
+    }
+
+    private static double heuristic(BlockPos a, BlockPos b, double scale) {
+        return heuristic(a.getX(), a.getZ(), b, scale);
+    }
+
+    /** Перегрузки по-старому (по умолчанию берём базовый HEURISTIC_SCALE). */
+    private static double heuristic(int x, int z, BlockPos goal) {
+        return heuristic(x, z, goal, HEURISTIC_SCALE);
     }
 
     private static double heuristic(BlockPos a, BlockPos b) {
-        return heuristic(a.getX(), a.getZ(), b);
+        return heuristic(a, b, HEURISTIC_SCALE);
     }
+
+    /**
+     * Простая адаптация масштаба эвристики под длину запроса (L1 в блоках).
+     * Диапазон намеренно ограничен [80; 120], чтобы не «пережимать» короткие запросы.
+     */
+    private static double selectHeuristicScale(BlockPos start, BlockPos goal) {
+        int l1 = Math.abs(start.getX() - goal.getX()) + Math.abs(start.getZ() - goal.getZ());
+        double scale = HEURISTIC_SCALE;
+
+        if (l1 >= 1200) {
+            scale = Math.min(120.0, HEURISTIC_SCALE + 20.0); // дальние маршруты
+        } else if (l1 >= 400) {
+            scale = Math.min(110.0, HEURISTIC_SCALE + 10.0); // средние
+        } else if (l1 <= 200) {
+            scale = Math.max(80.0, HEURISTIC_SCALE - 15.0);  // короткие
+        }
+        return scale;
+    }
+
+    /* ───────────────────────── Вспомогательное ───────────────────────── */
 
     private static BlockPos snap(BlockPos p) {
         int x = Math.floorDiv(p.getX(), GRID_STEP) * GRID_STEP;
@@ -206,17 +243,25 @@ public class PathFinder {
         long startKey = hash(startPos.getX(), startPos.getZ());
         long endKey = hash(endPos.getX(), endPos.getZ());
 
+        // ── адаптивный масштаб эвристики для этого запуска ──
+        final double localScale = selectHeuristicScale(startPos, endPos);
+        if (ps != null) {
+            ps.localScale = localScale;
+        }
+
         PriorityQueue<Rec> open = new PriorityQueue<>(Comparator.comparingDouble(r -> r.f));
         Long2DoubleMap gScore = new Long2DoubleOpenHashMap();
         gScore.defaultReturnValue(Double.MAX_VALUE);
         Long2LongMap parent = new Long2LongOpenHashMap();
 
         gScore.put(startKey, 0.0);
-        open.add(new Rec(startKey, 0.0, heuristic(startPos, endPos) * heuristicWeight));
+        open.add(new Rec(startKey, 0.0, heuristic(startPos, endPos, localScale) * heuristicWeight));
 
         int iterations = 0;
         while (!open.isEmpty() && iterations++ < maxSteps) {
-            if (ps != null) ps.iterations++;
+            if (ps != null) {
+                ps.iterations++;
+            }
 
             Rec current = open.poll();
             if (current.g() > gScore.get(current.key())) {
@@ -241,7 +286,9 @@ public class PathFinder {
                 int nx = curX + off[0];
                 int nz = curZ + off[1];
                 long neighKey = hash(nx, nz);
-                if (ps != null) ps.neighborsChecked++;
+                if (ps != null) {
+                    ps.neighborsChecked++;
+                }
 
                 int ny = sampleHeight(nx, nz);
                 if (isSteep(curY, ny)) {
@@ -273,7 +320,7 @@ public class PathFinder {
                         ps.relaxationsAccepted++;
                         ps.sumStepCosts += inc;
                     }
-                    double f = tentativeG + heuristic(nx, nz, endPos) * heuristicWeight;
+                    double f = tentativeG + heuristic(nx, nz, endPos, localScale) * heuristicWeight;
                     open.add(new Rec(neighKey, tentativeG, f));
                 }
             }
@@ -355,7 +402,6 @@ public class PathFinder {
             int ay = a.getY();
             int by = b.getY();
 
-            // шаг в терминах OFFSETS (±GRID_STEP по x/z)
             int[] off = new int[]{dx, dz};
 
             double inc = stepCost(off)
@@ -385,8 +431,7 @@ public class PathFinder {
                 : 0.0;
 
         double base = (ps.pathFound && ps.avgStepOnPath > 0.0) ? ps.avgStepOnPath : avgStepAll;
-
-        double suggested = base > 0.0 ? Math.max(5.0, Math.min(120.0, base)) : 0.0;
+        double suggested = base > 0.0 ? Math.max(80.0, Math.min(120.0, base)) : 0.0;
 
         LOGGER.info(
                 """
@@ -394,6 +439,7 @@ public class PathFinder {
                   iterations={}  neighbors={}  relaxations={}
                   calls: height={}  biome={}  stability={}
                   avg-step: path={}  all-relaxations={}
+                  localScale={}
                   suggest HEURISTIC_SCALE ≈ {}
                 """,
                 ps.start.toShortString(), ps.goal.toShortString(),
@@ -401,6 +447,7 @@ public class PathFinder {
                 profHeightCalls, profBiomeCalls, profStabCalls,
                 String.format(Locale.ROOT, "%.2f", ps.avgStepOnPath),
                 String.format(Locale.ROOT, "%.2f", avgStepAll),
+                String.format(Locale.ROOT, "%.1f", ps.localScale),
                 String.format(Locale.ROOT, "%.1f", suggested)
         );
     }
