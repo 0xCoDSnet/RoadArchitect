@@ -212,9 +212,9 @@ public class PathFinder {
      */
     private static int selectMaxSteps(BlockPos start, BlockPos goal) {
         int l1 = Math.abs(start.getX() - goal.getX()) + Math.abs(start.getZ() - goal.getZ());
-        double k = 14.0;      // коэффициент усилия на один блок L1
+        double k = 16.0;      // коэффициент усилия на один блок L1
         int min = 512;        // защитный минимум (убирает кейсы iterations=1–4)
-        int max = 120_000;    // жёсткий максимум на запуск (страховка)
+        int max = 200_000;    // жёсткий максимум на запуск (страховка)
         long est = Math.round((k * l1) / GRID_STEP);
         if (est < min) return min;
         if (est > max) return max;
@@ -414,7 +414,7 @@ public class PathFinder {
         for (Direction d : Direction.Type.HORIZONTAL) {
             int ny = sampleHeight(x + d.getOffsetX(), z + d.getOffsetZ());
             cost += Math.abs(y - ny);
-            if (cost > 2) {
+            if (cost > 3) {
                 return Double.MAX_VALUE;
             }
         }
