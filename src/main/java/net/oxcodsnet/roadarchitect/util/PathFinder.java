@@ -43,6 +43,9 @@ public class PathFinder {
      * Inflation factor ε для ARA* (Weighted A*)
      */
     public static final double HEURISTIC_WEIGHT = 1.8;
+    public static final double HEURISTIC_SCALE = 35;
+
+    private static final int EARLY_STOP_L1 = 65;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinder");
     private static final int[][] OFFSETS = generateOffsets();
@@ -54,6 +57,9 @@ public class PathFinder {
             BiomeTags.IS_MOUNTAIN, 160.0,
             BiomeTags.IS_BEACH, 160.0
     );
+
+
+
     /* ===================================================== */
 
     private final NodeStorage nodes;
@@ -111,8 +117,8 @@ public class PathFinder {
     private static double heuristic(int x, int z, BlockPos goal) {
         int dx = Math.abs(x - goal.getX());
         int dz = Math.abs(z - goal.getZ());
-        double a = dx + dz - 0.6 * Math.min(dx, dz);
-        return a * 40.0;
+        double a = dx + dz - 0.5 * Math.min(dx, dz);
+        return a * HEURISTIC_SCALE;
     }
 
     private static double heuristic(BlockPos a, BlockPos b) {
@@ -172,11 +178,14 @@ public class PathFinder {
         int iterations = 0;
         while (!open.isEmpty() && iterations++ < maxSteps) {
             Rec current = open.poll();
+            if (current.g() > gScore.get(current.key())) continue;
+
             int curX = (int) (current.key >> 32);
             int curZ = (int) current.key;
             int curY = sampleHeight(curX, curZ);
 
-            if (current.key == endKey) {
+            int md = Math.abs(curX - endPos.getX()) + Math.abs(curZ - endPos.getZ());
+            if (md <= EARLY_STOP_L1 || current.key == endKey) {
                 return reconstructVertices(current.key, startKey, parent);
             }
 
