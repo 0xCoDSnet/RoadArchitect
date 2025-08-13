@@ -3,9 +3,8 @@
 </p>
 
 <p align="center">
-  <a href="https://modrinth.com/mod/roadarchitect">
-    <img src="https://img.shields.io/modrinth/dt/roadarchitect.svg?color=00AF5C&label=Modrinth%20downloads" alt="Modrinth downloads">
-  </a>
+  <img alt="Modrinth Downloads" src="https://img.shields.io/modrinth/dt/dLRvLyY3?style=flat&logo=modrinth&link=https%3A%2F%2Fmodrinth.com%2Fmod%2Froadarchitect">
+  <img alt="CurseForge Downloads" src="https://img.shields.io/curseforge/dt/1326434?style=flat&logo=curseforge&link=https%3A%2F%2Fwww.curseforge.com%2Fminecraft%2Fmc-mods%2Froadarchitect">
 </p>
 
 <p align="center">
@@ -36,6 +35,7 @@ Roads adapt their style to the biome, and the network is saved between game sess
 1. Install **[Fabric Loader](https://fabricmc.net/use/installer/)** `0.16.14` for **Minecraft 1.21.1**
 2. Download the mod:
     - From **[Modrinth](https://modrinth.com/mod/roadarchitect)**
+    - From **[CurseForge](https://www.curseforge.com/minecraft/mc-mods/roadarchitect)**
 3. Place the `.jar` file in your `mods` folder
 
 ---
