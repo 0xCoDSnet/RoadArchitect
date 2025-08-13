@@ -21,7 +21,7 @@ public final class BuoyDecoration implements Decoration {
     @Override
     public void place(StructureWorldAccess world, BlockPos basePos, Random random) {
         // ── Если в клетке не воздух/вода — не рискуем ──
-        //if (!world.getBlockState(basePos).getFluidState().isStill()) return;
+        if (!world.getBlockState(basePos).getFluidState().isStill()) return;
 
         // Ставим бревно на уровень дороги-воды, fence и факел — выше
         world.setBlockState(basePos, LOG, Block.NOTIFY_NEIGHBORS);

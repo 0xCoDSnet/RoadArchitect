@@ -12,7 +12,7 @@
     "sources": "https://github.com/0xCoDSnet/RoadArchitect"
   },
   "license": "Apache-2.0",
-  "icon": "assets/roadarchitect/icon3.png",
+  "icon": "assets/roadarchitect/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [

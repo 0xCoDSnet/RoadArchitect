@@ -41,17 +41,17 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadFeature");
 
     private static final BuoyDecoration BUOY = new BuoyDecoration();
-    private static final int BUOY_INTERVAL = 12;
+    private static final int BUOY_INTERVAL = 20;
 
     public RoadFeature(Codec<RoadFeatureConfig> codec) {
         super(codec);
     }
 
+
     private static void buildRoadStripe(StructureWorldAccess world, List<BlockPos> pts, int halfWidth, Random random) {
         for (int i = 0; i < pts.size(); i++) {
             BlockPos p = pts.get(i);
 
-            /* Направление по соседним точкам */
             int prevIdx = Math.max(0, i - 2);
             int nextIdx = Math.min(pts.size() - 1, i + 2);
             Vec3d dir = new Vec3d(
@@ -63,7 +63,6 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
             double nz = dir.z;
             boolean diagonal = Math.abs(nx) > 0.001 && Math.abs(nz) > 0.001;
 
-            /* Полотно */
             for (int dx = -halfWidth; dx <= halfWidth; dx++) {
                 for (int dz = -halfWidth; dz <= halfWidth; dz++) {
                     double dist = Math.abs(dx * nz - dz * nx);
@@ -71,6 +70,12 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
                     if (!inside) continue;
 
                     BlockPos roadPos = p.add(dx, 0, dz);
+
+                    // 🔒 Новое: не кладём дорогу в воду/воду в waterlogged
+                    if (world.getBlockState(roadPos).getFluidState().isIn(FluidTags.WATER)) {
+                        continue;
+                    }
+
                     RegistryEntry<Biome> biome = world.getBiome(roadPos);
                     RoadStyle style = RoadStyles.forBiome(biome);
                     BlockState roadState = style.palette().pick(random);
@@ -78,7 +83,6 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
                 }
             }
 
-            /* Декорации */
             if (random.nextInt(15) == 0) {
                 decorateSide(world, p, nx, nz, halfWidth, random);
             }
@@ -171,18 +175,33 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
 
             /* ---------- ФАЗА 1: вода / буйки ---------- */
             List<BlockPos> landPts = new ArrayList<>();
-            int waterCounter = 0;
+
+            // 🔁 Новое: отмеряем реальное расстояние между буйками
+            BlockPos lastBuoyPos = null;
 
             for (int i = from; i < to; i++) {
                 BlockPos p = pts.get(i);
                 if (isNotWaterBlock(world, p)) {
-                    waterCounter = 0;
+                    lastBuoyPos = null; // сбрасываем при выходе на сушу
                     landPts.add(p);
                 } else {
-                    if (isWaterSegment(world, p) && (waterCounter % BUOY_INTERVAL == 0)) {
-                        BUOY.place(world, p, random);
+                    if (isWaterSegment(world, p)) {
+                        boolean farEnough = false;
+                        if (lastBuoyPos == null) {
+                            farEnough = true; // первый буй в сегменте воды
+                        } else {
+                            // сравниваем квадрат расстояния, чтобы не считать sqrt
+                            long dx = p.getX() - lastBuoyPos.getX();
+                            long dz = p.getZ() - lastBuoyPos.getZ();
+                            long dist2 = dx * dx + dz * dz;
+                            farEnough = dist2 >= (long) BUOY_INTERVAL * BUOY_INTERVAL;
+                        }
+
+                        if (farEnough) {
+                            BUOY.place(world, p, random);
+                            lastBuoyPos = p;
+                        }
                     }
-                    waterCounter++;
                 }
             }
 

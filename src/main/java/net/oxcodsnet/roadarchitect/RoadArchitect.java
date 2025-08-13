@@ -1,5 +1,6 @@
 package net.oxcodsnet.roadarchitect;
 
+import io.wispforest.owo.command.EnumArgumentType;
 import net.fabricmc.api.ModInitializer;
 import net.oxcodsnet.roadarchitect.config.RoadArchitectConfig;
 import net.oxcodsnet.roadarchitect.handlers.RoadGraphStateManager;
@@ -25,8 +26,18 @@ public class RoadArchitect implements ModInitializer {
      */
     @Override
     public void onInitialize() {
-        LOGGER.info("Road Architect initialization...");
 
+        try {
+            EnumArgumentType.create(org.slf4j.event.Level.class);
+            LOGGER.debug("Registered OWO enum argument for SLF4J Level");
+        } catch (IllegalStateException already) {
+            // если кто-то уже зарегистрировал — это ок, просто логируем по-тихому
+            LOGGER.debug("OWO enum argument for SLF4J Level already registered");
+        } catch (Throwable t) {
+            LOGGER.warn("Failed to register OWO enum argument for SLF4J Level", t);
+        }
+
+        LOGGER.info("Road Architect initialization...");
         // Регистрация хранилищ и пайплайна
         RoadGraphStateManager.register();
         RoadPipelineController.register();
