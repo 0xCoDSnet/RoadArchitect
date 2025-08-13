@@ -41,7 +41,7 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadFeature");
 
     private static final BuoyDecoration BUOY = new BuoyDecoration();
-    private static final int BUOY_INTERVAL = 15;
+    private static final int BUOY_INTERVAL = 18;
 
     public RoadFeature(Codec<RoadFeatureConfig> codec) {
         super(codec);
