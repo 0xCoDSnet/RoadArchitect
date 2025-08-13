@@ -27,13 +27,14 @@ public final class RoadPostProcessor {
     private RoadPostProcessor() {}
 
     // ====== ПАРАМЕТРЫ (можно вынести в конфиг позже) ======
-    private static final int TOLERANCE_BLOCKS = 30;          // близость, блоки
+    private static final int TOLERANCE_BLOCKS = 45;          // близость, блоки
     private static final int ANGLE_THRESHOLD_DEG = 35;       // почти параллельные
     private static final int TAIL_ANGLE_MAX_DEG = 35;        // угол после схождения
     private static final double AVG_DIST_FACTOR = 1.5;       // < tolerance * factor
     private static final double SCORE_LIMIT = 50.0;          // угол + dist/10
-    private static final int MAX_ITER = 1;                   // N-циклы
+    private static final int MAX_ITER = 5;                   // N-циклы (Для лучшего эффекта, должно быть нечётным)
     private static final boolean UNTIL_STABLE = true;        // до стабилизации
+    private static final int TRIM_RADIUS_L1 = 50;        // L1-радиус обрезки (как в PathFinder)
 
     // ====== Нормализация высот (профиль) ======
     private static final int SMOOTH_MEDIAN_WINDOW = 5;       // нечётное: 3/5/7
@@ -51,6 +52,42 @@ public final class RoadPostProcessor {
         });
     }
 
+
+    // ====== Обрезка начала и конца пути по L1-радиусу (XZ) ======
+    private static int manhattanXZ(BlockPos a, BlockPos b) {
+        return Math.abs(a.getX() - b.getX()) + Math.abs(a.getZ() - b.getZ());
+    }
+
+    /**
+     * Обрезает последовательность вершин с начала и конца, удаляя точки,
+     * находящиеся в пределах радиуса R (по Манхэттену в XZ) от ИСХОДНЫХ
+     * крайних точек. Если после обрезки остаётся < 2 вершин — возвращаем
+     * исходный путь без изменений.
+     */
+    private static List<BlockPos> trimByManhattan(List<BlockPos> path) {
+        if (path == null || path.size() < 2) return path;
+
+        BlockPos start0 = path.getFirst();
+        BlockPos end0   = path.getLast();
+
+        int i = 0;
+        while (i < path.size() && manhattanXZ(path.get(i), start0) <= TRIM_RADIUS_L1) i++;
+
+        int j = path.size() - 1;
+        while (j >= 0 && manhattanXZ(path.get(j), end0) <= TRIM_RADIUS_L1) j--;
+
+        if (i <= 0 && j >= path.size() - 1) {
+            // ничего не обрезали
+            return path;
+        }
+
+        if (j - i + 1 < 2) {
+            // по условию — продолжаем без обрезки
+            return path;
+        }
+
+        return new ArrayList<>(path.subList(i, j + 1));
+    }
     // ====== refine как было ======
     private static List<BlockPos> refine(ServerWorld world, List<BlockPos> verts) {
         if (verts.isEmpty()) return List.of();
@@ -198,6 +235,8 @@ public final class RoadPostProcessor {
         AsyncExecutor.execute(() -> {
             String activeKey = baseKey;
             List<BlockPos> activeRaw = new ArrayList<>(baseRawInitial);
+            // Применяем обрезку по Манхэттену к активному пути до любой обработки
+            activeRaw = trimByManhattan(activeRaw);
 
             final Set<String> partnersMarked = new HashSet<>();
             final Set<String> becameReady = new HashSet<>();
@@ -209,6 +248,8 @@ public final class RoadPostProcessor {
 
                 do {
                     changed = false;
+                    // Повторно применяем обрезку в начале итерации (после возможных обновлений activeRaw)
+                    //activeRaw = trimByManhattan(activeRaw, TRIM_RADIUS_L1);
                     iter++;
 
                     // 1) Ищем лучшего параллельного соседа среди PENDING
@@ -223,13 +264,16 @@ public final class RoadPostProcessor {
 
                     // 3) Проверяем схождение
                     List<BlockPos> otherRaw = storage.getPath(cand.otherKey);
+
+                    // Обрезаем путь партнёра до всех манипуляций
+                    otherRaw = trimByManhattan(otherRaw);
+
                     Convergence conv = findConvergence(activeRaw, otherRaw);
                     if (conv == null) {
                         storage.setStatus(cand.otherKey, PathStorage.Status.PENDING);
                         partnersMarked.remove(cand.otherKey);
                         continue;
                     }
-
                     // 4) Строим Y
                     BuildResult br = buildY(world, activeKey, activeRaw, cand.otherKey, otherRaw, conv);
 
@@ -241,8 +285,8 @@ public final class RoadPostProcessor {
                         toBuild.put(leg.getKey(), nr.path());
 
                         if (!nr.path().isEmpty()) {
-                            BlockPos s = nr.path().get(0);
-                            BlockPos t = nr.path().get(nr.path().size() - 1);
+                            BlockPos s = nr.path().getFirst();
+                            BlockPos t = nr.path().getLast();
                             LOGGER.debug(
                                     "[PostProcess] READY (leg) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
                                     leg.getKey(), nr.path().size(), nr.spikesCut(), nr.gradClamped(), s, t
@@ -258,8 +302,8 @@ public final class RoadPostProcessor {
                     toBuild.put(br.trunkRaw.key, trunkNR.path());
 
                     if (!trunkNR.path().isEmpty()) {
-                        BlockPos s = trunkNR.path().get(0);
-                        BlockPos t = trunkNR.path().get(trunkNR.path().size() - 1);
+                        BlockPos s = trunkNR.path().getFirst();
+                        BlockPos t = trunkNR.path().getLast();
                         LOGGER.debug(
                                 "[PostProcess] READY (trunk) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
                                 br.trunkRaw.key, trunkNR.path().size(), trunkNR.spikesCut(), trunkNR.gradClamped(), s, t
@@ -282,8 +326,8 @@ public final class RoadPostProcessor {
                     toBuild.put(activeKey, nr.path());
 
                     if (!nr.path().isEmpty()) {
-                        BlockPos s = nr.path().get(0);
-                        BlockPos t = nr.path().get(nr.path().size() - 1);
+                        BlockPos s = nr.path().getFirst();
+                        BlockPos t = nr.path().getLast();
                         LOGGER.debug(
                                 "[PostProcess] READY (single) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
                                 activeKey, nr.path().size(), nr.spikesCut(), nr.gradClamped(), s, t
@@ -328,6 +372,7 @@ public final class RoadPostProcessor {
             if (otherKey.equals(baseKey)) continue;
 
             List<BlockPos> otherRaw = storage.getPath(otherKey);
+            //otherRaw = trimByManhattan(otherRaw, TRIM_RADIUS_L1);
             if (otherRaw.size() < 2) continue;
 
             // bbox отсев
@@ -464,7 +509,7 @@ public final class RoadPostProcessor {
     }
 
     private static int[] dir(List<BlockPos> pts) {
-        BlockPos s = pts.get(0), e = pts.get(pts.size() - 1);
+        BlockPos s = pts.getFirst(), e = pts.getLast();
         return new int[]{ e.getX() - s.getX(), e.getZ() - s.getZ() };
     }
 

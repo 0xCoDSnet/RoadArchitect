@@ -41,14 +41,15 @@ public class PathFinder {
     /* ================ USER-TUNABLE PARAMS ================ */
     public static final int GRID_STEP = 4;
 
-    /** Inflation factor ε для ARA* (Weighted A*) */
+    /**
+     * Inflation factor ε для ARA* (Weighted A*)
+     */
     public static final double HEURISTIC_WEIGHT = 1.8;
 
-    /** Базовый масштаб эвристики (адаптируется per-run через selectHeuristicScale) */
+    /**
+     * Базовый масштаб эвристики (адаптируется per-run через selectHeuristicScale)
+     */
     public static final double HEURISTIC_SCALE = 95.0;
-
-    /** Раннее завершение по манхэттену (радиус в блоках) */
-    private static final int EARLY_STOP_L1 = 65;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinder");
     private static final int[][] OFFSETS = generateOffsets();
@@ -63,10 +64,14 @@ public class PathFinder {
 
     /* =================== ПРОФАЙЛЕР =================== */
 
-    /** Щёлкалка профилирования */
+    /**
+     * Щёлкалка профилирования
+     */
     private static final boolean PROFILING_ENABLED = true;
 
-    /** Счётчики вызовов семплеров на один запуск поиска */
+    /**
+     * Счётчики вызовов семплеров на один запуск поиска
+     */
     private long profHeightCalls = 0L;
     private long profBiomeCalls = 0L;
     private long profStabCalls = 0L;
@@ -80,14 +85,20 @@ public class PathFinder {
         long neighborsChecked = 0L;
         long relaxationsAccepted = 0L;
 
-        /** Сумма инкрементальных стоимостей по ВСЕМ принятым релаксациям */
+        /**
+         * Сумма инкрементальных стоимостей по ВСЕМ принятым релаксациям
+         */
         double sumStepCosts = 0.0;
 
-        /** Средняя цена шага по фактическому пути (если найден) */
+        /**
+         * Средняя цена шага по фактическому пути (если найден)
+         */
         double avgStepOnPath = 0.0;
         boolean pathFound = false;
 
-        /** Фактически использованный масштаб эвристики в этом запуске */
+        /**
+         * Фактически использованный масштаб эвристики в этом запуске
+         */
         double localScale = HEURISTIC_SCALE;
 
         // ── метрики сходимости ──
@@ -167,7 +178,9 @@ public class PathFinder {
 
     /* ───────────────────────── Эвристика ───────────────────────── */
 
-    /** Октильная эвристика с явным scale. */
+    /**
+     * Октильная эвристика с явным scale.
+     */
     private static double heuristic(int x, int z, BlockPos goal, double scale) {
         int dx = Math.abs(x - goal.getX());
         int dz = Math.abs(z - goal.getZ());
@@ -179,7 +192,9 @@ public class PathFinder {
         return heuristic(a.getX(), a.getZ(), b, scale);
     }
 
-    /** Перегрузки по-старому (по умолчанию берём базовый HEURISTIC_SCALE). */
+    /**
+     * Перегрузки по-старому (по умолчанию берём базовый HEURISTIC_SCALE).
+     */
     private static double heuristic(int x, int z, BlockPos goal) {
         return heuristic(x, z, goal, HEURISTIC_SCALE);
     }
@@ -236,7 +251,9 @@ public class PathFinder {
 
     /* ───────────────────────── Публичный API ───────────────────────── */
 
-    /** Поиск по идентификаторам узлов (как и раньше). */
+    /**
+     * Поиск по идентификаторам узлов (как и раньше).
+     */
     public List<BlockPos> findPath(String fromId, String toId) {
         Node startNode = nodes.all().get(fromId);
         Node endNode = nodes.all().get(toId);
@@ -247,7 +264,9 @@ public class PathFinder {
         return aStarPositions(snap(startNode.pos()), snap(endNode.pos()));
     }
 
-    /** Поиск между произвольными позициями (для локального реплана). */
+    /**
+     * Поиск между произвольными позициями (для локального реплана).
+     */
     public List<BlockPos> findPath(BlockPos from, BlockPos to) {
         return aStarPositions(snap(from), snap(to));
     }
@@ -267,7 +286,7 @@ public class PathFinder {
     }
 
     private List<BlockPos> aStarPositions(BlockPos startPos, BlockPos endPos, ProfileSession ps) {
-        record Rec(long key, double g, double f) {}
+        record Rec(long key, double g, double f) { }
 
         long startKey = hash(startPos.getX(), startPos.getZ());
         long endKey = hash(endPos.getX(), endPos.getZ());
@@ -316,7 +335,7 @@ public class PathFinder {
                 }
             }
 
-            if (md <= EARLY_STOP_L1 || current.key == endKey) {
+            if (current.key == endKey) {
                 List<BlockPos> path = reconstructVertices(current.key, startKey, parent);
                 if (ps != null) {
                     ps.avgStepOnPath = computeAvgCostOfPathVertices(path);
@@ -435,7 +454,9 @@ public class PathFinder {
         return vertices;
     }
 
-    /** Средняя «цена шага» по уже восстановленному списку вершин пути. */
+    /**
+     * Средняя «цена шага» по уже восстановленному списку вершин пути.
+     */
     private double computeAvgCostOfPathVertices(List<BlockPos> path) {
         if (path.size() < 2) {
             return 0.0;
@@ -491,16 +512,16 @@ public class PathFinder {
                 ? (double) (ps.initialL1 - Math.min(ps.bestL1, ps.initialL1)) / (double) ps.initialL1
                 : 0.0;
 
-        LOGGER.info(
+        LOGGER.debug(
                 """
-                [A* profiler] {} -> {}
-                  iterations={}  neighbors={}  relaxations={}
-                  calls: height={}  biome={}  stability={}
-                  avg-step: path={}  all-relaxations={}
-                  localScale={}
-                  convergence: L1_start={}  L1_best={}  progress={}%  stallIters={}  bestF={}  stepCap={}  hitCap={}
-                  {}
-                """,
+                        [A* profiler] {} -> {}
+                          iterations={}  neighbors={}  relaxations={}
+                          calls: height={}  biome={}  stability={}
+                          avg-step: path={}  all-relaxations={}
+                          localScale={}
+                          convergence: L1_start={}  L1_best={}  progress={}%  stallIters={}  bestF={}  stepCap={}  hitCap={}
+                          {}
+                        """,
                 ps.start.toShortString(), ps.goal.toShortString(),
                 ps.iterations, ps.neighborsChecked, ps.relaxationsAccepted,
                 profHeightCalls, profBiomeCalls, profStabCalls,
