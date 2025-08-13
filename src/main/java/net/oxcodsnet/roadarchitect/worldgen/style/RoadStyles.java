@@ -150,7 +150,7 @@ public final class RoadStyles {
                             .add(Blocks.CRACKED_STONE_BRICKS.getDefaultState(), 1)
                             .add(Blocks.MOSS_BLOCK.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.MOSSY_COBBLESTONE.getDefaultState()))
+                    new FenceDecoration(Blocks.MOSSY_COBBLESTONE_WALL.getDefaultState()))
             ),
 
             Map.entry(BiomeKeys.MANGROVE_SWAMP, new RoadStyle(

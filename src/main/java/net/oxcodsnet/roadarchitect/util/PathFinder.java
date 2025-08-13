@@ -44,7 +44,7 @@ public class PathFinder {
     /**
      * Inflation factor ε для ARA* (Weighted A*)
      */
-    public static final double HEURISTIC_WEIGHT = 1.8;
+    public static final double HEURISTIC_WEIGHT = 1.5;
 
     /**
      * Базовый масштаб эвристики (адаптируется per-run через selectHeuristicScale)

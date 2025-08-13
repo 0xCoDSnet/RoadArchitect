@@ -43,6 +43,12 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
     private static final BuoyDecoration BUOY = new BuoyDecoration();
     private static final int BUOY_INTERVAL = 18;
 
+    private static final int[][] OFFSETS_8 = {
+            {-1, -1}, {0, -1}, {1, -1},
+            {-1,  0},          {1,  0},
+            {-1,  1}, {0,  1}, {1,  1}
+    };
+
     public RoadFeature(Codec<RoadFeatureConfig> codec) {
         super(codec);
     }
@@ -51,6 +57,10 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
     private static void buildRoadStripe(StructureWorldAccess world, List<BlockPos> pts, int halfWidth, Random random) {
         for (int i = 0; i < pts.size(); i++) {
             BlockPos p = pts.get(i);
+
+            if (!isNotWaterBlock(world, p)) {
+                continue;
+            }
 
             int prevIdx = Math.max(0, i - 2);
             int nextIdx = Math.min(pts.size() - 1, i + 2);
@@ -71,6 +81,10 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
 
                     BlockPos roadPos = p.add(dx, 0, dz);
 
+                    if (!isNotWaterBlock(world, p)) {
+                        continue;
+                    }
+
                     // 🔒 Новое: не кладём дорогу в воду/воду в waterlogged
                     if (isWaterSegment(world, roadPos)) {
                         continue;
@@ -84,9 +98,6 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
             }
 
             if (random.nextInt(15) == 0) {
-                if (isWaterSegment(world, p)) {
-                    continue;
-                }
                 decorateSide(world, p, nx, nz, halfWidth, random);
             }
         }
@@ -124,14 +135,17 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
         //world.setBlockState(pos.up(), Blocks.AIR.getDefaultState(), Block.NOTIFY_NEIGHBORS);
     }
 
-    /**
-     * Проверяем, что в данном блоке и 4 его горизонтальных соседях вода.
-     */
+
+
     private static boolean isWaterSegment(StructureWorldAccess world, BlockPos pos) {
-        if (isNotWaterBlock(world, pos)) return false;
-        for (Direction dir : Direction.Type.HORIZONTAL) {
-            BlockPos n = pos.offset(dir);
-            if (isNotWaterBlock(world, n)) return false;
+        if (isNotWaterBlock(world, pos)) {
+            return false;
+        }
+        for (int[] d : OFFSETS_8) {
+            BlockPos neighbor = pos.add(d[0], 0, d[1]);
+            if (isNotWaterBlock(world, neighbor)) {
+                return false;
+            }
         }
         return true;
     }
@@ -179,49 +193,32 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
             /* ---------- ФАЗА 1: вода / буйки ---------- */
             List<BlockPos> landPts = new ArrayList<>();
 
-            BlockPos lastBuoyPos = null;        // где поставили последний буй
-            BlockPos prevWaterPos = null;       // предыдущая узловая точка по воде
-            double accumulated = 0.0D;          // накопленная длина по воде с момента последнего буя
+            // 🔁 Новое: отмеряем реальное расстояние между буйками
+            BlockPos lastBuoyPos = null;
 
             for (int i = from; i < to; i++) {
                 BlockPos p = pts.get(i);
                 if (isNotWaterBlock(world, p)) {
-                    // При выходе на сушу — сброс водных счетчиков
-                    lastBuoyPos = null;
-                    prevWaterPos = null;
-                    accumulated = 0.0D;
+                    lastBuoyPos = null; // сбрасываем при выходе на сушу
                     landPts.add(p);
-                    continue;
-                }
+                } else {
+                    if (isWaterSegment(world, p)) {
+                        boolean farEnough = false;
+                        if (lastBuoyPos == null) {
+                            farEnough = true; // первый буй в сегменте воды
+                        } else {
+                            // сравниваем квадрат расстояния, чтобы не считать sqrt
+                            long dx = p.getX() - lastBuoyPos.getX();
+                            long dz = p.getZ() - lastBuoyPos.getZ();
+                            long dist2 = dx * dx + dz * dz;
+                            farEnough = dist2 >= (long) BUOY_INTERVAL * BUOY_INTERVAL;
+                        }
 
-                // Мы в воде — ставим буй только в "настоящем" водном сегменте (пятерка из воды вокруг)
-                if (!isWaterSegment(world, p)) {
-                    // Это переходная зона (край воды) — не считаем длину и не ставим буй
-                    prevWaterPos = null;
-                    continue;
-                }
-
-                if (lastBuoyPos == null) {
-                    // Первый буй в водном сегменте
-                    BUOY.place(world, p, random);
-                    lastBuoyPos = p;
-                    prevWaterPos = p;
-                    accumulated = 0.0D;
-                    continue;
-                }
-
-                // Нормальный водный шаг: накапливаем фактическую длину по ломаной
-                if (prevWaterPos != null) {
-                    int dx = p.getX() - prevWaterPos.getX();
-                    int dz = p.getZ() - prevWaterPos.getZ();
-                    accumulated += Math.hypot(dx, dz); // 1 по ортогонали, ~1.414 по диагонали
-                }
-                prevWaterPos = p;
-
-                if (accumulated >= BUOY_INTERVAL) {
-                    BUOY.place(world, p, random);
-                    lastBuoyPos = p;
-                    accumulated = 0.0D;
+                        if (farEnough) {
+                            BUOY.place(world, p, random);
+                            lastBuoyPos = p;
+                        }
+                    }
                 }
             }
 
