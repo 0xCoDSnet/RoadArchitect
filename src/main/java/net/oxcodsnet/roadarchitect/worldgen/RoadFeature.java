@@ -41,7 +41,7 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadFeature");
 
     private static final BuoyDecoration BUOY = new BuoyDecoration();
-    private static final int BUOY_INTERVAL = 20;
+    private static final int BUOY_INTERVAL = 15;
 
     public RoadFeature(Codec<RoadFeatureConfig> codec) {
         super(codec);
@@ -72,7 +72,7 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
                     BlockPos roadPos = p.add(dx, 0, dz);
 
                     // 🔒 Новое: не кладём дорогу в воду/воду в waterlogged
-                    if (world.getBlockState(roadPos).getFluidState().isIn(FluidTags.WATER)) {
+                    if (isWaterSegment(world, roadPos)) {
                         continue;
                     }
 
@@ -84,6 +84,9 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
             }
 
             if (random.nextInt(15) == 0) {
+                if (isWaterSegment(world, p)) {
+                    continue;
+                }
                 decorateSide(world, p, nx, nz, halfWidth, random);
             }
         }
@@ -118,7 +121,7 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
 
     private static void placeRoad(StructureWorldAccess world, BlockPos pos, BlockState stateRoad) {
         world.setBlockState(pos, stateRoad, Block.NOTIFY_NEIGHBORS);
-        world.setBlockState(pos.up(), Blocks.AIR.getDefaultState(), Block.NOTIFY_NEIGHBORS);
+        //world.setBlockState(pos.up(), Blocks.AIR.getDefaultState(), Block.NOTIFY_NEIGHBORS);
     }
 
     /**
@@ -176,32 +179,49 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
             /* ---------- ФАЗА 1: вода / буйки ---------- */
             List<BlockPos> landPts = new ArrayList<>();
 
-            // 🔁 Новое: отмеряем реальное расстояние между буйками
-            BlockPos lastBuoyPos = null;
+            BlockPos lastBuoyPos = null;        // где поставили последний буй
+            BlockPos prevWaterPos = null;       // предыдущая узловая точка по воде
+            double accumulated = 0.0D;          // накопленная длина по воде с момента последнего буя
 
             for (int i = from; i < to; i++) {
                 BlockPos p = pts.get(i);
                 if (isNotWaterBlock(world, p)) {
-                    lastBuoyPos = null; // сбрасываем при выходе на сушу
+                    // При выходе на сушу — сброс водных счетчиков
+                    lastBuoyPos = null;
+                    prevWaterPos = null;
+                    accumulated = 0.0D;
                     landPts.add(p);
-                } else {
-                    if (isWaterSegment(world, p)) {
-                        boolean farEnough = false;
-                        if (lastBuoyPos == null) {
-                            farEnough = true; // первый буй в сегменте воды
-                        } else {
-                            // сравниваем квадрат расстояния, чтобы не считать sqrt
-                            long dx = p.getX() - lastBuoyPos.getX();
-                            long dz = p.getZ() - lastBuoyPos.getZ();
-                            long dist2 = dx * dx + dz * dz;
-                            farEnough = dist2 >= (long) BUOY_INTERVAL * BUOY_INTERVAL;
-                        }
+                    continue;
+                }
 
-                        if (farEnough) {
-                            BUOY.place(world, p, random);
-                            lastBuoyPos = p;
-                        }
-                    }
+                // Мы в воде — ставим буй только в "настоящем" водном сегменте (пятерка из воды вокруг)
+                if (!isWaterSegment(world, p)) {
+                    // Это переходная зона (край воды) — не считаем длину и не ставим буй
+                    prevWaterPos = null;
+                    continue;
+                }
+
+                if (lastBuoyPos == null) {
+                    // Первый буй в водном сегменте
+                    BUOY.place(world, p, random);
+                    lastBuoyPos = p;
+                    prevWaterPos = p;
+                    accumulated = 0.0D;
+                    continue;
+                }
+
+                // Нормальный водный шаг: накапливаем фактическую длину по ломаной
+                if (prevWaterPos != null) {
+                    int dx = p.getX() - prevWaterPos.getX();
+                    int dz = p.getZ() - prevWaterPos.getZ();
+                    accumulated += Math.hypot(dx, dz); // 1 по ортогонали, ~1.414 по диагонали
+                }
+                prevWaterPos = p;
+
+                if (accumulated >= BUOY_INTERVAL) {
+                    BUOY.place(world, p, random);
+                    lastBuoyPos = p;
+                    accumulated = 0.0D;
                 }
             }
 
