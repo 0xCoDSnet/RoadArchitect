@@ -9,7 +9,10 @@
 
 <p align="center">
   <a href="https://modrinth.com/mod/roadarchitect/versions?l=fabric">
-     <img src="https://cdn.modrinth.com/data/cached_images/513035d1231a86dff137c74e04a5e64633593f10.png" alt="Available on Fabric">
+    <img src="https://cdn.modrinth.com/data/cached_images/513035d1231a86dff137c74e04a5e64633593f10.png" alt="Available on Fabric">
+  </a>
+  <a href="https://modrinth.com/mod/roadarchitect/versions?l=quilt">
+    <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/quilt_vector.svg" alt="Available on Quilt">
   </a>
 </p>
 
