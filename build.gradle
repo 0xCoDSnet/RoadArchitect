@@ -123,7 +123,7 @@ modrinth {
 
     token = resolvedToken
     projectId = "dLRvLyY3"
-    versionName = "RoadArchitect v${version}"
+    versionName = "RoadArchitect v${version}-${minecraft_version}"
     versionNumber = version
     uploadFile = remapJar
     gameVersions = [minecraft_version]
