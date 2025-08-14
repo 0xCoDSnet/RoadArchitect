@@ -18,10 +18,10 @@ import net.oxcodsnet.roadarchitect.storage.components.Node;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Компонент для отрисовки графа дорог в debug-экране (фикс под 1.21.6).
+ * Компонент для отрисовки графа дорог в debug-экране (фикс под 1.21.8).
  * - не используем drawText(..., scale) из oωo; масштабируем матрицей
  * - кружки рисуем полилинией (обход фан/стрип пайплайнов)
- * - draw(...) соответствует сигнатуре BaseComponent для 1.21.6 (delta, tickDelta)
+ * - draw(...) соответствует сигнатуре BaseComponent для 1.21.8 (delta, tickDelta)
  * - все цвета текста — с непрозрачной альфой (Colors.WHITE = 0xFFFFFFFF)
  */
 public class GraphComponent extends BaseComponent {

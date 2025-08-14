@@ -128,6 +128,8 @@ public class MyLevelLoadingScreen extends BaseOwoScreen<FlowLayout> {
         final long now = System.currentTimeMillis();
         final float tLinear = (now % PERIOD_MS) / (float) PERIOD_MS;
         final float t = tLinear * tLinear * (3f - 2f * tLinear); // smoothstep
+
+        // Путь движения сегмента
         final float path = -GLOW_W + t * (BAR_W + GLOW_W);
         int left = Math.max(0, Math.round(path));
         int right = Math.min(BAR_W, Math.round(path) + GLOW_W);
