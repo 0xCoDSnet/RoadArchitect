@@ -7,13 +7,13 @@
   <img alt="CurseForge Downloads" src="https://img.shields.io/curseforge/dt/1326434?style=flat&logo=curseforge&link=https%3A%2F%2Fwww.curseforge.com%2Fminecraft%2Fmc-mods%2Froadarchitect">
 </p>
 
-<p align="center">
-  <a href="https://modrinth.com/mod/roadarchitect/versions?l=fabric">
-    <img src="https://cdn.modrinth.com/data/cached_images/513035d1231a86dff137c74e04a5e64633593f10.png" alt="Available on Fabric">
-  </a>
-  <a href="https://modrinth.com/mod/roadarchitect/versions?l=quilt">
-    <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/quilt_vector.svg" alt="Available on Quilt">
-  </a>
+<p align="center" style="display: flex; justify-content: center; margin: 6px;">
+    <a href="https://modrinth.com/mod/roadarchitect/versions?l=fabric">
+        <img src="https://cdn.modrinth.com/data/cached_images/513035d1231a86dff137c74e04a5e64633593f10.png" alt="Available on Fabric">
+    </a>
+    <a href="https://modrinth.com/mod/roadarchitect/versions?l=quilt">
+        <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/quilt_vector.svg" alt="Available on Quilt">
+    </a>
 </p>
 
 ---
