@@ -64,6 +64,9 @@ install-fabric.sh
 # MacOS junk files
 .DS_Store
 
+/.idea/
+/**/.gradle/
+/**/*.iml
 
 .idea/
 .cache/
