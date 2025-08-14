@@ -5,9 +5,10 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect-1.client.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect-1.client.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect-1.main.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect-1.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect-1.test.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect-1.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect.client.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect.client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect.main.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/RoadArchitect.test.iml" filepath="$PROJECT_DIR$/.idea/modules/RoadArchitect.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fabric.client.iml" filepath="$PROJECT_DIR$/.idea/modules/fabric.client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fabric.main.iml" filepath="$PROJECT_DIR$/.idea/modules/fabric.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fabric.test.iml" filepath="$PROJECT_DIR$/.idea/modules/fabric.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/net.oxcodsnet.roadarchitect.RoadArchitect.test.iml" filepath="$PROJECT_DIR$/.idea/modules/net.oxcodsnet.roadarchitect.RoadArchitect.test.iml" />
     </modules>
   </component>
