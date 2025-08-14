@@ -19,8 +19,6 @@
 **RoadArchitect** is a **Fabric** mod for **Minecraft 1.21.1-1.21.8** that automatically scans the world for villages and other structures, connecting them with roads to form a persistent travel network.  
 Roads adapt their style to the biome, and the network is saved between game sessions.
 
----
-
 ## Features
 
 - 🏘 **Automatic detection** of villages and other structures
@@ -31,8 +29,6 @@ Roads adapt their style to the biome, and the network is saved between game sess
 
 ---
 
-
----
 ## 📷 Screenshots
 ### Savanna
 <p align="left">
@@ -95,6 +91,7 @@ Roads adapt their style to the biome, and the network is saved between game sess
 
 **⚠ Compatibility:** No breaking changes, worlds from 1.0.1 remain fully compatible.
 </details>
+
 ---
 
 ## 📜 License
