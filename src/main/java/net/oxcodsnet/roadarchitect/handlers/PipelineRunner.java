@@ -45,8 +45,11 @@ public final class PipelineRunner {
                     setStage(PipelineStage.SCANNING_STRUCTURES);
                     StructureScanManager.scan(world, mode.reason(), center, RoadArchitect.CONFIG.initScanRadius());
 
+                    //long start = System.nanoTime();
                     setStage(PipelineStage.PATH_FINDING);
                     PathFinderManager.computePaths(world, 1000);
+                    //double ms = (System.nanoTime() - start) / 1_000_000.0;
+                    //LOGGER.debug("PathFinderManager finish: {}", ms);
 
                     setStage(PipelineStage.POST_PROCESSING);
                     RoadPostProcessor.processPending(world);
@@ -63,7 +66,6 @@ public final class PipelineRunner {
             LOGGER.error("Pipeline failure", e);
         } finally {
             setStage(PipelineStage.COMPLETE);
-
             RUNNING.set(false);
             LOGGER.debug("Pipeline finished: {}", mode.reason());
         }

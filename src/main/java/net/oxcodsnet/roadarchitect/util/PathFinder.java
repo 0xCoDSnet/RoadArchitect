@@ -37,12 +37,19 @@ import static net.oxcodsnet.roadarchitect.util.CacheManager.keyToPos;
  * </ul>
  */
 public class PathFinder {
+
     /* ================ USER-TUNABLE PARAMS ================ */
     public static final int GRID_STEP = 4;
+
     /**
      * Inflation factor ε для ARA* (Weighted A*)
      */
-    public static final double HEURISTIC_WEIGHT = 1.8;
+    public static final double HEURISTIC_WEIGHT = 1.5;
+
+    /**
+     * Базовый масштаб эвристики (адаптируется per-run через selectHeuristicScale)
+     */
+    public static final double HEURISTIC_SCALE = 95.0;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinder");
     private static final int[][] OFFSETS = generateOffsets();
@@ -54,11 +61,70 @@ public class PathFinder {
             BiomeTags.IS_MOUNTAIN, 160.0,
             BiomeTags.IS_BEACH, 160.0
     );
+
+    /* =================== ПРОФАЙЛЕР =================== */
+
+    /**
+     * Щёлкалка профилирования
+     */
+    private static final boolean PROFILING_ENABLED = true;
+
+    /**
+     * Счётчики вызовов семплеров на один запуск поиска
+     */
+    private long profHeightCalls = 0L;
+    private long profBiomeCalls = 0L;
+    private long profStabCalls = 0L;
+
+    private static final class ProfileSession {
+        final BlockPos start;
+        final BlockPos goal;
+
+        // основная статистика
+        int iterations = 0;
+        long neighborsChecked = 0L;
+        long relaxationsAccepted = 0L;
+
+        /**
+         * Сумма инкрементальных стоимостей по ВСЕМ принятым релаксациям
+         */
+        double sumStepCosts = 0.0;
+
+        /**
+         * Средняя цена шага по фактическому пути (если найден)
+         */
+        double avgStepOnPath = 0.0;
+        boolean pathFound = false;
+
+        /**
+         * Фактически использованный масштаб эвристики в этом запуске
+         */
+        double localScale = HEURISTIC_SCALE;
+
+        // ── метрики сходимости ──
+        int initialL1 = 0;
+        int bestL1 = Integer.MAX_VALUE;
+        int lastL1 = 0;
+        int stallIters = 0;          // итераций без улучшения bestL1
+        double bestF = Double.POSITIVE_INFINITY;
+
+        // ── динамический лимит шагов ──
+        int stepCap = 0;
+        boolean hitCap = false;
+
+        ProfileSession(BlockPos start, BlockPos goal) {
+            this.start = start;
+            this.goal = goal;
+            this.initialL1 = Math.abs(start.getX() - goal.getX()) + Math.abs(start.getZ() - goal.getZ());
+            this.lastL1 = this.initialL1;
+        }
+    }
+
     /* ===================================================== */
 
     private final NodeStorage nodes;
     private final ServerWorld world;
-    private final int maxSteps;
+    private final int maxSteps; // глобальный потолок (сохранён для обратной совместимости)
     private final double heuristicWeight;
 
     /* ── горячие ссылки на объекты генерации мира ── */
@@ -82,6 +148,8 @@ public class PathFinder {
         this.noiseSampler = noiseConfig.getMultiNoiseSampler();
         this.biomeSource = generator.getBiomeSource();
     }
+
+    /* ───────────────────────── Стоимости ───────────────────────── */
 
     private static double stepCost(int[] off) {
         return (Math.abs(off[0]) == GRID_STEP && Math.abs(off[1]) == GRID_STEP) ? 1.5 : 1.0;
@@ -108,16 +176,67 @@ public class PathFinder {
         return Math.abs(y1 - y2) > 3;
     }
 
-    private static double heuristic(int x, int z, BlockPos goal) {
+    /* ───────────────────────── Эвристика ───────────────────────── */
+
+    /**
+     * Октильная эвристика с явным scale.
+     */
+    private static double heuristic(int x, int z, BlockPos goal, double scale) {
         int dx = Math.abs(x - goal.getX());
         int dz = Math.abs(z - goal.getZ());
-        double a = dx + dz - 0.6 * Math.min(dx, dz);
-        return a * 40.0;
+        double a = dx + dz - 0.5 * Math.min(dx, dz);
+        return a * scale;
+    }
+
+    private static double heuristic(BlockPos a, BlockPos b, double scale) {
+        return heuristic(a.getX(), a.getZ(), b, scale);
+    }
+
+    /**
+     * Перегрузки по-старому (по умолчанию берём базовый HEURISTIC_SCALE).
+     */
+    private static double heuristic(int x, int z, BlockPos goal) {
+        return heuristic(x, z, goal, HEURISTIC_SCALE);
     }
 
     private static double heuristic(BlockPos a, BlockPos b) {
-        return heuristic(a.getX(), a.getZ(), b);
+        return heuristic(a, b, HEURISTIC_SCALE);
     }
+
+    /**
+     * Непрерывная подстройка масштаба эвристики по L1‑длине запроса.
+     * Плавно интерполируем [L0..L1] → [80..120] через smoothstep.
+     */
+    private static double selectHeuristicScale(BlockPos start, BlockPos goal) {
+        int l1 = Math.abs(start.getX() - goal.getX()) + Math.abs(start.getZ() - goal.getZ());
+        final double L0 = 200.0;   // «короткий» запрос
+        final double L1 = 1200.0;  // «дальний» запрос
+        double t = (l1 - L0) / (L1 - L0);
+        if (t < 0.0) t = 0.0;
+        else if (t > 1.0) t = 1.0;
+        double s = t * t * (3.0 - 2.0 * t); // smoothstep
+        double scale = 80.0 + s * (120.0 - 80.0);
+        return Math.max(80.0, Math.min(120.0, scale));
+    }
+
+    /* ───────────────────────── Динамический лимит шагов ───────────────────────── */
+
+    /**
+     * Выбор локального лимита шагов на запуск исходя из L1‑дистанции.
+     * Нормализует усилие под длину, чтобы дальние маршруты не «капались» преждевременно.
+     */
+    private static int selectMaxSteps(BlockPos start, BlockPos goal) {
+        int l1 = Math.abs(start.getX() - goal.getX()) + Math.abs(start.getZ() - goal.getZ());
+        double k = 16.0;      // коэффициент усилия на один блок L1
+        int min = 512;        // защитный минимум (убирает кейсы iterations=1–4)
+        int max = 200_000;    // жёсткий максимум на запуск (страховка)
+        long est = Math.round((k * l1) / GRID_STEP);
+        if (est < min) return min;
+        if (est > max) return max;
+        return (int) est;
+    }
+
+    /* ───────────────────────── Вспомогательное ───────────────────────── */
 
     private static BlockPos snap(BlockPos p) {
         int x = Math.floorDiv(p.getX(), GRID_STEP) * GRID_STEP;
@@ -146,7 +265,7 @@ public class PathFinder {
     }
 
     /**
-     * Новый метод: поиск между произвольными позициями (для локального реплана).
+     * Поиск между произвольными позициями (для локального реплана).
      */
     public List<BlockPos> findPath(BlockPos from, BlockPos to) {
         return aStarPositions(snap(from), snap(to));
@@ -155,11 +274,30 @@ public class PathFinder {
     /* ───────────────────────── Реализация A* ───────────────────────── */
 
     private List<BlockPos> aStarPositions(BlockPos startPos, BlockPos endPos) {
-        record Rec(long key, double g, double f) {
+        ProfileSession ps = PROFILING_ENABLED ? new ProfileSession(startPos, endPos) : null;
+        try {
+            return aStarPositions(startPos, endPos, ps);
+        } finally {
+            if (PROFILING_ENABLED) {
+                logProfile(ps);
+                profHeightCalls = profBiomeCalls = profStabCalls = 0L;
+            }
         }
+    }
+
+    private List<BlockPos> aStarPositions(BlockPos startPos, BlockPos endPos, ProfileSession ps) {
+        record Rec(long key, double g, double f) { }
 
         long startKey = hash(startPos.getX(), startPos.getZ());
         long endKey = hash(endPos.getX(), endPos.getZ());
+
+        // ── адаптивный масштаб эвристики и локальный лимит шагов ──
+        final double localScale = selectHeuristicScale(startPos, endPos);
+        final int localStepCap = Math.min(selectMaxSteps(startPos, endPos), this.maxSteps);
+        if (ps != null) {
+            ps.localScale = localScale;
+            ps.stepCap = localStepCap;
+        }
 
         PriorityQueue<Rec> open = new PriorityQueue<>(Comparator.comparingDouble(r -> r.f));
         Long2DoubleMap gScore = new Long2DoubleOpenHashMap();
@@ -167,23 +305,53 @@ public class PathFinder {
         Long2LongMap parent = new Long2LongOpenHashMap();
 
         gScore.put(startKey, 0.0);
-        open.add(new Rec(startKey, 0.0, heuristic(startPos, endPos) * heuristicWeight));
+        open.add(new Rec(startKey, 0.0, heuristic(startPos, endPos, localScale) * heuristicWeight));
 
         int iterations = 0;
-        while (!open.isEmpty() && iterations++ < maxSteps) {
+        while (!open.isEmpty() && iterations++ < localStepCap) {
+            if (ps != null) {
+                ps.iterations++;
+            }
+
             Rec current = open.poll();
+            if (current.g() > gScore.get(current.key())) {
+                continue; // фильтр "протухших" записей
+            }
+
             int curX = (int) (current.key >> 32);
             int curZ = (int) current.key;
             int curY = sampleHeight(curX, curZ);
 
+            // ── метрики сходимости ──
+            int md = Math.abs(curX - endPos.getX()) + Math.abs(curZ - endPos.getZ());
+            if (ps != null) {
+                ps.lastL1 = md;
+                if (current.f() < ps.bestF) ps.bestF = current.f();
+                if (md < ps.bestL1) {
+                    ps.bestL1 = md;
+                    ps.stallIters = 0;
+                } else {
+                    ps.stallIters++;
+                }
+            }
+
             if (current.key == endKey) {
-                return reconstructVertices(current.key, startKey, parent);
+                List<BlockPos> path = reconstructVertices(current.key, startKey, parent);
+                if (ps != null) {
+                    ps.avgStepOnPath = computeAvgCostOfPathVertices(path);
+                    ps.pathFound = true;
+                    ps.bestL1 = Math.min(ps.bestL1, md);
+                }
+                return path;
             }
 
             for (int[] off : OFFSETS) {
                 int nx = curX + off[0];
                 int nz = curZ + off[1];
                 long neighKey = hash(nx, nz);
+                if (ps != null) {
+                    ps.neighborsChecked++;
+                }
 
                 int ny = sampleHeight(nx, nz);
                 if (isSteep(curY, ny)) {
@@ -200,28 +368,39 @@ public class PathFinder {
                     continue;
                 }
 
-                double tentativeG = gScore.get(current.key)
-                        + stepCost(off)
+                double inc = stepCost(off)
                         + elevationCost(curY, ny)
                         + bCost
                         + yLevelCost(ny)
                         + stab;
 
+                double tentativeG = gScore.get(current.key) + inc;
+
                 if (tentativeG < gScore.get(neighKey)) {
                     parent.put(neighKey, current.key);
                     gScore.put(neighKey, tentativeG);
-                    double f = tentativeG + heuristic(nx, nz, endPos) * heuristicWeight;
+                    if (ps != null) {
+                        ps.relaxationsAccepted++;
+                        ps.sumStepCosts += inc;
+                    }
+                    double f = tentativeG + heuristic(nx, nz, endPos, localScale) * heuristicWeight;
                     open.add(new Rec(neighKey, tentativeG, f));
                 }
             }
         }
-        LOGGER.debug("Path not found between {} and {} after {} iterations", startPos, endPos, iterations);
+
+        if (ps != null) {
+            ps.hitCap = !open.isEmpty();
+        }
+        LOGGER.debug("Path not found between {} and {} after {} iterations (cap={})",
+                startPos, endPos, Math.min(iterations, localStepCap), localStepCap);
         return List.of();
     }
 
     /* ───────────────────────── Быстрые семплеры ───────────────────────── */
 
     private int sampleHeight(int x, int z) {
+        profHeightCalls++;
         long key = hash(x, z);
         return CacheManager.getHeight(world, key, () ->
                 generator.getHeight(x, z, Heightmap.Type.WORLD_SURFACE_WG, world, noiseConfig)
@@ -229,11 +408,13 @@ public class PathFinder {
     }
 
     private double sampleStability(int x, int z, int y) {
+        profStabCalls++;
         long key = hash(x, z);
         return CacheManager.getStability(world, key, () -> terrainStabilityCost(x, z, y));
     }
 
     private RegistryEntry<Biome> sampleBiome(int x, int z, int y) {
+        profBiomeCalls++;
         long key = hash(x, z);
         return CacheManager.getBiome(world, key, () ->
                 biomeSource.getBiome(
@@ -252,7 +433,7 @@ public class PathFinder {
         for (Direction d : Direction.Type.HORIZONTAL) {
             int ny = sampleHeight(x + d.getOffsetX(), z + d.getOffsetZ());
             cost += Math.abs(y - ny);
-            if (cost > 2) {
+            if (cost > 3) {
                 return Double.MAX_VALUE;
             }
         }
@@ -271,5 +452,90 @@ public class PathFinder {
         }
         Collections.reverse(vertices);
         return vertices;
+    }
+
+    /**
+     * Средняя «цена шага» по уже восстановленному списку вершин пути.
+     */
+    private double computeAvgCostOfPathVertices(List<BlockPos> path) {
+        if (path.size() < 2) {
+            return 0.0;
+        }
+        double sum = 0.0;
+        int cnt = 0;
+        for (int i = 1; i < path.size(); i++) {
+            BlockPos a = path.get(i - 1);
+            BlockPos b = path.get(i);
+            int dx = b.getX() - a.getX();
+            int dz = b.getZ() - a.getZ();
+            int ay = a.getY();
+            int by = b.getY();
+
+            int[] off = new int[]{dx, dz};
+
+            double inc = stepCost(off)
+                    + elevationCost(ay, by)
+                    + biomeCost(sampleBiome(b.getX(), b.getZ(), by))
+                    + yLevelCost(by)
+                    + sampleStability(b.getX(), b.getZ(), by);
+
+            if (inc == Double.MAX_VALUE) {
+                continue;
+            }
+            sum += inc;
+            cnt++;
+        }
+        return cnt > 0 ? (sum / (double) cnt) : 0.0;
+    }
+
+    /* ───────────────────────── Лог профайлера ───────────────────────── */
+
+    private void logProfile(ProfileSession ps) {
+        if (ps == null) {
+            return;
+        }
+
+        double avgStepAll = ps.relaxationsAccepted > 0
+                ? ps.sumStepCosts / (double) ps.relaxationsAccepted
+                : 0.0;
+
+        // совет даём ТОЛЬКО если путь найден
+        double suggested = 0.0;
+        boolean suggestable = ps.pathFound && ps.avgStepOnPath > 0.0;
+        if (suggestable) {
+            double base = ps.avgStepOnPath;
+            suggested = Math.max(80.0, Math.min(120.0, base));
+        }
+
+        // метрики сходимости
+        double progress = ps.initialL1 > 0
+                ? (double) (ps.initialL1 - Math.min(ps.bestL1, ps.initialL1)) / (double) ps.initialL1
+                : 0.0;
+
+        LOGGER.debug(
+                """
+                        [A* profiler] {} -> {}
+                          iterations={}  neighbors={}  relaxations={}
+                          calls: height={}  biome={}  stability={}
+                          avg-step: path={}  all-relaxations={}
+                          localScale={}
+                          convergence: L1_start={}  L1_best={}  progress={}%  stallIters={}  bestF={}  stepCap={}  hitCap={}
+                          {}
+                        """,
+                ps.start.toShortString(), ps.goal.toShortString(),
+                ps.iterations, ps.neighborsChecked, ps.relaxationsAccepted,
+                profHeightCalls, profBiomeCalls, profStabCalls,
+                String.format(Locale.ROOT, "%.2f", ps.avgStepOnPath),
+                String.format(Locale.ROOT, "%.2f", avgStepAll),
+                String.format(Locale.ROOT, "%.1f", ps.localScale),
+                ps.initialL1, (ps.bestL1 == Integer.MAX_VALUE ? -1 : ps.bestL1),
+                String.format(Locale.ROOT, "%.1f", progress * 100.0),
+                ps.stallIters,
+                String.format(Locale.ROOT, "%.1f", ps.bestF),
+                ps.stepCap, ps.hitCap,
+                suggestable
+                        ? ("suggest HEURISTIC_SCALE ≈ " + String.format(Locale.ROOT, "%.1f", suggested))
+                        : "no suggestion (path not found)"
+        );
     }
 }
