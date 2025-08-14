@@ -1,5 +1,6 @@
 package net.oxcodsnet.roadarchitect;
 
+import io.wispforest.owo.command.EnumArgumentType;
 import net.fabricmc.api.ModInitializer;
 import net.oxcodsnet.roadarchitect.config.RoadArchitectConfig;
 import net.oxcodsnet.roadarchitect.handlers.RoadGraphStateManager;
