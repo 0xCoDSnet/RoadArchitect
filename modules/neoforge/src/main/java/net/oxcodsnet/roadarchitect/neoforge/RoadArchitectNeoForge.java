@@ -19,8 +19,8 @@ public final class RoadArchitectNeoForge {
         modBus.addListener(RoadFeatureRegistryNeoForge::register);
         modBus.addListener(RoadArchitectDataGenerator::gatherData);
 
-        NeoForgeEventBridge.register();
-        RoadGraphStateNeoForgeEvents.register();
+        NeoForgeEventBridge.register(); // v
+        RoadGraphStateNeoForgeEvents.register(); // v
         RoadPipelineNeoForgeEvents.register();
 
         RoadArchitect.init();
