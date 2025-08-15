@@ -1,12 +1,12 @@
-package net.oxcodsnet.roadarchitect;
+package net.oxcodsnet.roadarchitect.fabric;
 
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.minecraft.registry.RegistryBuilder;
 import net.minecraft.registry.RegistryKeys;
-import net.oxcodsnet.roadarchitect.datagen.RoadLanguageProvider;
-import net.oxcodsnet.roadarchitect.worldgen.RoadFeatureRegistry;
-import net.oxcodsnet.roadarchitect.worldgen.RoadWorldgenProvider;
+import net.oxcodsnet.roadarchitect.fabric.datagen.RoadLanguageProvider;
+import net.oxcodsnet.roadarchitect.fabric.worldgen.RoadFeatureRegistry;
+import net.oxcodsnet.roadarchitect.fabric.worldgen.RoadWorldgenProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.minecraft.registry.RegistryWrapper;
 import java.util.concurrent.CompletableFuture;

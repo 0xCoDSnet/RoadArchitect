@@ -1,4 +1,4 @@
-package net.oxcodsnet.roadarchitect.client.gui;
+package net.oxcodsnet.roadarchitect.fabric.client.gui;
 
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.container.Containers;
@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Экран отладки, отображающий граф дорог.

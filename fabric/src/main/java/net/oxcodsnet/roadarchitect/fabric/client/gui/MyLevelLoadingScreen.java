@@ -1,4 +1,4 @@
-package net.oxcodsnet.roadarchitect.client.gui;
+package net.oxcodsnet.roadarchitect.fabric.client.gui;
 
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.component.BoxComponent;

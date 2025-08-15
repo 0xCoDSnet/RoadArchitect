@@ -1,4 +1,4 @@
-package net.oxcodsnet.roadarchitect;
+package net.oxcodsnet.roadarchitect.fabric.client;
 
 import io.wispforest.owo.ui.component.Components;
 import io.wispforest.owo.ui.container.Containers;
@@ -11,14 +11,12 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.gui.screen.world.LevelLoadingScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.oxcodsnet.roadarchitect.client.gui.MyLevelLoadingScreen;
-import net.oxcodsnet.roadarchitect.client.gui.RoadGraphDebugScreen;
+import net.oxcodsnet.roadarchitect.fabric.client.gui.MyLevelLoadingScreen;
+import net.oxcodsnet.roadarchitect.fabric.client.gui.RoadGraphDebugScreen;
 import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
@@ -32,7 +30,7 @@ import java.util.List;
  * Клиентская сторона мода.
  * <p>Client side entry point of the mod.</p>
  */
-public class RoadArchitectClient implements ClientModInitializer {
+public class RoadArchitectClientFabric implements ClientModInitializer {
 
     private static KeyBinding debugKey;
 

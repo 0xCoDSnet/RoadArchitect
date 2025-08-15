@@ -3,36 +3,36 @@
   "id": "roadarchitect",
   "version": "${version}",
   "name": "RoadArchitect",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "Travel around the world without barriers: RoadArchitect automatically scans your world, finds villages, and other structures, and then lays a network of roads between them.",
   "authors": [
-    "Me!"
+    "0xCoDSnet"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/0xCoDSnet",
+    "sources": "https://github.com/0xCoDSnet/RoadArchitect"
   },
-  "license": "CC0-1.0",
+  "license": "Apache-2.0",
   "icon": "assets/roadarchitect/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.oxcodsnet.roadarchitect.fabric.ExampleModFabric"
+      "net.oxcodsnet.roadarchitect.fabric.RoadArchitectFabric"
     ],
     "client": [
-      "net.oxcodsnet.roadarchitect.fabric.client.ExampleModFabricClient"
+      "net.oxcodsnet.roadarchitect.fabric.client.RoadArchitectClientFabric"
+    ],
+    "fabric-datagen": [
+      "net.oxcodsnet.roadarchitect.fabric.RoadArchitectDataGenerator"
     ]
   },
-  "mixins": [
-    "roadarchitect.mixins.json"
-  ],
   "depends": {
-    "fabricloader": ">=0.17.2",
+    "fabricloader": ">=0.16.14",
     "minecraft": "~1.21.1",
     "java": ">=21",
-    "architectury": ">=13.0.8",
-    "fabric-api": "*"
+    "fabric-api": "*",
+    "owo-lib": "0.12.15.4+1.21"
   },
   "suggests": {
-    "another-mod": "*"
+    "modmenu": "11.0.3"
   }
 }

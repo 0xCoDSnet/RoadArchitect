@@ -1,4 +1,4 @@
-package net.oxcodsnet.roadarchitect.worldgen;
+package net.oxcodsnet.roadarchitect.fabric.worldgen;
 
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
@@ -10,6 +10,8 @@ import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.PlacedFeature;
 import net.minecraft.world.gen.placementmodifier.SquarePlacementModifier;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
+import net.oxcodsnet.roadarchitect.worldgen.RoadFeature;
+import net.oxcodsnet.roadarchitect.worldgen.RoadFeatureConfig;
 
 /**
  * Holds registry keys and bootstrap logic for road worldgen features.
