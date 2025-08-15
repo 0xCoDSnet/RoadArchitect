@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "${mod_authors}"
+  ],
+  "contact": {
+    "homepage": "${mod_homepage}",
+    "sources": "${mod_sources}"
+  },
+  "license": "${mod_license}",
+  "icon": "assets/roadarchitect/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.oxcodsnet.roadarchitect.fabric.RoadArchitectFabric"
+    ],
+    "client": [
+      "net.oxcodsnet.roadarchitect.fabric.client.RoadArchitectClientFabric"
+    ],
+    "fabric-datagen": [
+      "net.oxcodsnet.roadarchitect.fabric.datagen.RoadArchitectDataGenerator"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version_for_quilt}",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*",
+    "owo-lib": "${owo_version}"
+  },
+  "suggests": {
+    "modmenu": "${modmenu_version}"
+  }
+}

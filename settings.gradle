@@ -8,7 +8,9 @@ pluginManagement {
 }
 
 rootProject.name = 'roadarchitect'
-
-include 'common'
-include 'fabric'
-include 'neoforge'
+include(
+        ":modules:common",
+        ":modules:fabric",
+        ":modules:quilt",
+        ":modules:neoforge"
+)
