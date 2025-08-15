@@ -1,7 +1,7 @@
 [Architectury Transformer] Architectury Runtime 5.2.87
 [Architectury Transformer DEBUG] Closed File Systems for /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar
 [Architectury Transformer DEBUG] Preparing tiny remapper prepared transformer: dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
-[Architectury Transformer DEBUG] Provided 110 classpath jar(s):
+[Architectury Transformer DEBUG] Provided 117 classpath jar(s):
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/dev.architectury/architectury-injectables/1.0.10/62db2a366d662606d1b23ad02ccc3212ed37ec3/architectury-injectables-1.0.10.jar
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/net.fabricmc/fabric-loader/0.17.2/647622ac4163aad5ed5f79ccb532e31225562aa/fabric-loader-0.17.2.jar
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/25.0.0/c1e6b966db352094ac3bf7f88f3bdef332fe43f0/annotations-25.0.0.jar
@@ -60,9 +60,15 @@
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl/3.3.3/29589b5f87ed335a6c7e7ee6a5775f81f97ecb84/lwjgl-3.3.3.jar
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/org.lz4/lz4-java/1.8.0/4b986a99445e49ea5fbf5d149c4b63f6ed6c6780/lz4-java-1.8.0.jar
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/2.0.9/7cf2726fdcfbc8610f9a71fb3ed639871f315340/slf4j-api-2.0.9.jar
-[Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-merged-c5422250b6/1.21.1-loom.mappings.1_21_1.layered+hash.477322616-v2/minecraft-merged-c5422250b6-1.21.1-loom.mappings.1_21_1.layered+hash.477322616-v2.jar
+[Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-merged-07dd14628b/1.21.1-loom.mappings.1_21_1.layered+hash.477322616-v2/minecraft-merged-07dd14628b-1.21.1-loom.mappings.1_21_1.layered+hash.477322616-v2.jar
+[Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/io.wispforest.endec/gson/0.1.3.1/9ecb1bfe416a15bcfd87ae1c7271c9b4aee5d7d6/gson-0.1.3.1.jar
+[Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/io.wispforest/endec/0.1.5.1/d5159c464eb096a3aecd01644bde6e5abcd95ae9/endec-0.1.5.1.jar
+[Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/io.wispforest.endec/netty/0.1.2/a94918326b9ebf3f8d716aa4a0148cfb53f68e03/netty-0.1.2.jar
+[Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/io.wispforest.endec/jankson/0.1.3.1/a544e6cf1c4cbf1904319ab71e29db4d1c2dd9cd/jankson-0.1.3.1.jar
+[Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/blue.endless/jankson/1.2.2/eff82149f9a68fcb9dc3e2daf1793955f1425b26/jankson-1.2.2.jar
 [Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_477322616_v2/net/fabricmc/fabric-api/fabric-api/0.116.5+1.21.1/fabric-api-0.116.5+1.21.1.jar
 [Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_477322616_v2/dev/architectury/architectury-fabric/13.0.8/architectury-fabric-13.0.8.jar
+[Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_477322616_v2/io/wispforest/owo-lib/0.12.15.4+1.21/owo-lib-0.12.15.4+1.21.jar
 [Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_477322616_v2/net/fabricmc/fabric-api/fabric-transfer-api-v1/5.4.3+c24bd99419/fabric-transfer-api-v1-5.4.3+c24bd99419.jar
 [Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_477322616_v2/net/fabricmc/fabric-api/fabric-api-lookup-api-v1/1.6.71+b559734419/fabric-api-lookup-api-v1-1.6.71+b559734419.jar
 [Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_477322616_v2/net/fabricmc/fabric-api/fabric-blockrenderlayer-v1/1.1.52+0af3f5a719/fabric-blockrenderlayer-v1-1.1.52+0af3f5a719.jar
@@ -112,25 +118,283 @@
 [Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_477322616_v2/net/fabricmc/fabric-api/fabric-resource-loader-v0/1.3.1+5b5275af19/fabric-resource-loader-v0-1.3.1+5b5275af19.jar
 [Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_477322616_v2/net/fabricmc/fabric-api/fabric-sound-api-v1/1.0.23+6573ed8c19/fabric-sound-api-v1-1.0.23+6573ed8c19.jar
 [Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_477322616_v2/net/fabricmc/fabric-api/fabric-transitive-access-wideners-v1/6.2.0+45b9699719/fabric-transitive-access-wideners-v1-6.2.0+45b9699719.jar
-[Architectury Transformer] Read classpath in 883.7 ms
+[Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_477322616_v2/com/terraformersmc/modmenu/11.0.3/modmenu-11.0.3.jar
+[Architectury Transformer] Read classpath in 797.8 ms
 [Architectury Transformer DEBUG] Closed File Systems for /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar
-[Architectury Transformer DEBUG] Transforming 5 transformer(s) from /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar to /tmp/1728688963379767472.jar: 
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.RuntimeMixinRefmapDetector@77db4bfd
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.GenerateFakeFabricMod@3075e022
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformExpectPlatform@5f1ac9b5
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.RemapInjectables@152502a3
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformPlatformOnly@380c3759
-[Architectury Transformer DEBUG] Transforming from /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar to /tmp/1728688963379767472.jar with 5 transformer(s) on dev.architectury.transformer.handler.SimpleTransformerHandler
+[Architectury Transformer DEBUG] Transforming 5 transformer(s) from /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar to /tmp/6471146511658709676.jar: 
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.RuntimeMixinRefmapDetector@1fbb2a97
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.GenerateFakeFabricMod@7561dfe3
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformExpectPlatform@59f45a7d
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.RemapInjectables@5ce0d1aa
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformPlatformOnly@1ac9a733
+[Architectury Transformer DEBUG] Transforming from /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar to /tmp/6471146511658709676.jar with 5 transformer(s) on dev.architectury.transformer.handler.SimpleTransformerHandler
 [Architectury Transformer DEBUG] Found class transformer
-[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/ExampleMod with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/RoadArchitect$1 with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/RoadArchitect with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/config/RAConfig with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/config/RAConfigHolder$Defaults with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/config/RAConfigHolder with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/datagen/RACommonDatagen with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/datagen/RALanguage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PathFinderManager$PathJob with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PathFinderManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PipelineRunner$PipelineMode with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PipelineRunner with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PipelineStage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadBuilderManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadGraphStateManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPipelineController with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$AABB with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$BuildResult with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Convergence with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$MergeCandidate with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$NormalizeResult with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Trunk with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/StructureScanManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/CacheStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/EdgeStorage$Edge with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/EdgeStorage$Status with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/EdgeStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/NodeStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/PathStorage$Status with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/PathStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage$SegmentEntry with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/RoadGraphState with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/components/Node with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/AsyncExecutor with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/CacheManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/GeometryUtils with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/KeyUtil with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PathFinder$1Rec with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PathFinder$ProfileSession with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PathFinder with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PersistentStateUtil with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/StructureLocator with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/RoadFeature with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/RoadFeatureConfig with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/RoadFeatureRegistry with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Builder with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Entry with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/RoadStyle with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/RoadStyles with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/decoration/BuoyDecoration with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/decoration/Decoration with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/decoration/FenceDecoration with maxs=true frames=true
 [Architectury Transformer DEBUG] Checking whether /roadarchitect.mixins.json is a mixin config.
-[Architectury Transformer DEBUG] Closed File Systems for /tmp/1728688963379767472.jar
+[Architectury Transformer DEBUG] Closed File Systems for /tmp/6471146511658709676.jar
 [Architectury Transformer] Listening at /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar
-[Architectury Transformer DEBUG] Temporary jar [/tmp/1728688963379767472.jar] contains packages: net.oxcodsnet.roadarchitect
+[Architectury Transformer DEBUG] Temporary jar [/tmp/6471146511658709676.jar] contains packages: net.oxcodsnet.roadarchitect.storage.components, net.oxcodsnet.roadarchitect.storage, net.oxcodsnet.roadarchitect.worldgen, net.oxcodsnet.roadarchitect.util, net.oxcodsnet.roadarchitect.datagen, net.oxcodsnet.roadarchitect.handlers, net.oxcodsnet.roadarchitect.worldgen.style.decoration, net.oxcodsnet.roadarchitect.config, net.oxcodsnet.roadarchitect, net.oxcodsnet.roadarchitect.worldgen.style
 [Architectury Transformer DEBUG] Closed File Systems for /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar
-[Architectury Transformer DEBUG] Classpath entry [/home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/fabric/build/classes/java/main] contains packages: net.oxcodsnet.roadarchitect.fabric, net.oxcodsnet.roadarchitect.fabric.client
+[Architectury Transformer DEBUG] Classpath entry [/home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/fabric/build/classes/java/main] contains packages: net.oxcodsnet.roadarchitect.fabric.events, net.oxcodsnet.roadarchitect.fabric.worldgen, net.oxcodsnet.roadarchitect.fabric, net.oxcodsnet.roadarchitect.fabric.client.gui, net.oxcodsnet.roadarchitect.fabric.config, net.oxcodsnet.roadarchitect.fabric.client, net.oxcodsnet.roadarchitect.fabric.datagen
 [Architectury Transformer DEBUG] Classpath entry [/home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/fabric/build/resources/main] contains packages: 
-[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/ExampleMod.class to net/oxcodsnet/roadarchitect/ExampleMod.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/config/RAConfig.class to net/oxcodsnet/roadarchitect/config/RAConfig.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
 [Architectury Transformer DEBUG] Found class transformer
-[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/ExampleMod with maxs=true frames=true
-[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/ExampleMod in 783.6 μs
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/config/RAConfig with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/config/RAConfig in 580.6 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/config/RAConfigHolder.class to net/oxcodsnet/roadarchitect/config/RAConfigHolder.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/config/RAConfigHolder with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/config/RAConfigHolder in 1.083 ms
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/config/RAConfigHolder$Defaults.class to net/oxcodsnet/roadarchitect/config/RAConfigHolder$Defaults.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/config/RAConfigHolder$Defaults with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/config/RAConfigHolder$Defaults in 209.1 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/worldgen/RoadFeatureRegistry.class to net/oxcodsnet/roadarchitect/worldgen/RoadFeatureRegistry.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/RoadFeatureRegistry with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/worldgen/RoadFeatureRegistry in 423.3 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/worldgen/RoadFeature.class to net/oxcodsnet/roadarchitect/worldgen/RoadFeature.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/RoadFeature with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/worldgen/RoadFeature in 1.246 ms
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/worldgen/style/decoration/BuoyDecoration.class to net/oxcodsnet/roadarchitect/worldgen/style/decoration/BuoyDecoration.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/decoration/BuoyDecoration with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/worldgen/style/decoration/BuoyDecoration in 214.9 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/worldgen/style/decoration/Decoration.class to net/oxcodsnet/roadarchitect/worldgen/style/decoration/Decoration.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/decoration/Decoration with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/worldgen/style/decoration/Decoration in 193.9 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/worldgen/RoadFeatureConfig.class to net/oxcodsnet/roadarchitect/worldgen/RoadFeatureConfig.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/RoadFeatureConfig with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/worldgen/RoadFeatureConfig in 371.5 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/RoadGraphStateManager.class to net/oxcodsnet/roadarchitect/handlers/RoadGraphStateManager.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadGraphStateManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/RoadGraphStateManager in 356.4 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor.class to net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor in 1.877 ms
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/util/CacheManager.class to net/oxcodsnet/roadarchitect/util/CacheManager.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/CacheManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/util/CacheManager in 684.9 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/RoadPipelineController.class to net/oxcodsnet/roadarchitect/handlers/RoadPipelineController.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPipelineController with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/RoadPipelineController in 552.6 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/RoadArchitect.class to net/oxcodsnet/roadarchitect/RoadArchitect.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/RoadArchitect with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/RoadArchitect in 136.6 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/RoadArchitect$1.class to net/oxcodsnet/roadarchitect/RoadArchitect$1.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/RoadArchitect$1 with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/RoadArchitect$1 in 140.3 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/PipelineStage.class to net/oxcodsnet/roadarchitect/handlers/PipelineStage.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PipelineStage with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/PipelineStage in 746.9 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/PipelineRunner.class to net/oxcodsnet/roadarchitect/handlers/PipelineRunner.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PipelineRunner with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/PipelineRunner in 443.6 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/storage/RoadGraphState.class to net/oxcodsnet/roadarchitect/storage/RoadGraphState.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/RoadGraphState with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/storage/RoadGraphState in 1.053 ms
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/util/PersistentStateUtil.class to net/oxcodsnet/roadarchitect/util/PersistentStateUtil.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PersistentStateUtil with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/util/PersistentStateUtil in 162.2 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/storage/NodeStorage.class to net/oxcodsnet/roadarchitect/storage/NodeStorage.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/NodeStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/storage/NodeStorage in 289.8 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/storage/EdgeStorage.class to net/oxcodsnet/roadarchitect/storage/EdgeStorage.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/EdgeStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/storage/EdgeStorage in 494.5 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/storage/CacheStorage.class to net/oxcodsnet/roadarchitect/storage/CacheStorage.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/CacheStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/storage/CacheStorage in 577.6 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage.class to net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage in 966.1 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/storage/PathStorage.class to net/oxcodsnet/roadarchitect/storage/PathStorage.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/PathStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/storage/PathStorage in 586.2 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/PipelineRunner$PipelineMode.class to net/oxcodsnet/roadarchitect/handlers/PipelineRunner$PipelineMode.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PipelineRunner$PipelineMode with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/PipelineRunner$PipelineMode in 634.7 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/StructureScanManager.class to net/oxcodsnet/roadarchitect/handlers/StructureScanManager.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/StructureScanManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/StructureScanManager in 152.3 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/util/StructureLocator.class to net/oxcodsnet/roadarchitect/util/StructureLocator.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/StructureLocator with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/util/StructureLocator in 588.0 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/storage/components/Node.class to net/oxcodsnet/roadarchitect/storage/components/Node.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/components/Node with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/storage/components/Node in 546.0 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/util/KeyUtil.class to net/oxcodsnet/roadarchitect/util/KeyUtil.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/KeyUtil with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/util/KeyUtil in 282.3 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/storage/EdgeStorage$Edge.class to net/oxcodsnet/roadarchitect/storage/EdgeStorage$Edge.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/EdgeStorage$Edge with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/storage/EdgeStorage$Edge in 284.7 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/storage/EdgeStorage$Status.class to net/oxcodsnet/roadarchitect/storage/EdgeStorage$Status.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/EdgeStorage$Status with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/storage/EdgeStorage$Status in 192.0 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/util/GeometryUtils.class to net/oxcodsnet/roadarchitect/util/GeometryUtils.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/GeometryUtils with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/util/GeometryUtils in 233.0 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/PathFinderManager.class to net/oxcodsnet/roadarchitect/handlers/PathFinderManager.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PathFinderManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/PathFinderManager in 453.9 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/util/PathFinder.class to net/oxcodsnet/roadarchitect/util/PathFinder.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PathFinder with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/util/PathFinder in 974.2 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/PathFinderManager$PathJob.class to net/oxcodsnet/roadarchitect/handlers/PathFinderManager$PathJob.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PathFinderManager$PathJob with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/PathFinderManager$PathJob in 233.6 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/util/AsyncExecutor.class to net/oxcodsnet/roadarchitect/util/AsyncExecutor.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/AsyncExecutor with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/util/AsyncExecutor in 183.9 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/util/PathFinder$ProfileSession.class to net/oxcodsnet/roadarchitect/util/PathFinder$ProfileSession.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PathFinder$ProfileSession with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/util/PathFinder$ProfileSession in 219.7 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/util/PathFinder$1Rec.class to net/oxcodsnet/roadarchitect/util/PathFinder$1Rec.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PathFinder$1Rec with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/util/PathFinder$1Rec in 268.3 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/storage/PathStorage$Status.class to net/oxcodsnet/roadarchitect/storage/PathStorage$Status.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/PathStorage$Status with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/storage/PathStorage$Status in 755.3 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$AABB.class to net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$AABB.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$AABB with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$AABB in 501.2 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$NormalizeResult.class to net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$NormalizeResult.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$NormalizeResult with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$NormalizeResult in 296.4 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/RoadBuilderManager.class to net/oxcodsnet/roadarchitect/handlers/RoadBuilderManager.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadBuilderManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/RoadBuilderManager in 162.2 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage$SegmentEntry.class to net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage$SegmentEntry.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage$SegmentEntry with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage$SegmentEntry in 144.5 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$MergeCandidate.class to net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$MergeCandidate.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$MergeCandidate with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$MergeCandidate in 266.1 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Convergence.class to net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Convergence.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Convergence with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Convergence in 357.1 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$BuildResult.class to net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$BuildResult.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$BuildResult with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$BuildResult in 145.2 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Trunk.class to net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Trunk.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Trunk with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Trunk in 190.9 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/worldgen/style/RoadStyles.class to net/oxcodsnet/roadarchitect/worldgen/style/RoadStyles.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/RoadStyles with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/worldgen/style/RoadStyles in 765.6 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/worldgen/style/RoadStyle.class to net/oxcodsnet/roadarchitect/worldgen/style/RoadStyle.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/RoadStyle with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/worldgen/style/RoadStyle in 153.4 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette.class to net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette in 188.2 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Builder.class to net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Builder.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Builder with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Builder in 107.6 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Entry.class to net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Entry.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Entry with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Entry in 144.3 μs
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/worldgen/style/decoration/FenceDecoration.class to net/oxcodsnet/roadarchitect/worldgen/style/decoration/FenceDecoration.class with 5 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/decoration/FenceDecoration with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/worldgen/style/decoration/FenceDecoration in 219.9 μs

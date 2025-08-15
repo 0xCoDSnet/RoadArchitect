@@ -4,6 +4,7 @@ package net.oxcodsnet.roadarchitect.util;
 //import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
@@ -41,26 +42,23 @@ public final class CacheManager {
     /**
      * Registers world load/unload hooks.
      */
-    public static void register() {
-//        ServerWorldEvents.LOAD.register((server, world) -> {
-//            if (world.isClient()) {
-//                return;
-//            }
-//            load(world);
-//        });
-//
-//        ServerWorldEvents.UNLOAD.register((server, world) -> {
-//            if (world.isClient()) {
-//                return;
-//            }
-//            save(world);
-//        });
-//
-//        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-//            for (ServerWorld world : server.getWorlds()) {
-//                save(world);
-//            }
-//        });
+    /** Был ServerWorldEvents.LOAD: world loaded on server side. */
+    public static void onWorldLoad(ServerWorld world) {
+        if (world.isClient()) return;
+        load(world);
+    }
+
+    /** Был ServerWorldEvents.UNLOAD: world about to unload. */
+    public static void onWorldUnload(ServerWorld world) {
+        if (world.isClient()) return;
+        save(world);
+    }
+
+    /** Был ServerLifecycleEvents.SERVER_STOPPING: persist all states. */
+    public static void onServerStopping(MinecraftServer server) {
+        for (ServerWorld world : server.getWorlds()) {
+            save(world);
+        }
     }
 
     private static CacheStorage state(ServerWorld world) {

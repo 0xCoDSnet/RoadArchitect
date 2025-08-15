@@ -1,0 +1,19 @@
+{
+  "category.roadarchitect": "Arquitecto de Carreteras",
+  "key.roadarchitect.debug": "Depuración del grafo de carreteras",
+  "roadarchitect.stage.complete": "Completado",
+  "roadarchitect.stage.intialisation": "Inicialización",
+  "roadarchitect.stage.pathfinding": "Búsqueda de rutas",
+  "roadarchitect.stage.postprocess": "Postprocesamiento",
+  "roadarchitect.stage.scanning": "Escaneando estructuras",
+  "text.config.roadarchitect.option.chunkGenerateScanRadius": "Radio de exploración al generar chunks",
+  "text.config.roadarchitect.option.chunkGenerateScanRadius.tooltip": "Radio en chunks que se examina al generar nuevos chunks.",
+  "text.config.roadarchitect.option.initScanRadius": "Radio de exploración inicial",
+  "text.config.roadarchitect.option.initScanRadius.tooltip": "Radio en bloques para buscar estructuras cuando se carga el mundo por primera vez.",
+  "text.config.roadarchitect.option.maxConnectionDistance": "Distancia máxima de conexión",
+  "text.config.roadarchitect.option.maxConnectionDistance.tooltip": "Distancia máxima en bloques entre dos estructuras para conectarlas.",
+  "text.config.roadarchitect.option.pipelineIntervalSeconds": "Intervalo del pipeline (segundos)",
+  "text.config.roadarchitect.option.pipelineIntervalSeconds.tooltip": "Retraso en segundos entre ejecuciones del pipeline.",
+  "text.config.roadarchitect.option.structureSelectors": "Selectores de estructuras",
+  "text.config.roadarchitect.option.structureSelectors.tooltip": "Lista de selectores de estructuras que se conectarán con carreteras."
+}

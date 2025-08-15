@@ -22,7 +22,7 @@
       "net.oxcodsnet.roadarchitect.fabric.client.RoadArchitectClientFabric"
     ],
     "fabric-datagen": [
-      "net.oxcodsnet.roadarchitect.fabric.RoadArchitectDataGenerator"
+      "net.oxcodsnet.roadarchitect.fabric.datagen.RoadArchitectDataGenerator"
     ]
   },
   "depends": {

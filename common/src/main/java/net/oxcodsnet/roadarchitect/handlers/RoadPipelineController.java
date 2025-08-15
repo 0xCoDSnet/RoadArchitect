@@ -1,14 +1,11 @@
 package net.oxcodsnet.roadarchitect.handlers;
 
-//import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
-//import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-//import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-//import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureStart;
@@ -28,102 +25,102 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Controls execution of the road generation pipeline.
+ * Controls execution of the road generation pipeline (platform-agnostic).
+ * Fabric / NeoForge должны вызывать публичные onXxx(...) методы ниже,
+ * сохраняя точные кейсы из исходного register().
  */
 public final class RoadPipelineController {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadPipelineController");
 
-    /**
-     * Tracks worlds that have completed initial pipeline setup.
-     * Cleared on server stop to allow fresh initialization next run.
-     */
+    /** Миры, для которых уже отработал INIT по событию генерации спавн-чанка. */
     private static final Set<RegistryKey<World>> INITIALIZED = ConcurrentHashMap.newKeySet();
-    // private static final int INTERVAL_TICKS = RoadArchitect.CONFIG.pipelineIntervalSeconds() * 20;
-    private static final int INTERVAL_TICKS = 1;
-    // Cached selectors for fast matching
+
+    /** Кеш селекторов (ID и теги) из конфигурации, для быстрых проверок. */
     private static final Set<Identifier> TARGET_IDS = new HashSet<>();
     private static final Set<TagKey<Structure>> TARGET_TAGS = new HashSet<>();
+
+    /** Счётчик тиков для периодического триггера. */
     private static int tickCounter = 0;
 
-    private RoadPipelineController() {
-    }
+    private RoadPipelineController() {}
 
-    /**
-     * Registers event hooks for pipeline triggers.
-     */
-    public static void register() {
+    /** Вызывать при старте сервера/мода (однократно), чтобы закешировать селекторы. */
+    public static void init() {
         cacheStructureSelectors();
-
-//        // ───── First‑chunk generation trigger ────────────────────────────────────
-//        // Fires only when the spawn chunk is generated for the first time.
-//        ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
-//            if (world.getRegistryKey() != World.OVERWORLD) {
-//                return;
-//            }
-//
-//            ChunkPos spawnChunk = new ChunkPos(world.getSpawnPos());
-//            if (!chunk.getPos().equals(spawnChunk)) {
-//                return; // Not the spawn chunk – ignore.
-//            }
-//
-//            if (INITIALIZED.add(world.getRegistryKey())) {
-//                LOGGER.debug("Spawn chunk {} generated in {}, starting pipeline", chunk.getPos(),
-//                        world.getRegistryKey().getValue());
-//                PipelineRunner.runPipeline(world, world.getSpawnPos(), PipelineRunner.PipelineMode.INIT);
-//            }
-//        });
-//
-//        // ───── Chunk generation containing a target structure ───────────────────
-//        ServerChunkEvents.CHUNK_GENERATE.register((world, chunk) -> {
-//            if (world.getRegistryKey() != World.OVERWORLD) {
-//                return;
-//            }
-//            if (!containsTargetStructure(world, chunk)) {
-//                return;
-//            }
-//            LOGGER.debug("Chunk {} generated with target structure, starting pipeline", chunk.getPos());
-//            PipelineRunner.runPipeline(world, chunk.getPos().getCenterAtY(0),
-//                    PipelineRunner.PipelineMode.CHUNK);
-//        });
-//
-//        // ───── Player‑join trigger – run as early as possible for the player ────
-//        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-//            ServerPlayerEntity player = handler.getPlayer();
-//            ServerWorld world = (ServerWorld) player.getWorld();
-//            if (world.getRegistryKey() != World.OVERWORLD) {
-//                return;
-//            }
-//            BlockPos pos = player.getBlockPos();
-//            LOGGER.debug("Player {} joined at {}, starting pipeline", player.getName().getString(), pos);
-//            // Using PERIODIC mode as the closest existing mode; it uses small scan radius.
-//            PipelineRunner.runPipeline(world, pos, PipelineRunner.PipelineMode.PERIODIC);
-//        });
-//
-//        // ───── Periodic trigger every INTERVAL_TICKS ────────────────────────────
-//        ServerTickEvents.START_SERVER_TICK.register(server -> {
-//            tickCounter++;
-//            if (tickCounter < INTERVAL_TICKS) {
-//                return;
-//            }
-//            tickCounter = 0;
-//            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-//                World world = player.getWorld();
-//                if (world.getRegistryKey() != World.OVERWORLD) {
-//                    continue;
-//                }
-//                BlockPos pos = player.getBlockPos();
-//                LOGGER.debug("Periodic trigger at player {} pos {}, starting pipeline", player.getName().getString(), pos);
-//                PipelineRunner.runPipeline((ServerWorld) world, pos, PipelineRunner.PipelineMode.PERIODIC);
-//            }
-//        });
-//
-//        // ───── Clear state on server stop ───────────────────────────────────────
-//        ServerLifecycleEvents.SERVER_STOPPING.register(server -> INITIALIZED.clear());
+        tickCounter = 0;
+        LOGGER.debug("RoadPipelineController initialized (selectors cached)");
     }
 
-    /**
-     * Pre‑caches identifiers and tags from config for O(1) matching.
-     */
+    /** Вызывать при обновлении конфига — перекешируем селекторы. */
+    public static void refreshStructureSelectorCache() {
+        cacheStructureSelectors();
+        LOGGER.debug("RoadPipelineController reloaded selectors from config");
+    }
+
+    /* ───────────────────────── Точные кейсы из исходного register() ───────────────────────── */
+
+    /** 1) Генерация спавн-чанка ВПЕРВЫЕ → INIT. */
+    public static void onSpawnChunkGenerated(ServerWorld world, Chunk chunk) {
+        if (world.getRegistryKey() != World.OVERWORLD) return;
+
+        ChunkPos spawnChunk = new ChunkPos(world.getSpawnPos());
+        if (!chunk.getPos().equals(spawnChunk)) return;
+
+        if (INITIALIZED.add(world.getRegistryKey())) {
+            LOGGER.debug("Spawn chunk {} generated in {}, starting INIT pipeline",
+                    chunk.getPos(), world.getRegistryKey().getValue());
+            PipelineRunner.runPipeline(world, world.getSpawnPos(), PipelineRunner.PipelineMode.INIT);
+        }
+    }
+
+    /** 2) Генерация ЛЮБОГО чанка; если внутри есть целевая структура → CHUNK. */
+    public static void onChunkGenerated(ServerWorld world, Chunk chunk) {
+        if (world.getRegistryKey() != World.OVERWORLD) return;
+        if (!containsTargetStructure(world, chunk)) return;
+
+        BlockPos center = chunk.getPos().getCenterAtY(0);
+        LOGGER.debug("Chunk {} generated with target structure, starting CHUNK pipeline", chunk.getPos());
+        PipelineRunner.runPipeline(world, center, PipelineRunner.PipelineMode.CHUNK);
+    }
+
+    /** 3) Игрок вошёл на сервер → PERIODIC (как в исходнике). */
+    public static void onPlayerJoin(ServerPlayerEntity player) {
+        ServerWorld world = (ServerWorld) player.getWorld();
+        if (world.getRegistryKey() != World.OVERWORLD) return;
+
+        BlockPos pos = player.getBlockPos();
+        LOGGER.debug("Player {} joined at {}, starting PERIODIC pipeline",
+                player.getName().getString(), pos);
+        PipelineRunner.runPipeline(world, pos, PipelineRunner.PipelineMode.PERIODIC);
+    }
+
+    /** 4) Периодический триггер раз в N секунд (из конфига) – START_SERVER_TICK. */
+    public static void onServerTick(MinecraftServer server) {
+        int intervalTicks = Math.max(1, RoadArchitect.CONFIG.pipelineIntervalSeconds() * 20);
+        tickCounter++;
+        if (tickCounter < intervalTicks) return;
+        tickCounter = 0;
+
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            World w = player.getWorld();
+            if (w.getRegistryKey() != World.OVERWORLD) continue;
+
+            BlockPos pos = player.getBlockPos();
+            LOGGER.debug("Periodic trigger at player {} pos {}, starting PERIODIC pipeline",
+                    player.getName().getString(), pos);
+            PipelineRunner.runPipeline((ServerWorld) w, pos, PipelineRunner.PipelineMode.PERIODIC);
+        }
+    }
+
+    /** 5) Остановка сервера → чистим флаг и состояние контроллера. */
+    public static void onServerStopping() {
+        INITIALIZED.clear();
+        tickCounter = 0;
+        LOGGER.debug("Server stopping, state cleared");
+    }
+
+    /* ─────────────────────────── Вспомогательное ─────────────────────────── */
+
     private static void cacheStructureSelectors() {
         TARGET_IDS.clear();
         TARGET_TAGS.clear();
@@ -137,30 +134,22 @@ public final class RoadPipelineController {
         }
     }
 
-    /* ─────────────────────────── Structure matching ─────────────────────────── */
-
     private static boolean containsTargetStructure(ServerWorld world, Chunk chunk) {
-        if (!chunk.hasStructureReferences()) {
-            return false;
-        }
+        if (!chunk.hasStructureReferences()) return false;
 
         Registry<Structure> registry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
         for (StructureStart start : chunk.getStructureStarts().values()) {
             Structure structure = start.getStructure();
             Identifier id = registry.getId(structure);
-            if (id != null && TARGET_IDS.contains(id)) {
-                return true;
-            }
+            if (id != null && TARGET_IDS.contains(id)) return true;
+
             RegistryEntry<Structure> entry = registry.getEntry(structure);
             if (entry != null) {
                 for (TagKey<Structure> tag : TARGET_TAGS) {
-                    if (entry.isIn(tag)) {
-                        return true;
-                    }
+                    if (entry.isIn(tag)) return true;
                 }
             }
         }
         return false;
     }
 }
-

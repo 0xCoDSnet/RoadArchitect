@@ -1,6 +1,5 @@
 package net.oxcodsnet.roadarchitect.handlers;
 
-//import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -44,12 +43,10 @@ public final class RoadPostProcessor {
     private static final boolean LOG_GRAD_CLAMP = true;     // включить подробный лог клампа
 
     // ====== Регистрация хуков ======
-    public static void register() {
-//        ServerTickEvents.START_WORLD_TICK.register(world -> {
-//            if (world.isClient()) return;
-//            if (world.getRegistryKey() != World.OVERWORLD) return;
-//            processPending(world);
-//        });
+    public static void onStartWorldTick(ServerWorld world) {
+        if (world.isClient()) return;
+        if (world.getRegistryKey() != World.OVERWORLD) return;
+        processPending(world);
     }
 
 

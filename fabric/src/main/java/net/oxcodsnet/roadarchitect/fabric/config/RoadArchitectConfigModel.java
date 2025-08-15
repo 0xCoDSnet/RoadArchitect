@@ -2,21 +2,17 @@ package net.oxcodsnet.roadarchitect.fabric.config;
 
 import io.wispforest.owo.config.annotation.Config;
 import io.wispforest.owo.config.annotation.Modmenu;
+import io.wispforest.owo.config.annotation.Hook; // ← добавили
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 
 import java.util.List;
 
-/**
- * Настройки мода Road Architect (owo-config, видны в ModMenu).
- */
-@Modmenu(modId = RoadArchitect.MOD_ID) // Регистрация экрана в ModMenu через аннотацию
-@Config(name = "roadarchitect", wrapperName = "RoadArchitectConfig") // генерит wrapper-класс
+@Modmenu(modId = RoadArchitect.MOD_ID)
+@Config(name = "roadarchitect", wrapperName = "RoadArchitectConfig")
 public class RoadArchitectConfigModel {
-    public int initScanRadius = 125;
-    public int chunkGenerateScanRadius = 20;
-    public int maxConnectionDistance = 715;
-    public int pipelineIntervalSeconds = 120;
-    public List<String> structureSelectors = List.of(
-            "#minecraft:village"
-    );
+    @Hook public int initScanRadius = 125;
+    @Hook public int chunkGenerateScanRadius = 20;
+    @Hook public int maxConnectionDistance = 715;
+    @Hook public int pipelineIntervalSeconds = 120;
+    @Hook public List<String> structureSelectors = List.of("#minecraft:village");
 }
