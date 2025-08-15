@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/main/resources/assets/roadarchitect/icon.png" width="128" height="128" alt="RoadArchitect icon">
+  <img src="src-fabric/main/resources/assets/roadarchitect/icon.png" width="128" height="128" alt="RoadArchitect icon">
 </p>
 
 <p align="center">
@@ -16,7 +16,7 @@
 ---
 #  RoadArchitect
 
-**RoadArchitect** is a **Fabric** mod for **Minecraft 1.21.1-1.21.8** that automatically scans the world for villages and other structures, connecting them with roads to form a persistent travel network.  
+**RoadArchitect** is a **Fabric** / **NeoForge** mod for **Minecraft 1.21.1-1.21.8** that automatically scans the world for villages and other structures, connecting them with roads to form a persistent travel network.  
 Roads adapt their style to the biome, and the network is saved between game sessions.
 
 ## Features

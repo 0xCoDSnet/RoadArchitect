@@ -39,8 +39,8 @@ install-fabric.sh
 
 # Folders
 !/gradle
-!/src
-!/src/main/java/net/oxcodsnet/roadarchitect/config/
+!/src-fabric
+!/src-fabric/main/java/net/oxcodsnet/roadarchitect/config/
 !/.github
 
 # Files
@@ -71,4 +71,4 @@ install-fabric.sh
 .idea/
 .cache/
 .env
-src/main/generated/.cache/
+src-fabric/main/generated/.cache/

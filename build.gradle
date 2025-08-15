@@ -1,131 +1,73 @@
 plugins {
-    id "pl.allegro.tech.build.axion-release" version "1.19.0"
-    id 'fabric-loom' version "${loom_version}"
-    id 'maven-publish'
-    id "com.modrinth.minotaur" version "2.8.8"
-    id "co.uzzu.dotenv.gradle" version "4.0.0"
+    id 'dev.architectury.loom' version '1.10-SNAPSHOT' apply false
+    id 'architectury-plugin' version '3.4-SNAPSHOT'
+    id 'com.gradleup.shadow' version '8.3.6' apply false
 }
 
-version = project.mod_version
-group = project.maven_group
-
-base {
-    archivesName = project.archives_base_name
+architectury {
+    minecraft = project.minecraft_version
 }
 
-repositories {
-    // Loom automatically adds repositories for Minecraft and its libraries.
-    // These are only for third-party mods.
-    maven { url = uri('https://maven.wispforest.io') }
-    maven { url = uri('https://maven.terraformersmc.com/') }
+allprojects {
+    group = rootProject.maven_group
+    version = rootProject.mod_version
 }
 
-loom {
-    splitEnvironmentSourceSets()
+subprojects {
+    apply plugin: 'dev.architectury.loom'
+    apply plugin: 'architectury-plugin'
+    apply plugin: 'maven-publish'
 
-    mods {
-        roadarchitect {
-            sourceSet(sourceSets.main)
-            sourceSet(sourceSets.client)
-        }
-    }
-}
-
-fabricApi {
-    configureDataGeneration {
-        client = true
-    }
-}
-
-dependencies {
-
-    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
-
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-    // Fabric API
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    modImplementation "io.wispforest:owo-lib:${project.owo_version}"
-    annotationProcessor "io.wispforest:owo-lib:${project.owo_version}"
-    include "io.wispforest:owo-sentinel:${project.owo_version}"
-
-    modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
-    modRuntimeOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.junit_version}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit_version}"
-}
-
-processResources {
-    inputs.property('version', project.version)
-    filesMatching('fabric.mod.json') {
-        expand version: inputs.properties.version
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.release = 21
-    // Suppress warnings from Gradle's TimeTrackingProcessor which only supports up to Java 17
-    options.compilerArgs += ['-Xlint:-processing', '-nowarn']
-}
-
-// Гарантируем сборку перед загрузкой на Modrinth
-tasks.named("modrinth").configure {
-    dependsOn tasks.named("build")
-}
-
-java {
-    withSourcesJar()
-
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-}
-
-jar {
-    inputs.property('archivesName', project.base.archivesName)
-
-    from('LICENSE') {
-        rename { "${it}_${inputs.properties.archivesName}" }
-    }
-}
-
-test {
-    useJUnitPlatform()
-}
-
-publishing {
-    publications {
-        create('mavenJava', MavenPublication) {
-            artifactId = project.archives_base_name
-            from(components.java)
-        }
+    base {
+        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
+        archivesName = "$rootProject.archives_name-$project.name"
     }
 
     repositories {
-        // Configure your publishing repo here
-    }
-}
-
-// ---- Modrinth ----
-modrinth {
-    def tokenFromDotenv = env.isPresent("MODRINTH_TOKEN") ? env.fetch("MODRINTH_TOKEN") : null
-    def tokenFromSystem = System.getenv("MODRINTH_TOKEN")
-    def resolvedToken = tokenFromDotenv ?: tokenFromSystem
-
-    if (!resolvedToken) {
-        throw new GradleException(
-               "Modrinth_token did not find it in .env (modrinth_token = ...)" + "or as a variable of the environment."
-        )
+        // Add repositories to retrieve artifacts from in here.
+        // You should only use this when depending on other mods because
+        // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+        // See https://docs.gradle.org/current/userguide/declaring_repositories.html
+        // for more information about repositories.
     }
 
-    token = resolvedToken
-    projectId = "dLRvLyY3"
-    versionName = "RoadArchitect v${version}-${minecraft_version}"
-    versionNumber = version
-    uploadFile = remapJar
-    gameVersions = [minecraft_version]
-    loaders = ["fabric","quilt"]
+    dependencies {
+        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+        mappings loom.layered {
+            it.mappings("net.fabricmc:yarn:$rootProject.yarn_mappings:v2")
+            it.mappings("dev.architectury:yarn-mappings-patch-neoforge:$rootProject.yarn_mappings_patch_neoforge_version")
+        }
+    }
+
+    java {
+        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+        // if it is present.
+        // If you remove this line, sources will not be generated.
+        withSourcesJar()
+
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        it.options.release = 21
+    }
+
+    // Configure Maven publishing.
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = base.archivesName.get()
+                from components.java
+            }
+        }
+
+        // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+        repositories {
+            // Add repositories to publish to here.
+            // Notice: This block does NOT have the same function as the block in the top level.
+            // The repositories here will be used for publishing your artifact, not for
+            // retrieving dependencies.
+        }
+    }
 }

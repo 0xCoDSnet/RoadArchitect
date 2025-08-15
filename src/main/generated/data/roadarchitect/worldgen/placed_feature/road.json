@@ -1,8 +1,0 @@
-{
-  "feature": "roadarchitect:road",
-  "placement": [
-    {
-      "type": "minecraft:in_square"
-    }
-  ]
-}

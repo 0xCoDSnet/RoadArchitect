@@ -2,7 +2,7 @@
 
 ## 1. Mission
 
-Generate and maintain clean, reliable code that builds and manages road networks connecting natural structures in **Minecraft 1.21.1** using the Fabric modding toolchain.
+Generate and maintain clean, reliable code that builds and manages road networks connecting natural structures in **Minecraft 1.21.1** using the Fabric / NeoForge modding toolchain.
 
 ## 2. Coding Guidelines
 
@@ -16,7 +16,7 @@ Generate and maintain clean, reliable code that builds and manages road networks
 
 ### 3.1 Do
 
-* Leverage Fabric events and hooks for all world interaction.
+* Leverage Fabric / NeoForge events and hooks for all world interaction.
 * Re‑use helper utilities in `util/*` to prevent code duplication.
 
 ### 3.2 Don’t
