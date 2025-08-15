@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.minecraft.registry.RegistryBuilder;
 import net.minecraft.registry.RegistryKeys;
 import net.oxcodsnet.roadarchitect.fabric.datagen.RoadLanguageProvider;
-import net.oxcodsnet.roadarchitect.fabric.worldgen.RoadFeatureRegistry;
+import net.oxcodsnet.roadarchitect.worldgen.RoadFeatureRegistry;
 import net.oxcodsnet.roadarchitect.fabric.worldgen.RoadWorldgenProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.minecraft.registry.RegistryWrapper;
