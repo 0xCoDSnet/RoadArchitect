@@ -1,7 +1,23 @@
 package net.oxcodsnet.roadarchitect;
 
+import net.oxcodsnet.roadarchitect.config.RAConfig;
+import net.oxcodsnet.roadarchitect.config.RAConfigHolder;
+
 public final class RoadArchitect {
     public static final String MOD_ID = "roadarchitect";
+
+    // Фасад, делегирующий в актуальный провайдер из Holder
+    public static final RAConfig CONFIG = new RAConfig() {
+        @Override public int initScanRadius()          { return RAConfigHolder.get().initScanRadius(); }
+        @Override public int chunkGenerateScanRadius() { return RAConfigHolder.get().chunkGenerateScanRadius(); }
+        @Override public int maxConnectionDistance()   { return RAConfigHolder.get().maxConnectionDistance(); }
+        @Override public int pipelineIntervalSeconds() { return RAConfigHolder.get().pipelineIntervalSeconds(); }
+        @Override public java.util.List<String> structureSelectors() {
+            return RAConfigHolder.get().structureSelectors();
+        }
+    };
+
+    private RoadArchitect() {}
 
     public static void init() {
         // Write common init code here.
