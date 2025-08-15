@@ -77,3 +77,6 @@ install-fabric.sh
 src-fabric/main/generated/.cache/
 /common/build/
 /common/.gradle/
+/fabric/run/.architectury-transformer/
+/fabric/run/
+/neoforge/run/
