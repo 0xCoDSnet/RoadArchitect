@@ -32,26 +32,37 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class RoadPipelineController {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadPipelineController");
 
-    /** Миры, для которых уже отработал INIT по событию генерации спавн-чанка. */
+    /**
+     * Миры, для которых уже отработал INIT по событию генерации спавн-чанка.
+     */
     private static final Set<RegistryKey<World>> INITIALIZED = ConcurrentHashMap.newKeySet();
 
-    /** Кеш селекторов (ID и теги) из конфигурации, для быстрых проверок. */
+    /**
+     * Кеш селекторов (ID и теги) из конфигурации, для быстрых проверок.
+     */
     private static final Set<Identifier> TARGET_IDS = new HashSet<>();
     private static final Set<TagKey<Structure>> TARGET_TAGS = new HashSet<>();
 
-    /** Счётчик тиков для периодического триггера. */
+    /**
+     * Счётчик тиков для периодического триггера.
+     */
     private static int tickCounter = 0;
 
-    private RoadPipelineController() {}
+    private RoadPipelineController() {
+    }
 
-    /** Вызывать при старте сервера/мода (однократно), чтобы закешировать селекторы. */
+    /**
+     * Вызывать при старте сервера/мода (однократно), чтобы закешировать селекторы.
+     */
     public static void init() {
         cacheStructureSelectors();
         tickCounter = 0;
         LOGGER.debug("RoadPipelineController initialized (selectors cached)");
     }
 
-    /** Вызывать при обновлении конфига — перекешируем селекторы. */
+    /**
+     * Вызывать при обновлении конфига — перекешируем селекторы.
+     */
     public static void refreshStructureSelectorCache() {
         cacheStructureSelectors();
         LOGGER.debug("RoadPipelineController reloaded selectors from config");
@@ -59,7 +70,9 @@ public final class RoadPipelineController {
 
     /* ───────────────────────── Точные кейсы из исходного register() ───────────────────────── */
 
-    /** 1) Генерация спавн-чанка ВПЕРВЫЕ → INIT. */
+    /**
+     * 1) Генерация спавн-чанка ВПЕРВЫЕ → INIT.
+     */
     public static void onSpawnChunkGenerated(ServerWorld world, Chunk chunk) {
         if (world.getRegistryKey() != World.OVERWORLD) return;
 
@@ -73,7 +86,9 @@ public final class RoadPipelineController {
         }
     }
 
-    /** 2) Генерация ЛЮБОГО чанка; если внутри есть целевая структура → CHUNK. */
+    /**
+     * 2) Генерация ЛЮБОГО чанка; если внутри есть целевая структура → CHUNK.
+     */
     public static void onChunkGenerated(ServerWorld world, Chunk chunk) {
         if (world.getRegistryKey() != World.OVERWORLD) return;
         if (!containsTargetStructure(world, chunk)) return;
@@ -83,7 +98,9 @@ public final class RoadPipelineController {
         PipelineRunner.runPipeline(world, center, PipelineRunner.PipelineMode.CHUNK);
     }
 
-    /** 3) Игрок вошёл на сервер → PERIODIC (как в исходнике). */
+    /**
+     * 3) Игрок вошёл на сервер → PERIODIC (как в исходнике).
+     */
     public static void onPlayerJoin(ServerPlayerEntity player) {
         ServerWorld world = (ServerWorld) player.getWorld();
         if (world.getRegistryKey() != World.OVERWORLD) return;
@@ -94,7 +111,9 @@ public final class RoadPipelineController {
         PipelineRunner.runPipeline(world, pos, PipelineRunner.PipelineMode.PERIODIC);
     }
 
-    /** 4) Периодический триггер раз в N секунд (из конфига) – START_SERVER_TICK. */
+    /**
+     * 4) Периодический триггер раз в N секунд (из конфига) – START_SERVER_TICK.
+     */
     public static void onServerTick(MinecraftServer server) {
         int intervalTicks = Math.max(1, RoadArchitect.CONFIG.pipelineIntervalSeconds() * 20);
         tickCounter++;
@@ -112,7 +131,9 @@ public final class RoadPipelineController {
         }
     }
 
-    /** 5) Остановка сервера → чистим флаг и состояние контроллера. */
+    /**
+     * 5) Остановка сервера → чистим флаг и состояние контроллера.
+     */
     public static void onServerStopping() {
         INITIALIZED.clear();
         tickCounter = 0;

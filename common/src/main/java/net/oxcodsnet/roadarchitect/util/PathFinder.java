@@ -68,71 +68,23 @@ public class PathFinder {
      * Щёлкалка профилирования
      */
     private static final boolean PROFILING_ENABLED = true;
+    private final NodeStorage nodes;
+    private final ServerWorld world;
+    private final int maxSteps; // глобальный потолок (сохранён для обратной совместимости)
+    private final double heuristicWeight;
 
+    /* ===================================================== */
+    /* ── горячие ссылки на объекты генерации мира ── */
+    private final ChunkGenerator generator;
+    private final NoiseConfig noiseConfig;
+    private final MultiNoiseUtil.MultiNoiseSampler noiseSampler;
+    private final BiomeSource biomeSource;
     /**
      * Счётчики вызовов семплеров на один запуск поиска
      */
     private long profHeightCalls = 0L;
     private long profBiomeCalls = 0L;
     private long profStabCalls = 0L;
-
-    private static final class ProfileSession {
-        final BlockPos start;
-        final BlockPos goal;
-
-        // основная статистика
-        int iterations = 0;
-        long neighborsChecked = 0L;
-        long relaxationsAccepted = 0L;
-
-        /**
-         * Сумма инкрементальных стоимостей по ВСЕМ принятым релаксациям
-         */
-        double sumStepCosts = 0.0;
-
-        /**
-         * Средняя цена шага по фактическому пути (если найден)
-         */
-        double avgStepOnPath = 0.0;
-        boolean pathFound = false;
-
-        /**
-         * Фактически использованный масштаб эвристики в этом запуске
-         */
-        double localScale = HEURISTIC_SCALE;
-
-        // ── метрики сходимости ──
-        int initialL1 = 0;
-        int bestL1 = Integer.MAX_VALUE;
-        int lastL1 = 0;
-        int stallIters = 0;          // итераций без улучшения bestL1
-        double bestF = Double.POSITIVE_INFINITY;
-
-        // ── динамический лимит шагов ──
-        int stepCap = 0;
-        boolean hitCap = false;
-
-        ProfileSession(BlockPos start, BlockPos goal) {
-            this.start = start;
-            this.goal = goal;
-            this.initialL1 = Math.abs(start.getX() - goal.getX()) + Math.abs(start.getZ() - goal.getZ());
-            this.lastL1 = this.initialL1;
-        }
-    }
-
-    /* ===================================================== */
-
-    private final NodeStorage nodes;
-    private final ServerWorld world;
-    private final int maxSteps; // глобальный потолок (сохранён для обратной совместимости)
-    private final double heuristicWeight;
-
-    /* ── горячие ссылки на объекты генерации мира ── */
-    private final ChunkGenerator generator;
-    private final NoiseConfig noiseConfig;
-    private final MultiNoiseUtil.MultiNoiseSampler noiseSampler;
-    private final BiomeSource biomeSource;
-
     public PathFinder(NodeStorage nodes, ServerWorld world, int maxSteps) {
         this(nodes, world, maxSteps, HEURISTIC_WEIGHT);
     }
@@ -149,11 +101,11 @@ public class PathFinder {
         this.biomeSource = generator.getBiomeSource();
     }
 
-    /* ───────────────────────── Стоимости ───────────────────────── */
-
     private static double stepCost(int[] off) {
         return (Math.abs(off[0]) == GRID_STEP && Math.abs(off[1]) == GRID_STEP) ? 1.5 : 1.0;
     }
+
+    /* ───────────────────────── Стоимости ───────────────────────── */
 
     private static double elevationCost(int y1, int y2) {
         return Math.abs(y1 - y2) * 40.0;
@@ -176,8 +128,6 @@ public class PathFinder {
         return Math.abs(y1 - y2) > 3;
     }
 
-    /* ───────────────────────── Эвристика ───────────────────────── */
-
     /**
      * Октильная эвристика с явным scale.
      */
@@ -187,6 +137,8 @@ public class PathFinder {
         double a = dx + dz - 0.5 * Math.min(dx, dz);
         return a * scale;
     }
+
+    /* ───────────────────────── Эвристика ───────────────────────── */
 
     private static double heuristic(BlockPos a, BlockPos b, double scale) {
         return heuristic(a.getX(), a.getZ(), b, scale);
@@ -219,8 +171,6 @@ public class PathFinder {
         return Math.max(80.0, Math.min(120.0, scale));
     }
 
-    /* ───────────────────────── Динамический лимит шагов ───────────────────────── */
-
     /**
      * Выбор локального лимита шагов на запуск исходя из L1‑дистанции.
      * Нормализует усилие под длину, чтобы дальние маршруты не «капались» преждевременно.
@@ -236,7 +186,7 @@ public class PathFinder {
         return (int) est;
     }
 
-    /* ───────────────────────── Вспомогательное ───────────────────────── */
+    /* ───────────────────────── Динамический лимит шагов ───────────────────────── */
 
     private static BlockPos snap(BlockPos p) {
         int x = Math.floorDiv(p.getX(), GRID_STEP) * GRID_STEP;
@@ -244,12 +194,12 @@ public class PathFinder {
         return new BlockPos(x, p.getY(), z);
     }
 
+    /* ───────────────────────── Вспомогательное ───────────────────────── */
+
     private static int[][] generateOffsets() {
         int d = GRID_STEP;
         return new int[][]{{d, 0}, {-d, 0}, {0, d}, {0, -d}, {d, d}, {d, -d}, {-d, d}, {-d, -d}};
     }
-
-    /* ───────────────────────── Публичный API ───────────────────────── */
 
     /**
      * Поиск по идентификаторам узлов (как и раньше).
@@ -264,14 +214,14 @@ public class PathFinder {
         return aStarPositions(snap(startNode.pos()), snap(endNode.pos()));
     }
 
+    /* ───────────────────────── Публичный API ───────────────────────── */
+
     /**
      * Поиск между произвольными позициями (для локального реплана).
      */
     public List<BlockPos> findPath(BlockPos from, BlockPos to) {
         return aStarPositions(snap(from), snap(to));
     }
-
-    /* ───────────────────────── Реализация A* ───────────────────────── */
 
     private List<BlockPos> aStarPositions(BlockPos startPos, BlockPos endPos) {
         ProfileSession ps = PROFILING_ENABLED ? new ProfileSession(startPos, endPos) : null;
@@ -285,8 +235,11 @@ public class PathFinder {
         }
     }
 
+    /* ───────────────────────── Реализация A* ───────────────────────── */
+
     private List<BlockPos> aStarPositions(BlockPos startPos, BlockPos endPos, ProfileSession ps) {
-        record Rec(long key, double g, double f) { }
+        record Rec(long key, double g, double f) {
+        }
 
         long startKey = hash(startPos.getX(), startPos.getZ());
         long endKey = hash(endPos.getX(), endPos.getZ());
@@ -397,8 +350,6 @@ public class PathFinder {
         return List.of();
     }
 
-    /* ───────────────────────── Быстрые семплеры ───────────────────────── */
-
     private int sampleHeight(int x, int z) {
         profHeightCalls++;
         long key = hash(x, z);
@@ -406,6 +357,8 @@ public class PathFinder {
                 generator.getHeight(x, z, Heightmap.Type.WORLD_SURFACE_WG, world, noiseConfig)
         );
     }
+
+    /* ───────────────────────── Быстрые семплеры ───────────────────────── */
 
     private double sampleStability(int x, int z, int y) {
         profStabCalls++;
@@ -426,8 +379,6 @@ public class PathFinder {
         );
     }
 
-    /* ───────────────────────── Утилиты ───────────────────────── */
-
     private double terrainStabilityCost(int x, int z, int y) {
         int cost = 0;
         for (Direction d : Direction.Type.HORIZONTAL) {
@@ -439,6 +390,8 @@ public class PathFinder {
         }
         return cost * 16.0;
     }
+
+    /* ───────────────────────── Утилиты ───────────────────────── */
 
     private List<BlockPos> reconstructVertices(long goal, long start, Long2LongMap parent) {
         List<BlockPos> vertices = new ArrayList<>();
@@ -488,8 +441,6 @@ public class PathFinder {
         return cnt > 0 ? (sum / (double) cnt) : 0.0;
     }
 
-    /* ───────────────────────── Лог профайлера ───────────────────────── */
-
     private void logProfile(ProfileSession ps) {
         if (ps == null) {
             return;
@@ -537,5 +488,51 @@ public class PathFinder {
                         ? ("suggest HEURISTIC_SCALE ≈ " + String.format(Locale.ROOT, "%.1f", suggested))
                         : "no suggestion (path not found)"
         );
+    }
+
+    /* ───────────────────────── Лог профайлера ───────────────────────── */
+
+    private static final class ProfileSession {
+        final BlockPos start;
+        final BlockPos goal;
+
+        // основная статистика
+        int iterations = 0;
+        long neighborsChecked = 0L;
+        long relaxationsAccepted = 0L;
+
+        /**
+         * Сумма инкрементальных стоимостей по ВСЕМ принятым релаксациям
+         */
+        double sumStepCosts = 0.0;
+
+        /**
+         * Средняя цена шага по фактическому пути (если найден)
+         */
+        double avgStepOnPath = 0.0;
+        boolean pathFound = false;
+
+        /**
+         * Фактически использованный масштаб эвристики в этом запуске
+         */
+        double localScale = HEURISTIC_SCALE;
+
+        // ── метрики сходимости ──
+        int initialL1 = 0;
+        int bestL1 = Integer.MAX_VALUE;
+        int lastL1 = 0;
+        int stallIters = 0;          // итераций без улучшения bestL1
+        double bestF = Double.POSITIVE_INFINITY;
+
+        // ── динамический лимит шагов ──
+        int stepCap = 0;
+        boolean hitCap = false;
+
+        ProfileSession(BlockPos start, BlockPos goal) {
+            this.start = start;
+            this.goal = goal;
+            this.initialL1 = Math.abs(start.getX() - goal.getX()) + Math.abs(start.getZ() - goal.getZ());
+            this.lastL1 = this.initialL1;
+        }
     }
 }

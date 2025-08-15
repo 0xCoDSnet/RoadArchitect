@@ -8,7 +8,8 @@ import net.minecraft.util.math.BlockPos;
  * segments intersect on the XZ-plane.</p>
  */
 public final class GeometryUtils {
-    private GeometryUtils() {}
+    private GeometryUtils() {
+    }
 
     /**
      * Checks whether two segments on the XZ-plane intersect.

@@ -9,8 +9,6 @@ import net.minecraft.world.StructureWorldAccess;
 
 import java.util.List;
 
-import static net.minecraft.world.gen.feature.PlacedFeatures.isAir;
-
 /**
  * Decoration that places a fence post. If the target position is occupied, the
  * post is shifted upwards until free space is found. After placement the fence
@@ -66,8 +64,9 @@ public final class FenceDecoration implements Decoration {
 
     /**
      * Ставит забор, не заменяя твёрдые блоки и не оставляя его в воздухе.
-     * @param world  StructureWorldAccess (во время world-гена) :contentReference[oaicite:4]{index=4}
-     * @param pos    «базовая» точка, от которой считаем ±3 блока
+     *
+     * @param world StructureWorldAccess (во время world-гена) :contentReference[oaicite:4]{index=4}
+     * @param pos   «базовая» точка, от которой считаем ±3 блока
      */
     private void setFenceSmart(StructureWorldAccess world, BlockPos pos) {
 

@@ -9,7 +9,8 @@ import net.oxcodsnet.roadarchitect.worldgen.RoadFeatureRegistry;
  * Вызывается из Fabric/NeoForge-адаптеров.
  */
 public final class RACommonDatagen {
-    private RACommonDatagen() {}
+    private RACommonDatagen() {
+    }
 
     public static void buildRegistries(RegistryBuilder builder) {
         builder.addRegistry(RegistryKeys.CONFIGURED_FEATURE, RoadFeatureRegistry::bootstrapConfigured);

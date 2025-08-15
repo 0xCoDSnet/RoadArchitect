@@ -9,8 +9,8 @@ import java.util.function.Consumer;
  * Синглтон-холдер активного конфига + простые слушатели «перепривязки».
  */
 public final class RAConfigHolder {
-    private static volatile RAConfig INSTANCE = new Defaults();
     private static final CopyOnWriteArrayList<Consumer<RAConfig>> LISTENERS = new CopyOnWriteArrayList<>();
+    private static volatile RAConfig INSTANCE = new Defaults();
 
     private RAConfigHolder() {
     }

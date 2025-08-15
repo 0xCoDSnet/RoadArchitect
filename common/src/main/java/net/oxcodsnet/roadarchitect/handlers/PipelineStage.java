@@ -10,6 +10,12 @@ public enum PipelineStage {
     COMPLETE(Text.translatable("roadarchitect.stage.complete"));
 
     private final Text label;
-    PipelineStage(Text label) { this.label = label; }
-    public Text label() { return label; }
+
+    PipelineStage(Text label) {
+        this.label = label;
+    }
+
+    public Text label() {
+        return label;
+    }
 }

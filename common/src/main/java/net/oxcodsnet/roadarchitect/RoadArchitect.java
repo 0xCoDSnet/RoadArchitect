@@ -8,16 +8,34 @@ public final class RoadArchitect {
 
     // Фасад, делегирующий в актуальный провайдер из Holder
     public static final RAConfig CONFIG = new RAConfig() {
-        @Override public int initScanRadius()          { return RAConfigHolder.get().initScanRadius(); }
-        @Override public int chunkGenerateScanRadius() { return RAConfigHolder.get().chunkGenerateScanRadius(); }
-        @Override public int maxConnectionDistance()   { return RAConfigHolder.get().maxConnectionDistance(); }
-        @Override public int pipelineIntervalSeconds() { return RAConfigHolder.get().pipelineIntervalSeconds(); }
-        @Override public java.util.List<String> structureSelectors() {
+        @Override
+        public int initScanRadius() {
+            return RAConfigHolder.get().initScanRadius();
+        }
+
+        @Override
+        public int chunkGenerateScanRadius() {
+            return RAConfigHolder.get().chunkGenerateScanRadius();
+        }
+
+        @Override
+        public int maxConnectionDistance() {
+            return RAConfigHolder.get().maxConnectionDistance();
+        }
+
+        @Override
+        public int pipelineIntervalSeconds() {
+            return RAConfigHolder.get().pipelineIntervalSeconds();
+        }
+
+        @Override
+        public java.util.List<String> structureSelectors() {
             return RAConfigHolder.get().structureSelectors();
         }
     };
 
-    private RoadArchitect() {}
+    private RoadArchitect() {
+    }
 
     public static void init() {
         // Write common init code here.

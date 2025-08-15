@@ -9,8 +9,12 @@ import java.util.List;
  */
 public interface RAConfig {
     int initScanRadius();
+
     int chunkGenerateScanRadius();
+
     int maxConnectionDistance();
+
     int pipelineIntervalSeconds();
+
     List<String> structureSelectors();
 }

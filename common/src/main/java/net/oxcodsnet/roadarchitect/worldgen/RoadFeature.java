@@ -43,8 +43,8 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
 
     private static final int[][] OFFSETS_8 = {
             {-1, -1}, {0, -1}, {1, -1},
-            {-1,  0},          {1,  0},
-            {-1,  1}, {0,  1}, {1,  1}
+            {-1, 0}, {1, 0},
+            {-1, 1}, {0, 1}, {1, 1}
     };
 
     public RoadFeature(Codec<RoadFeatureConfig> codec) {
@@ -123,7 +123,7 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
             fence.placeFenceStripe(world, stripe);
         } else {
             for (int j = 0; j < length; j++) {
-                deco.place(world,  center.add(sx * (halfWidth + 1) + fx * j, 0, sz * (halfWidth + 1) + fz * j), random);
+                deco.place(world, center.add(sx * (halfWidth + 1) + fx * j, 0, sz * (halfWidth + 1) + fz * j), random);
             }
         }
     }
@@ -132,7 +132,6 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
         world.setBlockState(pos, stateRoad, Block.NOTIFY_NEIGHBORS);
         //world.setBlockState(pos.up(), Blocks.AIR.getDefaultState(), Block.NOTIFY_NEIGHBORS);
     }
-
 
 
     private static boolean isWaterSegment(StructureWorldAccess world, BlockPos pos) {

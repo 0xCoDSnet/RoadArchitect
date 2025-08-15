@@ -2,6 +2,7 @@ package net.oxcodsnet.roadarchitect.util;
 
 //import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 //import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
@@ -42,19 +43,25 @@ public final class CacheManager {
     /**
      * Registers world load/unload hooks.
      */
-    /** Был ServerWorldEvents.LOAD: world loaded on server side. */
+    /**
+     * Был ServerWorldEvents.LOAD: world loaded on server side.
+     */
     public static void onWorldLoad(ServerWorld world) {
         if (world.isClient()) return;
         load(world);
     }
 
-    /** Был ServerWorldEvents.UNLOAD: world about to unload. */
+    /**
+     * Был ServerWorldEvents.UNLOAD: world about to unload.
+     */
     public static void onWorldUnload(ServerWorld world) {
         if (world.isClient()) return;
         save(world);
     }
 
-    /** Был ServerLifecycleEvents.SERVER_STOPPING: persist all states. */
+    /**
+     * Был ServerLifecycleEvents.SERVER_STOPPING: persist all states.
+     */
     public static void onServerStopping(MinecraftServer server) {
         for (ServerWorld world : server.getWorlds()) {
             save(world);

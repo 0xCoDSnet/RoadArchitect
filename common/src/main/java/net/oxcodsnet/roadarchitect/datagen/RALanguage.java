@@ -7,7 +7,8 @@ import java.util.function.BiConsumer;
  * Платформенный провайдер просто вызывает fill(locale, builder::add).
  */
 public final class RALanguage {
-    private RALanguage() {}
+    private RALanguage() {
+    }
 
     public static void fill(String code, BiConsumer<String, String> add) {
         switch (code) {

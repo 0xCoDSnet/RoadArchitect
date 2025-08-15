@@ -22,9 +22,6 @@ import java.util.Map.Entry;
  */
 public final class RoadPostProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadPostProcessor");
-
-    private RoadPostProcessor() {}
-
     // ====== ПАРАМЕТРЫ (можно вынести в конфиг позже) ======
     private static final int TOLERANCE_BLOCKS = 45;          // близость, блоки
     private static final int ANGLE_THRESHOLD_DEG = 35;       // почти параллельные
@@ -34,13 +31,14 @@ public final class RoadPostProcessor {
     private static final int MAX_ITER = 5;                   // N-циклы (Для лучшего эффекта, должно быть нечётным)
     private static final boolean UNTIL_STABLE = true;        // до стабилизации
     private static final int TRIM_RADIUS_L1 = 50;        // L1-радиус обрезки (как в PathFinder)
-
     // ====== Нормализация высот (профиль) ======
     private static final int SMOOTH_MEDIAN_WINDOW = 5;       // нечётное: 3/5/7
     private static final int SMOOTH_GRAD_MAX = 1;            // макс. разница Y между соседями
     private static final int SMOOTH_PASSES = 2;              // число прогонов
     private static final int DESPIKE_DELTA = 2;              // чувствительность «иголки»
     private static final boolean LOG_GRAD_CLAMP = true;     // включить подробный лог клампа
+    private RoadPostProcessor() {
+    }
 
     // ====== Регистрация хуков ======
     public static void onStartWorldTick(ServerWorld world) {
@@ -65,7 +63,7 @@ public final class RoadPostProcessor {
         if (path == null || path.size() < 2) return path;
 
         BlockPos start0 = path.getFirst();
-        BlockPos end0   = path.getLast();
+        BlockPos end0 = path.getLast();
 
         int i = 0;
         while (i < path.size() && manhattanXZ(path.get(i), start0) <= TRIM_RADIUS_L1) i++;
@@ -85,6 +83,7 @@ public final class RoadPostProcessor {
 
         return new ArrayList<>(path.subList(i, j + 1));
     }
+
     // ====== refine как было ======
     private static List<BlockPos> refine(ServerWorld world, List<BlockPos> verts) {
         if (verts.isEmpty()) return List.of();
@@ -111,9 +110,6 @@ public final class RoadPostProcessor {
             out.add(new BlockPos(nx, ny, nz));
         }
     }
-
-    // ====== Нормализация высот с логированием ======
-    private record NormalizeResult(List<BlockPos> path, int spikesCut, int gradClamped) {}
 
     private static NormalizeResult normalizeHeights(List<BlockPos> refined) {
         if (refined.size() < 3) {
@@ -222,7 +218,7 @@ public final class RoadPostProcessor {
      * ВАЖНО про статусы:
      * - baseKey: tryMarkProcessing(baseKey) -> PROCESSING; дальше либо updatePath(..., READY), либо FAILED.
      * - partnerKey: tryMarkProcessing(partner) -> PROCESSING; если отказались от слияния -> setStatus(partner, PENDING);
-     *   если слили -> updatePath(..., READY).
+     * если слили -> updatePath(..., READY).
      * Никаких «скрытых» переводов статусов в finally.
      */
     private static void schedule(ServerWorld world, PathStorage storage, String baseKey) {
@@ -384,7 +380,10 @@ public final class RoadPostProcessor {
             if (minDist >= TOLERANCE_BLOCKS) continue;
 
             double score = angle + minDist * 0.5;
-            if (score < bestScore) { bestScore = score; bestKey = otherKey; }
+            if (score < bestScore) {
+                bestScore = score;
+                bestKey = otherKey;
+            }
         }
 
         return bestKey == null ? null : new MergeCandidate(bestKey, bestScore);
@@ -400,10 +399,14 @@ public final class RoadPostProcessor {
 
         for (int i = 1; i < n - 1; i++) {
             BlockPos ai = a.get(i);
-            int jBest = -1; double dMin = Double.POSITIVE_INFINITY;
+            int jBest = -1;
+            double dMin = Double.POSITIVE_INFINITY;
             for (int j = 1; j < m - 1; j++) {
                 double d = hypot2D(ai, b.get(j));
-                if (d < dMin) { dMin = d; jBest = j; }
+                if (d < dMin) {
+                    dMin = d;
+                    jBest = j;
+                }
             }
             if (jBest <= 0 || dMin >= TOLERANCE_BLOCKS * 2) continue;
 
@@ -416,7 +419,9 @@ public final class RoadPostProcessor {
             double score = angTail + (avgDist / 10.0);
 
             if (angTail < TAIL_ANGLE_MAX_DEG && avgDist < (AVG_DIST_FACTOR * TOLERANCE_BLOCKS) && score < bestScore) {
-                bestScore = score; bestI = i; bestJ = jBest;
+                bestScore = score;
+                bestI = i;
+                bestJ = jBest;
             }
         }
 
@@ -449,9 +454,11 @@ public final class RoadPostProcessor {
         List<BlockPos> chosenTail;
         String chosenKey;
         if (tailA.size() > tailB.size() || (tailA.size() == tailB.size() && conv.i <= conv.j)) {
-            chosenTail = tailA; chosenKey = keyA;
+            chosenTail = tailA;
+            chosenKey = keyA;
         } else {
-            chosenTail = tailB; chosenKey = keyB;
+            chosenTail = tailB;
+            chosenKey = keyB;
         }
 
         List<BlockPos> trunk = new ArrayList<>(chosenTail.size());
@@ -466,15 +473,58 @@ public final class RoadPostProcessor {
         return new BuildResult(legs, new Trunk(trunkKey, trunk));
     }
 
+    private static double angleDeg(int[] v1, int[] v2) {
+        double n1 = Math.hypot(v1[0], v1[1]);
+        double n2 = Math.hypot(v2[0], v2[1]);
+        if (n1 == 0 || n2 == 0) return 180;
+        double dot = (v1[0] * v2[0] + v1[1] * v2[1]) / (n1 * n2);
+        dot = Math.max(-1, Math.min(1, dot));
+        double ang = Math.toDegrees(Math.acos(dot));
+        return Math.min(ang, 180 - ang);
+    }
+
+    private static int[] dir(List<BlockPos> pts) {
+        BlockPos s = pts.getFirst(), e = pts.getLast();
+        return new int[]{e.getX() - s.getX(), e.getZ() - s.getZ()};
+    }
+
+    private static double minPointToPointDist(List<BlockPos> a, List<BlockPos> b) {
+        double min = Double.POSITIVE_INFINITY;
+        for (BlockPos pa : a)
+            for (BlockPos pb : b) {
+                double d = hypot2D(pa, pb);
+                if (d < min) min = d;
+            }
+        return min;
+    }
+
+    private static double hypot2D(BlockPos p1, BlockPos p2) {
+        int dx = p1.getX() - p2.getX();
+        int dz = p1.getZ() - p2.getZ();
+        return Math.hypot(dx, dz);
+    }
+
+    // ====== Нормализация высот с логированием ======
+    private record NormalizeResult(List<BlockPos> path, int spikesCut, int gradClamped) {
+    }
+
     // ====== Вспомогательные структуры и математика ======
-    private record MergeCandidate(String otherKey, double score) {}
-    private record Convergence(int i, int j) {}
-    private record Trunk(String key, List<BlockPos> path) {}
+    private record MergeCandidate(String otherKey, double score) {
+    }
+
+    private record Convergence(int i, int j) {
+    }
+
+    private record Trunk(String key, List<BlockPos> path) {
+    }
+
     private static final class BuildResult {
         final Map<String, List<BlockPos>> legsRaw;
         final Trunk trunkRaw;
+
         BuildResult(Map<String, List<BlockPos>> legsRaw, Trunk trunkRaw) {
-            this.legsRaw = legsRaw; this.trunkRaw = trunkRaw;
+            this.legsRaw = legsRaw;
+            this.trunkRaw = trunkRaw;
         }
     }
 
@@ -489,39 +539,13 @@ public final class RoadPostProcessor {
             }
             return new AABB(minX, minZ, maxX, maxZ);
         }
-        AABB inflate(int r) { return new AABB(x1 - r, z1 - r, x2 + r, z2 + r); }
+
+        AABB inflate(int r) {
+            return new AABB(x1 - r, z1 - r, x2 + r, z2 + r);
+        }
+
         boolean intersectsInflated(AABB other) {
             return this.x1 <= other.x2 && this.x2 >= other.x1 && this.z1 <= other.z2 && this.z2 >= other.z1;
         }
-    }
-
-    private static double angleDeg(int[] v1, int[] v2) {
-        double n1 = Math.hypot(v1[0], v1[1]);
-        double n2 = Math.hypot(v2[0], v2[1]);
-        if (n1 == 0 || n2 == 0) return 180;
-        double dot = (v1[0] * v2[0] + v1[1] * v2[1]) / (n1 * n2);
-        dot = Math.max(-1, Math.min(1, dot));
-        double ang = Math.toDegrees(Math.acos(dot));
-        return Math.min(ang, 180 - ang);
-    }
-
-    private static int[] dir(List<BlockPos> pts) {
-        BlockPos s = pts.getFirst(), e = pts.getLast();
-        return new int[]{ e.getX() - s.getX(), e.getZ() - s.getZ() };
-    }
-
-    private static double minPointToPointDist(List<BlockPos> a, List<BlockPos> b) {
-        double min = Double.POSITIVE_INFINITY;
-        for (BlockPos pa : a) for (BlockPos pb : b) {
-            double d = hypot2D(pa, pb);
-            if (d < min) min = d;
-        }
-        return min;
-    }
-
-    private static double hypot2D(BlockPos p1, BlockPos p2) {
-        int dx = p1.getX() - p2.getX();
-        int dz = p1.getZ() - p2.getZ();
-        return Math.hypot(dx, dz);
     }
 }
