@@ -127,5 +127,5 @@ modrinth {
     versionNumber = version
     uploadFile = remapJar
     gameVersions = [minecraft_version]
-    loaders = ["fabric"]
+    loaders = ["fabric","quilt"]
 }
