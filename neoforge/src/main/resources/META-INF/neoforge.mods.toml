@@ -1,15 +1,15 @@
 modLoader = "javafml"
 loaderVersion = "[4,)"
 #issueTrackerURL = ""
-license = "Insert License Here"
+license = "${mod_license}"
 
 [[mods]]
 modId = "roadarchitect"
 version = "${version}"
-displayName = "RoadArchitect"
-authors = "Me!"
+displayName = "${mod_name}"
+authors = "${mod_authors}"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+${mod_description}
 '''
 #logoFile = ""
 
@@ -27,12 +27,12 @@ versionRange = "[1.21.1,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.roadarchitect]]
-modId = "architectury"
-type = "required"
-versionRange = "[13.0.8,)"
-ordering = "AFTER"
-side = "BOTH"
+#[[dependencies.roadarchitect]]
+#modId = "architectury"
+#type = "required"
+#versionRange = "[13.0.8,)"
+#ordering = "AFTER"
+#side = "BOTH"
 
 [[mixins]]
 config = "roadarchitect.mixins.json"

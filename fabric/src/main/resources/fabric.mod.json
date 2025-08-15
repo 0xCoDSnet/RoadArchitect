@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "id": "roadarchitect",
+  "id": "${mod_id}",
   "version": "${version}",
-  "name": "RoadArchitect",
-  "description": "Travel around the world without barriers: RoadArchitect automatically scans your world, finds villages, and other structures, and then lays a network of roads between them.",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
   "authors": [
-    "0xCoDSnet"
+    "${mod_authors}"
   ],
   "contact": {
-    "homepage": "https://github.com/0xCoDSnet",
-    "sources": "https://github.com/0xCoDSnet/RoadArchitect"
+    "homepage": "${mod_homepage}",
+    "sources": "${mod_sources}"
   },
-  "license": "Apache-2.0",
+  "license": "${mod_license}",
   "icon": "assets/roadarchitect/icon.png",
   "environment": "*",
   "entrypoints": {
@@ -26,13 +26,13 @@
     ]
   },
   "depends": {
-    "fabricloader": ">=0.16.14",
-    "minecraft": "~1.21.1",
+    "fabricloader": ">=${fabric_loader_version}",
+    "minecraft": "~${minecraft_version}",
     "java": ">=21",
     "fabric-api": "*",
-    "owo-lib": "0.12.15.4+1.21"
+    "owo-lib": "${owo_version}"
   },
   "suggests": {
-    "modmenu": "11.0.3"
+    "modmenu": "${modmenu_version}"
   }
 }

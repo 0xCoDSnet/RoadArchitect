@@ -1,7 +1,7 @@
 [Architectury Transformer] Architectury Runtime 5.2.87
 [Architectury Transformer DEBUG] Closed File Systems for /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar
 [Architectury Transformer DEBUG] Preparing tiny remapper prepared transformer: dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
-[Architectury Transformer DEBUG] Provided 92 classpath jar(s):
+[Architectury Transformer DEBUG] Provided 91 classpath jar(s):
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/fabric-loom/1.21.1/neoforge/21.1.187/client-extra.jar
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/dev.architectury/architectury-injectables/1.0.10/62db2a366d662606d1b23ad02ccc3212ed37ec3/architectury-injectables-1.0.10.jar
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/net.fabricmc/fabric-loader/0.17.2/647622ac4163aad5ed5f79ccb532e31225562aa/fabric-loader-0.17.2.jar
@@ -93,37 +93,107 @@
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-openal/3.3.3/daada81ceb5fc0c291fbfdd4433cb8d9423577f2/lwjgl-openal-3.3.3.jar
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/modules-2/files-2.1/org.lz4/lz4-java/1.8.0/4b986a99445e49ea5fbf5d149c4b63f6ed6c6780/lz4-java-1.8.0.jar
 [Architectury Transformer DEBUG]  - /home/alexey/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/neoforge-21.1.187-minecraft-merged/1.21.1-loom.mappings.1_21_1.layered+hash.477322616-v2-neoforge-21.1.187/neoforge-21.1.187-minecraft-merged-1.21.1-loom.mappings.1_21_1.layered+hash.477322616-v2-neoforge-21.1.187.jar
-[Architectury Transformer DEBUG]  - /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_477322616_v2_neoforge_21_1_187_forge/dev/architectury/architectury-neoforge/13.0.8/architectury-neoforge-13.0.8.jar
-[Architectury Transformer] Read classpath in 887.6 ms
+[Architectury Transformer] Read classpath in 812.7 ms
 [Architectury Transformer DEBUG] Closed File Systems for /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar
-[Architectury Transformer DEBUG] Transforming 6 transformer(s) from /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar to /tmp/16668660698413434866.jar: 
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformExpectPlatform@2a0c26d9
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.RemapInjectables@4bc9a60
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformPlatformOnly@1b574b87
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformNeoForgeAnnotations@5fbaeebe
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformNeoForgeEnvironment@144b317e
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.GenerateFakeNeoForgeMod@7444d60d
-[Architectury Transformer DEBUG] Transforming from /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar to /tmp/16668660698413434866.jar with 6 transformer(s) on dev.architectury.transformer.handler.SimpleTransformerHandler
+[Architectury Transformer DEBUG] Transforming 6 transformer(s) from /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar to /tmp/17930842418912152500.jar: 
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformExpectPlatform@32369404
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.RemapInjectables@76c8d30e
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformPlatformOnly@79774c1d
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformNeoForgeAnnotations@10db1a9d
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformNeoForgeEnvironment@164b2a36
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.GenerateFakeNeoForgeMod@262bcb52
+[Architectury Transformer DEBUG] Transforming from /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar to /tmp/17930842418912152500.jar with 6 transformer(s) on dev.architectury.transformer.handler.SimpleTransformerHandler
 [Architectury Transformer DEBUG] Remapping with 1 mapping provider(s):
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformNeoForgeEnvironment$$Lambda/0x00007f00580946f0@41acf46d
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformNeoForgeEnvironment$$Lambda/0x00007fe50c094bb0@7c550d44
 [Architectury Transformer DEBUG] Remapping Classes:
 [Architectury Transformer DEBUG] net/fabricmc/api/EnvType -> net/neoforged/api/distmarker/Dist
 [Architectury Transformer DEBUG] net/fabricmc/api/Environment -> net/neoforged/api/distmarker/OnlyIn
 [Architectury Transformer DEBUG] Found class transformer
-[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/ExampleMod with maxs=true frames=true
-[Architectury Transformer DEBUG] Closed File Systems for /tmp/16668660698413434866.jar
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/RoadArchitect$1 with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/RoadArchitect with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/config/RAConfigHolder$Defaults with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/config/RAConfig with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/config/RAConfigHolder with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/datagen/RALanguage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/datagen/RACommonDatagen with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PipelineRunner with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$NormalizeResult with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadGraphStateManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/StructureScanManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Trunk with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PathFinderManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPipelineController with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$Convergence with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$AABB with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$MergeCandidate with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PathFinderManager$PathJob with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PipelineRunner$PipelineMode with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadPostProcessor$BuildResult with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/RoadBuilderManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/handlers/PipelineStage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/CacheStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/EdgeStorage$Edge with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/EdgeStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/RoadGraphState with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/PathStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/NodeStorage with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/PathStorage$Status with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/EdgeStorage$Status with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/RoadBuilderStorage$SegmentEntry with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/storage/components/Node with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PathFinder with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/CacheManager with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/StructureLocator with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/KeyUtil with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PathFinder$ProfileSession with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PathFinder$1Rec with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/GeometryUtils with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/PersistentStateUtil with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/util/AsyncExecutor with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/RoadFeature with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/RoadFeatureConfig with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/RoadFeatureRegistry with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/RoadStyles with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Entry with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/RoadStyle with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/BlockPalette$Builder with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/decoration/FenceDecoration with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/decoration/BuoyDecoration with maxs=true frames=true
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/worldgen/style/decoration/Decoration with maxs=true frames=true
+[Architectury Transformer DEBUG] Closed File Systems for /tmp/17930842418912152500.jar
 [Architectury Transformer] Listening at /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar
-[Architectury Transformer DEBUG] Temporary jar [/tmp/16668660698413434866.jar] contains packages: net.oxcodsnet.roadarchitect
+[Architectury Transformer DEBUG] Temporary jar [/tmp/17930842418912152500.jar] contains packages: net.oxcodsnet.roadarchitect.storage.components, net.oxcodsnet.roadarchitect.storage, net.oxcodsnet.roadarchitect.worldgen, net.oxcodsnet.roadarchitect.util, net.oxcodsnet.roadarchitect.datagen, net.oxcodsnet.roadarchitect.handlers, net.oxcodsnet.roadarchitect.worldgen.style.decoration, net.oxcodsnet.roadarchitect.config, net.oxcodsnet.roadarchitect, net.oxcodsnet.roadarchitect.worldgen.style
 [Architectury Transformer DEBUG] Closed File Systems for /home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/common/build/devlibs/roadarchitect-common-1.1.0-dev.jar
 [Architectury Transformer DEBUG] Classpath entry [/home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/neoforge/build/classes/java/main] contains packages: net.oxcodsnet.roadarchitect.neoforge
 [Architectury Transformer DEBUG] Classpath entry [/home/alexey/Projects/RoadArchitect/1.21.1/architectury-loom/neoforge/build/resources/main] contains packages: 
-[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/ExampleMod.class to net/oxcodsnet/roadarchitect/ExampleMod.class with 6 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/RoadArchitect.class to net/oxcodsnet/roadarchitect/RoadArchitect.class with 6 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
 [Architectury Transformer DEBUG] Remapping with 1 mapping provider(s):
-[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformNeoForgeEnvironment$$Lambda/0x00007f00580946f0@41acf46d
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformNeoForgeEnvironment$$Lambda/0x00007fe50c094bb0@7c550d44
 [Architectury Transformer DEBUG] Remapping with Dirty Mappings...
 [Architectury Transformer DEBUG] Remapping Classes:
 [Architectury Transformer DEBUG] net/fabricmc/api/EnvType -> net/neoforged/api/distmarker/Dist
 [Architectury Transformer DEBUG] net/fabricmc/api/Environment -> net/neoforged/api/distmarker/OnlyIn
 [Architectury Transformer DEBUG] Found class transformer
-[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/ExampleMod with maxs=true frames=true
-[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/ExampleMod in 47.93 ms
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/RoadArchitect with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/RoadArchitect in 46.74 ms
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/config/RAConfig.class to net/oxcodsnet/roadarchitect/config/RAConfig.class with 6 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Remapping with 1 mapping provider(s):
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformNeoForgeEnvironment$$Lambda/0x00007fe50c094bb0@7c550d44
+[Architectury Transformer DEBUG] Remapping Classes:
+[Architectury Transformer DEBUG] net/fabricmc/api/EnvType -> net/neoforged/api/distmarker/Dist
+[Architectury Transformer DEBUG] net/fabricmc/api/Environment -> net/neoforged/api/distmarker/OnlyIn
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/config/RAConfig with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/config/RAConfig in 9.971 ms
+[Architectury Transformer DEBUG] Transforming from net/oxcodsnet/roadarchitect/RoadArchitect$1.class to net/oxcodsnet/roadarchitect/RoadArchitect$1.class with 6 transformer(s) on dev.architectury.transformer.handler.TinyRemapperPreparedTransformerHandler
+[Architectury Transformer DEBUG] Remapping with 1 mapping provider(s):
+[Architectury Transformer DEBUG]  - dev.architectury.transformer.transformers.TransformNeoForgeEnvironment$$Lambda/0x00007fe50c094bb0@7c550d44
+[Architectury Transformer DEBUG] Remapping Classes:
+[Architectury Transformer DEBUG] net/fabricmc/api/EnvType -> net/neoforged/api/distmarker/Dist
+[Architectury Transformer DEBUG] net/fabricmc/api/Environment -> net/neoforged/api/distmarker/OnlyIn
+[Architectury Transformer DEBUG] Found class transformer
+[Architectury Transformer DEBUG] Writing net/oxcodsnet/roadarchitect/RoadArchitect$1 with maxs=true frames=true
+[Architectury Transformer DEBUG] Transformed net/oxcodsnet/roadarchitect/RoadArchitect$1 in 5.403 ms

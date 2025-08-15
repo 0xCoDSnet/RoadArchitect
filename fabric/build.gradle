@@ -59,10 +59,25 @@ dependencies {
 }
 
 processResources {
-    inputs.property 'version', project.version
+    def props = [
+            version              : project.version,
+            mod_id               : rootProject.findProperty('mod_id'),
+            mod_name             : rootProject.findProperty('mod_name'),
+            mod_description      : rootProject.findProperty('mod_description'),
+            mod_authors          : rootProject.findProperty('mod_authors'),
+            mod_homepage         : rootProject.findProperty('mod_homepage'),
+            mod_sources          : rootProject.findProperty('mod_sources'),
+            mod_license          : rootProject.findProperty('mod_license'),
+
+            minecraft_version    : rootProject.findProperty('minecraft_version'),
+            fabric_loader_version        : rootProject.findProperty('fabric_loader_version'),
+            owo_version          : rootProject.findProperty('owo_version'),
+            modmenu_version      : rootProject.findProperty('modmenu_version'),
+    ]
+    inputs.properties(props)
 
     filesMatching('fabric.mod.json') {
-        expand version: project.version
+        expand(props)
     }
 }
 
