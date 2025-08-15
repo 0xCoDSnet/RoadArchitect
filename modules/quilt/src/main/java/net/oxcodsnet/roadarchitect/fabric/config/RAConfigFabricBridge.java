@@ -16,7 +16,7 @@ public final class RAConfigFabricBridge {
 
     private static final Logger LOG = LoggerFactory.getLogger("RoadArchitect/ConfigBridge");
 
-    private static RoadArchitectConfig CFG;
+    private static net.oxcodsnet.roadarchitect.fabric.config.RoadArchitectConfig CFG;
 
     private RAConfigFabricBridge() {}
 
