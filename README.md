@@ -15,7 +15,6 @@
         <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/quilt_vector.svg" alt="Available on Quilt">
     </a>
 </p>
-
 ---
 #  RoadArchitect
 
@@ -73,8 +72,14 @@ Roads adapt their style to the biome, and the network is saved between game sess
 0. Install **[Fabric Loader](https://fabricmc.net/use/installer/)** `0.16.14`
 1. Install **[owo-lib](https://modrinth.com/mod/owo-lib)** `0.12.15.4+1.21`
 2. Download the mod:
-   - From **[Modrinth](https://modrinth.com/mod/roadarchitect)**
-   - From **[CurseForge](https://www.curseforge.com/minecraft/mc-mods/roadarchitect)**
+<p align="center" style="display: flex; justify-content: center; margin: 6px;">
+    <a href="https://modrinth.com/mod/roadarchitect">
+        <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/available/modrinth_vector.svg" alt="Available on Modrinth">
+    </a>
+    <a href="https://www.curseforge.com/minecraft/mc-mods/roadarchitect">
+        <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/available/curseforge_vector.svg" alt="Available on Curseforge">
+    </a>
+</p>
 3. Place the `.jar` file in your `mods` folder
 
 ---
