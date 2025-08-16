@@ -31,6 +31,7 @@ public class RoadArchitectClientFabric implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
 
+        // TODO: Переделать под использование common + дефольный рендеринг через Fabric API
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof LevelLoadingScreen vanilla) {
                 client.execute(() -> client.setScreen(new MyLevelLoadingScreen(vanilla)));
