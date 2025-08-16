@@ -41,23 +41,22 @@ sourceSets {
     }
 }
 
-loom {
-    runs {
-        // Конфигурация раннера датагена для NeoForge 1.21–1.21.1
-        data {
-            data() // включить режим датагена
-            // Аргументы такие же, как в оф. доке NeoForge
-            programArgs "--mod", "roadarchitect", "--output", generatedResources.absolutePath
-        }
-    }
-}
+//loom {
+//    runs {
+//        // Конфигурация раннера датагена для NeoForge 1.21–1.21.1
+//        data {
+//            data() // включить режим датагена
+//            // Аргументы такие же, как в оф. доке NeoForge
+//            programArgs "--mod", "roadarchitect", "--output", generatedResources.absolutePath
+//        }
+//    }
+//}
 
 dependencies {
     neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
 
     // Architectury API. This is optional, and you can comment it out if you don't need it.
     // modImplementation "dev.architectury:architectury-neoforge:$rootProject.architectury_api_version"
-
 
     common(project(path: ':modules:common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':modules:common', configuration: 'transformProductionNeoForge')

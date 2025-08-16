@@ -1,0 +1,19 @@
+{
+  "category.roadarchitect": "Straßenarchitekt",
+  "key.roadarchitect.debug": "Straßengraph-Debug",
+  "roadarchitect.stage.complete": "Abgeschlossen",
+  "roadarchitect.stage.intialisation": "Initialisierung",
+  "roadarchitect.stage.pathfinding": "Wegfindung",
+  "roadarchitect.stage.postprocess": "Nachbearbeitung",
+  "roadarchitect.stage.scanning": "Strukturen scannen",
+  "text.config.roadarchitect.option.chunkGenerateScanRadius": "Scanradius bei Chunk-Generierung",
+  "text.config.roadarchitect.option.chunkGenerateScanRadius.tooltip": "Radius in Chunks, der beim Generieren neuer Chunks durchsucht wird.",
+  "text.config.roadarchitect.option.initScanRadius": "Anfänglicher Scanradius",
+  "text.config.roadarchitect.option.initScanRadius.tooltip": "Radius in Blöcken zum Suchen nach Strukturen beim ersten Laden der Welt.",
+  "text.config.roadarchitect.option.maxConnectionDistance": "Maximale Verbindungsdistanz",
+  "text.config.roadarchitect.option.maxConnectionDistance.tooltip": "Maximaler Abstand in Blöcken zwischen zwei Strukturen, die verbunden werden.",
+  "text.config.roadarchitect.option.pipelineIntervalSeconds": "Pipeline-Intervall (Sekunden)",
+  "text.config.roadarchitect.option.pipelineIntervalSeconds.tooltip": "Verzögerung in Sekunden zwischen Pipeline-Durchläufen.",
+  "text.config.roadarchitect.option.structureSelectors": "Strukturauswahlen",
+  "text.config.roadarchitect.option.structureSelectors.tooltip": "Liste von Strukturauswahlen, die Straßen verbinden."
+}

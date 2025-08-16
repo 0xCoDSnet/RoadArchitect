@@ -14,23 +14,31 @@ public final class RoadArchitectDataGenerator {
     private RoadArchitectDataGenerator() {}
 
     public static void gatherData(GatherDataEvent event) {
-        RegistryBuilder builder = new RegistryBuilder();
-        RACommonDatagen.buildRegistries(builder);
-        event.createDatapackRegistryObjects(builder);
 
-        DataGenerator generator = event.getGenerator();
-        DataOutput output = generator.getPackOutput();
-        CompletableFuture<WrapperLookup> lookup = event.getLookupProvider();
-        ExistingFileHelper helper = event.getExistingFileHelper();
+        // Disabled on Yarn: NeoForge’s datagen uses reflection on vanilla fields
+        // and crashes under Yarn mappings (see Loom/NeoForge issues).
+        // Use manual JSON files instead.
+        event.getGenerator().getPackOutput(); // no-op to keep class referenced
 
-        generator.addProvider(event.includeServer(), new RoadWorldgenProvider(output, lookup));
-        generator.addProvider(event.includeServer(), new RoadBiomeModifierProvider(output, lookup, helper));
 
-        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "en_us"));
-        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "ru_ru"));
-        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "es_es"));
-        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "fr_fr"));
-        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "de_de"));
-        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "zh_cn"));
+//        RegistryBuilder builder = new RegistryBuilder();
+//        RACommonDatagen.buildRegistries(builder);
+//        event.createDatapackRegistryObjects(builder);
+//
+//        DataGenerator generator = event.getGenerator();
+//        DataOutput output = generator.getPackOutput();
+//        CompletableFuture<WrapperLookup> lookup = event.getLookupProvider();
+//        ExistingFileHelper helper = event.getExistingFileHelper();
+//
+//        generator.addProvider(event.includeServer(), new RoadWorldgenProvider(output, lookup));
+//        generator.addProvider(event.includeServer(), new RoadBiomeModifierProvider(output, lookup, helper));
+//
+//        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "en_us"));
+//        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "ru_ru"));
+//        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "es_es"));
+//        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "fr_fr"));
+//        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "de_de"));
+//        generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "zh_cn"));
+
     }
 }

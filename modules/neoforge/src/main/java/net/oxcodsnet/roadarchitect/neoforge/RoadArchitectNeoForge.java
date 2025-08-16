@@ -17,7 +17,7 @@ public final class RoadArchitectNeoForge {
 
     public RoadArchitectNeoForge(IEventBus modBus) {
         modBus.addListener(RoadFeatureRegistryNeoForge::register); // v
-        modBus.addListener(RoadArchitectDataGenerator::gatherData); // v
+        // modBus.addListener(RoadArchitectDataGenerator::gatherData); // Disabled: NeoForge datagen breaks on Yarn mappings
 
         NeoForgeEventBridge.register(); // v
         RoadGraphStateNeoForgeEvents.register(); // v
