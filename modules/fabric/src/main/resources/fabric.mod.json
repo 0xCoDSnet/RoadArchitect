@@ -23,6 +23,9 @@
     ],
     "fabric-datagen": [
       "net.oxcodsnet.roadarchitect.fabric.datagen.RoadArchitectDataGenerator"
+    ],
+    "modmenu": [
+      "net.oxcodsnet.roadarchitect.fabric.config.RAConfigModMenu"
     ]
   },
   "depends": {
@@ -30,7 +33,8 @@
     "minecraft": "~${minecraft_version}",
     "java": ">=21",
     "fabric-api": "*",
-    "owo-lib": "${owo_version}"
+    "owo-lib": "${owo_version}",
+    "cloth-config2": ">=${cloth_config_version}"
   },
   "suggests": {
     "modmenu": "${modmenu_version}"

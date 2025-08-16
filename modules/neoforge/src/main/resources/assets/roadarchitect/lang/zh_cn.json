@@ -16,4 +16,15 @@
   "text.config.roadarchitect.option.pipelineIntervalSeconds.tooltip": "每次管线运行之间的秒数。",
   "text.config.roadarchitect.option.structureSelectors": "结构选择器",
   "text.config.roadarchitect.option.structureSelectors.tooltip": "将被道路连接的结构选择器列表。"
+  ,"text.autoconfig.roadarchitect.title": "Road Architect 配置"
+  ,"text.autoconfig.roadarchitect.option.chunkGenerateScanRadius": "区块生成扫描半径"
+  ,"text.autoconfig.roadarchitect.option.chunkGenerateScanRadius.tooltip": "在新生成区块时扫描的区块半径。"
+  ,"text.autoconfig.roadarchitect.option.initScanRadius": "初始扫描半径"
+  ,"text.autoconfig.roadarchitect.option.initScanRadius.tooltip": "在世界首次加载时扫描结构的方块半径。"
+  ,"text.autoconfig.roadarchitect.option.maxConnectionDistance": "最大连接距离"
+  ,"text.autoconfig.roadarchitect.option.maxConnectionDistance.tooltip": "两结构间允许连接的最大方块距离。"
+  ,"text.autoconfig.roadarchitect.option.pipelineIntervalSeconds": "管线间隔（秒）"
+  ,"text.autoconfig.roadarchitect.option.pipelineIntervalSeconds.tooltip": "每次管线运行之间的秒数。"
+  ,"text.autoconfig.roadarchitect.option.structureSelectors": "结构选择器"
+  ,"text.autoconfig.roadarchitect.option.structureSelectors.tooltip": "将被道路连接的结构选择器列表。"
 }

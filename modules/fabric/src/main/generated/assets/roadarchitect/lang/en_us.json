@@ -16,4 +16,15 @@
   "text.config.roadarchitect.option.pipelineIntervalSeconds.tooltip": "Delay in seconds between pipeline runs.",
   "text.config.roadarchitect.option.structureSelectors": "Structure Selectors",
   "text.config.roadarchitect.option.structureSelectors.tooltip": "List of structure selectors that roads will connect."
+  ,"text.autoconfig.roadarchitect.title": "Road Architect Config"
+  ,"text.autoconfig.roadarchitect.option.chunkGenerateScanRadius": "Chunk Generation Scan Radius"
+  ,"text.autoconfig.roadarchitect.option.chunkGenerateScanRadius.tooltip": "Radius in chunks scanned when new chunks generate."
+  ,"text.autoconfig.roadarchitect.option.initScanRadius": "Initial Scan Radius"
+  ,"text.autoconfig.roadarchitect.option.initScanRadius.tooltip": "Radius in blocks to scan for structures when the world is first loaded."
+  ,"text.autoconfig.roadarchitect.option.maxConnectionDistance": "Max Connection Distance"
+  ,"text.autoconfig.roadarchitect.option.maxConnectionDistance.tooltip": "Maximum distance in blocks between two structures to connect them."
+  ,"text.autoconfig.roadarchitect.option.pipelineIntervalSeconds": "Pipeline Interval Seconds"
+  ,"text.autoconfig.roadarchitect.option.pipelineIntervalSeconds.tooltip": "Delay in seconds between pipeline runs."
+  ,"text.autoconfig.roadarchitect.option.structureSelectors": "Structure Selectors"
+  ,"text.autoconfig.roadarchitect.option.structureSelectors.tooltip": "List of structure selectors that roads will connect."
 }

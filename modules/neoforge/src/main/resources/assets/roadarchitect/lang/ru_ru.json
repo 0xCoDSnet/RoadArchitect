@@ -16,4 +16,15 @@
   "text.config.roadarchitect.option.pipelineIntervalSeconds.tooltip": "Задержка в секундах между запусками конвейера.",
   "text.config.roadarchitect.option.structureSelectors": "Селекторы структур",
   "text.config.roadarchitect.option.structureSelectors.tooltip": "Список селекторов структур, которые будут соединяться дорогами."
+  ,"text.autoconfig.roadarchitect.title": "Конфиг Road Architect"
+  ,"text.autoconfig.roadarchitect.option.chunkGenerateScanRadius": "Радиус сканирования при генерации чанков"
+  ,"text.autoconfig.roadarchitect.option.chunkGenerateScanRadius.tooltip": "Радиус в чанках, который сканируется при генерации новых чанков."
+  ,"text.autoconfig.roadarchitect.option.initScanRadius": "Начальный радиус сканирования"
+  ,"text.autoconfig.roadarchitect.option.initScanRadius.tooltip": "Радиус в блоках для поиска структур при первом запуске мира."
+  ,"text.autoconfig.roadarchitect.option.maxConnectionDistance": "Максимальная дистанция соединения"
+  ,"text.autoconfig.roadarchitect.option.maxConnectionDistance.tooltip": "Максимальное расстояние в блоках между двумя структурами для соединения дорогой."
+  ,"text.autoconfig.roadarchitect.option.pipelineIntervalSeconds": "Интервал конвейера (сек)"
+  ,"text.autoconfig.roadarchitect.option.pipelineIntervalSeconds.tooltip": "Задержка в секундах между запусками конвейера."
+  ,"text.autoconfig.roadarchitect.option.structureSelectors": "Селекторы структур"
+  ,"text.autoconfig.roadarchitect.option.structureSelectors.tooltip": "Список селекторов структур, которые будут соединяться дорогами."
 }

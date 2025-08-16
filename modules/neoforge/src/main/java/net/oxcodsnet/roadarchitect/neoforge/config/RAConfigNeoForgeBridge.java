@@ -1,10 +1,8 @@
-package net.oxcodsnet.roadarchitect.fabric.config;
+package net.oxcodsnet.roadarchitect.neoforge.config;
 
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.ActionResult;
 import net.oxcodsnet.roadarchitect.config.RAConfig;
 import net.oxcodsnet.roadarchitect.config.RAConfigHolder;
 import net.oxcodsnet.roadarchitect.config.RoadArchitectConfigData;
@@ -13,13 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Bridges Cloth Config with the common {@link RAConfigHolder}.
+ * Bridges Cloth Config with the common {@link RAConfigHolder} on NeoForge.
  */
-public final class RAConfigFabricBridge {
+public final class RAConfigNeoForgeBridge {
     private static final Logger LOG = LoggerFactory.getLogger("RoadArchitect/ConfigBridge");
     private static ConfigHolder<RoadArchitectConfigData> holder;
 
-    private RAConfigFabricBridge() {}
+    private RAConfigNeoForgeBridge() {}
 
     public static void bootstrap() {
         holder = AutoConfig.register(RoadArchitectConfigData.class, GsonConfigSerializer::new);
@@ -49,17 +47,7 @@ public final class RAConfigFabricBridge {
                 return holder.getConfig().structureSelectors;
             }
         });
-
-        holder.registerSaveListener((h, cfg) -> {
-            RoadPipelineController.refreshStructureSelectorCache();
-            LOG.info("[RoadArchitect] config reloaded");
-            return ActionResult.PASS;
-        });
-
+        RoadPipelineController.refreshStructureSelectorCache();
         LOG.info("[RoadArchitect] cloth-config bridge initialized");
-    }
-
-    public static Screen createScreen(Screen parent) {
-        return AutoConfig.getConfigScreen(RoadArchitectConfigData.class, parent).get();
     }
 }

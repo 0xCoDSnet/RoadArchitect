@@ -11,7 +11,7 @@ authors = "${mod_authors}"
 description = '''
 ${mod_description}
 '''
-#logoFile = ""
+logoFile = "roadarchitect/textures/logo.png"
 
 [[dependencies.roadarchitect]]
 modId = "neoforge"
@@ -24,6 +24,13 @@ side = "BOTH"
 modId = "minecraft"
 type = "required"
 versionRange = "[1.21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.roadarchitect]]
+modId = "cloth_config"
+type = "required"
+versionRange = "[${cloth_config_version},)"
 ordering = "NONE"
 side = "BOTH"
 

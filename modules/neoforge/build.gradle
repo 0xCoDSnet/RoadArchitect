@@ -57,6 +57,8 @@ dependencies {
     // Architectury API. This is optional, and you can comment it out if you don't need it.
     // modImplementation "dev.architectury:architectury-neoforge:$rootProject.architectury_api_version"
 
+    implementation "me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}"
+
     common(project(path: ':modules:common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':modules:common', configuration: 'transformProductionNeoForge')
 }
@@ -73,6 +75,7 @@ processResources {
             mod_license          : rootProject.findProperty('mod_license'),
 
             minecraft_version    : rootProject.findProperty('minecraft_version'),
+            cloth_config_version : rootProject.findProperty('cloth_config_version'),
     ]
     inputs.properties(props)
 

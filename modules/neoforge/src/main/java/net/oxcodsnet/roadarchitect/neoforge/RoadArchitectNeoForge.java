@@ -8,6 +8,7 @@ import net.oxcodsnet.roadarchitect.neoforge.events.NeoForgeEventBridge;
 import net.oxcodsnet.roadarchitect.neoforge.events.RoadFeatureRegistryNeoForge;
 import net.oxcodsnet.roadarchitect.neoforge.events.RoadGraphStateNeoForgeEvents;
 import net.oxcodsnet.roadarchitect.neoforge.events.RoadPipelineNeoForgeEvents;
+import net.oxcodsnet.roadarchitect.neoforge.config.RAConfigNeoForgeBridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ public final class RoadArchitectNeoForge {
         RoadGraphStateNeoForgeEvents.register(); // v
         RoadPipelineNeoForgeEvents.register(); // v
 
+        RAConfigNeoForgeBridge.bootstrap();
         RoadArchitect.init();
         LOGGER.info("Initialized Road Architect on NeoForge");
     }

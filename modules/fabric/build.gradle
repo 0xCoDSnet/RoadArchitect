@@ -48,8 +48,9 @@ dependencies {
     // modImplementation "dev.architectury:architectury-fabric:$rootProject.architectury_api_version"
 
     modImplementation "io.wispforest:owo-lib:${rootProject.owo_version}"
-    annotationProcessor "io.wispforest:owo-lib:${rootProject.owo_version}"
     include "io.wispforest:owo-sentinel:${rootProject.owo_version}"
+
+    modImplementation "me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}"
 
     modCompileOnly "com.terraformersmc:modmenu:${rootProject.modmenu_version}"
     modRuntimeOnly "com.terraformersmc:modmenu:${rootProject.modmenu_version}"
@@ -73,6 +74,7 @@ processResources {
             fabric_loader_version        : rootProject.findProperty('fabric_loader_version'),
             owo_version          : rootProject.findProperty('owo_version'),
             modmenu_version      : rootProject.findProperty('modmenu_version'),
+            cloth_config_version : rootProject.findProperty('cloth_config_version'),
     ]
     inputs.properties(props)
 
