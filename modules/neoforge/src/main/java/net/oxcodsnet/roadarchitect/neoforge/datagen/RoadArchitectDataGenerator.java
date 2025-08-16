@@ -6,6 +6,7 @@ import net.minecraft.registry.RegistryBuilder;
 import net.minecraft.registry.RegistryWrapper.WrapperLookup;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.oxcodsnet.roadarchitect.datagen.RACommonDatagen;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -20,8 +21,10 @@ public final class RoadArchitectDataGenerator {
         DataGenerator generator = event.getGenerator();
         DataOutput output = generator.getPackOutput();
         CompletableFuture<WrapperLookup> lookup = event.getLookupProvider();
+        ExistingFileHelper helper = event.getExistingFileHelper();
 
         generator.addProvider(event.includeServer(), new RoadWorldgenProvider(output, lookup));
+        generator.addProvider(event.includeServer(), new RoadBiomeModifierProvider(output, lookup, helper));
 
         generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "en_us"));
         generator.addProvider(event.includeClient(), new RoadLanguageProvider(output, "ru_ru"));

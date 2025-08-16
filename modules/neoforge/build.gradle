@@ -31,6 +31,27 @@ repositories {
     }
 }
 
+def generatedResources = file("src/generated/resources")
+
+sourceSets {
+    main {
+        resources {
+            srcDir "src/generated/resources"
+        }
+    }
+}
+
+loom {
+    runs {
+        // Конфигурация раннера датагена для NeoForge 1.21–1.21.1
+        data {
+            data() // включить режим датагена
+            // Аргументы такие же, как в оф. доке NeoForge
+            programArgs "--mod", "roadarchitect", "--output", generatedResources.absolutePath
+        }
+    }
+}
+
 dependencies {
     neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
 
