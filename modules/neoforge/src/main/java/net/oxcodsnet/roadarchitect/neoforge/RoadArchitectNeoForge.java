@@ -16,12 +16,12 @@ public final class RoadArchitectNeoForge {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
 
     public RoadArchitectNeoForge(IEventBus modBus) {
-        modBus.addListener(RoadFeatureRegistryNeoForge::register);
-        modBus.addListener(RoadArchitectDataGenerator::gatherData);
+        modBus.addListener(RoadFeatureRegistryNeoForge::register); // v
+        modBus.addListener(RoadArchitectDataGenerator::gatherData); // v
 
         NeoForgeEventBridge.register(); // v
         RoadGraphStateNeoForgeEvents.register(); // v
-        RoadPipelineNeoForgeEvents.register();
+        RoadPipelineNeoForgeEvents.register(); // v
 
         RoadArchitect.init();
         LOGGER.info("Initialized Road Architect on NeoForge");
