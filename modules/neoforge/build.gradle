@@ -31,16 +31,15 @@ repositories {
     }
 }
 
-def generatedResources = file("src/generated/resources")
-
-sourceSets {
-    main {
-        resources {
-            srcDir "src/generated/resources"
-        }
-    }
-}
-
+//def generatedResources = file("src/generated/resources")
+//
+//sourceSets {
+//    main {
+//        resources {
+//            srcDir "src/generated/resources"
+//        }
+//    }
+//}
 //loom {
 //    runs {
 //        // Конфигурация раннера датагена для NeoForge 1.21–1.21.1
@@ -74,7 +73,6 @@ processResources {
             mod_license          : rootProject.findProperty('mod_license'),
 
             minecraft_version    : rootProject.findProperty('minecraft_version'),
-            owo_version          : rootProject.findProperty('owo_version'),
     ]
     inputs.properties(props)
 
