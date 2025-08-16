@@ -1,6 +1,6 @@
 modLoader = "javafml"
 loaderVersion = "[4,)"
-#issueTrackerURL = ""
+issueTrackerURL="https://github.com/0xCoDSnet/RoadArchitect/issues"
 license = "${mod_license}"
 
 [[mods]]
@@ -11,7 +11,9 @@ authors = "${mod_authors}"
 description = '''
 ${mod_description}
 '''
-logoFile = "roadarchitect/textures/logo.png"
+logoFile = "assets/roadarchitect/icon.png"
+displayURL="https://github.com/0xCoDSnet/RoadArchitect"
+
 
 [[dependencies.roadarchitect]]
 modId = "neoforge"
@@ -33,6 +35,17 @@ type = "required"
 versionRange = "[${cloth_config_version},)"
 ordering = "NONE"
 side = "BOTH"
+
+# Optional catalogue integration
+[[dependencies.roadarchitect]]
+modId = "catalogue"
+type = "optional"
+versionRange = "*"
+ordering = "NONE"
+side = "CLIENT"
+
+[modproperties.roadarchitect]
+catalogueImageIcon = "assets/roadarchitect/icon.png"
 
 #[[dependencies.roadarchitect]]
 #modId = "architectury"

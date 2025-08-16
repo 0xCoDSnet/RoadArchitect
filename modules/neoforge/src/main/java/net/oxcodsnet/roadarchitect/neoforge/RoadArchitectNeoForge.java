@@ -1,16 +1,18 @@
 package net.oxcodsnet.roadarchitect.neoforge;
 
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
-import net.oxcodsnet.roadarchitect.neoforge.datagen.RoadArchitectDataGenerator;
+import net.oxcodsnet.roadarchitect.neoforge.config.RAConfigNeoForgeBridge;
 import net.oxcodsnet.roadarchitect.neoforge.events.NeoForgeEventBridge;
 import net.oxcodsnet.roadarchitect.neoforge.events.RoadFeatureRegistryNeoForge;
 import net.oxcodsnet.roadarchitect.neoforge.events.RoadGraphStateNeoForgeEvents;
 import net.oxcodsnet.roadarchitect.neoforge.events.RoadPipelineNeoForgeEvents;
-import net.oxcodsnet.roadarchitect.neoforge.config.RAConfigNeoForgeBridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Proxy;
 
 @Mod(RoadArchitect.MOD_ID)
 public final class RoadArchitectNeoForge {
@@ -25,6 +27,15 @@ public final class RoadArchitectNeoForge {
         RoadPipelineNeoForgeEvents.register(); // v
 
         RAConfigNeoForgeBridge.bootstrap();
+        try {
+            Class<?> factoryClass = Class.forName("net.neoforged.neoforge.client.gui.IConfigScreenFactory");
+            Object factory = Proxy.newProxyInstance(factoryClass.getClassLoader(), new Class[]{factoryClass},
+                    (proxy, method, args) -> RAConfigNeoForgeBridge.createScreen(args[1]));
+            ModLoadingContext.get().registerExtensionPoint((Class) factoryClass,
+                    (java.util.function.Supplier) () -> factory);
+        } catch (ReflectiveOperationException e) {
+            LOGGER.warn("Failed to register config screen", e);
+        }
         RoadArchitect.init();
         LOGGER.info("Initialized Road Architect on NeoForge");
     }

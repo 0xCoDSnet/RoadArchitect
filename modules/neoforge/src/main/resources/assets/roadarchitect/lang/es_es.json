@@ -6,25 +6,25 @@
   "roadarchitect.stage.pathfinding": "Búsqueda de rutas",
   "roadarchitect.stage.postprocess": "Postprocesamiento",
   "roadarchitect.stage.scanning": "Escaneando estructuras",
+  "text.autoconfig.roadarchitect.option.chunkGenerateScanRadius": "Radio de exploración al generar chunks",
+  "text.autoconfig.roadarchitect.option.chunkGenerateScanRadius.@Tooltip": "Radio en chunks que se examina al generar nuevos chunks.",
+  "text.autoconfig.roadarchitect.option.initScanRadius": "Radio de exploración inicial",
+  "text.autoconfig.roadarchitect.option.initScanRadius.@Tooltip": "Radio en bloques para buscar estructuras cuando se carga el mundo por primera vez.",
+  "text.autoconfig.roadarchitect.option.maxConnectionDistance": "Distancia máxima de conexión",
+  "text.autoconfig.roadarchitect.option.maxConnectionDistance.@Tooltip": "Distancia máxima en bloques entre dos estructuras para conectarlas.",
+  "text.autoconfig.roadarchitect.option.pipelineIntervalSeconds": "Intervalo del pipeline (segundos)",
+  "text.autoconfig.roadarchitect.option.pipelineIntervalSeconds.@Tooltip": "Retraso en segundos entre ejecuciones del pipeline.",
+  "text.autoconfig.roadarchitect.option.structureSelectors": "Selectores de estructuras",
+  "text.autoconfig.roadarchitect.option.structureSelectors.@Tooltip": "Lista de selectores de estructuras que se conectarán con carreteras.",
+  "text.autoconfig.roadarchitect.title": "Configuración de Road Architect",
   "text.config.roadarchitect.option.chunkGenerateScanRadius": "Radio de exploración al generar chunks",
-  "text.config.roadarchitect.option.chunkGenerateScanRadius.tooltip": "Radio en chunks que se examina al generar nuevos chunks.",
+  "text.config.roadarchitect.option.chunkGenerateScanRadius.@Tooltip": "Radio en chunks que se examina al generar nuevos chunks.",
   "text.config.roadarchitect.option.initScanRadius": "Radio de exploración inicial",
-  "text.config.roadarchitect.option.initScanRadius.tooltip": "Radio en bloques para buscar estructuras cuando se carga el mundo por primera vez.",
+  "text.config.roadarchitect.option.initScanRadius.@Tooltip": "Radio en bloques para buscar estructuras cuando se carga el mundo por primera vez.",
   "text.config.roadarchitect.option.maxConnectionDistance": "Distancia máxima de conexión",
-  "text.config.roadarchitect.option.maxConnectionDistance.tooltip": "Distancia máxima en bloques entre dos estructuras para conectarlas.",
+  "text.config.roadarchitect.option.maxConnectionDistance.@Tooltip": "Distancia máxima en bloques entre dos estructuras para conectarlas.",
   "text.config.roadarchitect.option.pipelineIntervalSeconds": "Intervalo del pipeline (segundos)",
-  "text.config.roadarchitect.option.pipelineIntervalSeconds.tooltip": "Retraso en segundos entre ejecuciones del pipeline.",
+  "text.config.roadarchitect.option.pipelineIntervalSeconds.@Tooltip": "Retraso en segundos entre ejecuciones del pipeline.",
   "text.config.roadarchitect.option.structureSelectors": "Selectores de estructuras",
-  "text.config.roadarchitect.option.structureSelectors.tooltip": "Lista de selectores de estructuras que se conectarán con carreteras."
-  ,"text.autoconfig.roadarchitect.title": "Configuración de Road Architect"
-  ,"text.autoconfig.roadarchitect.option.chunkGenerateScanRadius": "Radio de exploración al generar chunks"
-  ,"text.autoconfig.roadarchitect.option.chunkGenerateScanRadius.tooltip": "Radio en chunks que se examina al generar nuevos chunks."
-  ,"text.autoconfig.roadarchitect.option.initScanRadius": "Radio de exploración inicial"
-  ,"text.autoconfig.roadarchitect.option.initScanRadius.tooltip": "Radio en bloques para buscar estructuras cuando se carga el mundo por primera vez."
-  ,"text.autoconfig.roadarchitect.option.maxConnectionDistance": "Distancia máxima de conexión"
-  ,"text.autoconfig.roadarchitect.option.maxConnectionDistance.tooltip": "Distancia máxima en bloques entre dos estructuras para conectarlas."
-  ,"text.autoconfig.roadarchitect.option.pipelineIntervalSeconds": "Intervalo del pipeline (segundos)"
-  ,"text.autoconfig.roadarchitect.option.pipelineIntervalSeconds.tooltip": "Retraso en segundos entre ejecuciones del pipeline."
-  ,"text.autoconfig.roadarchitect.option.structureSelectors": "Selectores de estructuras"
-  ,"text.autoconfig.roadarchitect.option.structureSelectors.tooltip": "Lista de selectores de estructuras que se conectarán con carreteras."
+  "text.config.roadarchitect.option.structureSelectors.@Tooltip": "Lista de selectores de estructuras que se conectarán con carreteras."
 }

@@ -6,25 +6,25 @@
   "roadarchitect.stage.pathfinding": "Recherche de chemin",
   "roadarchitect.stage.postprocess": "Post-traitement",
   "roadarchitect.stage.scanning": "Analyse des structures",
+  "text.autoconfig.roadarchitect.option.chunkGenerateScanRadius": "Rayon de balayage de génération de chunks",
+  "text.autoconfig.roadarchitect.option.chunkGenerateScanRadius.@Tooltip": "Rayon en chunks analysé lors de la génération de nouveaux chunks.",
+  "text.autoconfig.roadarchitect.option.initScanRadius": "Rayon de balayage initial",
+  "text.autoconfig.roadarchitect.option.initScanRadius.@Tooltip": "Rayon en blocs pour rechercher des structures lors du premier chargement du monde.",
+  "text.autoconfig.roadarchitect.option.maxConnectionDistance": "Distance maximale de connexion",
+  "text.autoconfig.roadarchitect.option.maxConnectionDistance.@Tooltip": "Distance maximale en blocs entre deux structures à relier.",
+  "text.autoconfig.roadarchitect.option.pipelineIntervalSeconds": "Intervalle du pipeline (secondes)",
+  "text.autoconfig.roadarchitect.option.pipelineIntervalSeconds.@Tooltip": "Délai en secondes entre les exécutions du pipeline.",
+  "text.autoconfig.roadarchitect.option.structureSelectors": "Sélecteurs de structures",
+  "text.autoconfig.roadarchitect.option.structureSelectors.@Tooltip": "Liste des sélecteurs de structures que les routes relieront.",
+  "text.autoconfig.roadarchitect.title": "Configuration de Road Architect",
   "text.config.roadarchitect.option.chunkGenerateScanRadius": "Rayon de balayage de génération de chunks",
-  "text.config.roadarchitect.option.chunkGenerateScanRadius.tooltip": "Rayon en chunks analysé lors de la génération de nouveaux chunks.",
+  "text.config.roadarchitect.option.chunkGenerateScanRadius.@Tooltip": "Rayon en chunks analysé lors de la génération de nouveaux chunks.",
   "text.config.roadarchitect.option.initScanRadius": "Rayon de balayage initial",
-  "text.config.roadarchitect.option.initScanRadius.tooltip": "Rayon en blocs pour rechercher des structures lors du premier chargement du monde.",
+  "text.config.roadarchitect.option.initScanRadius.@Tooltip": "Rayon en blocs pour rechercher des structures lors du premier chargement du monde.",
   "text.config.roadarchitect.option.maxConnectionDistance": "Distance maximale de connexion",
-  "text.config.roadarchitect.option.maxConnectionDistance.tooltip": "Distance maximale en blocs entre deux structures à relier.",
+  "text.config.roadarchitect.option.maxConnectionDistance.@Tooltip": "Distance maximale en blocs entre deux structures à relier.",
   "text.config.roadarchitect.option.pipelineIntervalSeconds": "Intervalle du pipeline (secondes)",
-  "text.config.roadarchitect.option.pipelineIntervalSeconds.tooltip": "Délai en secondes entre les exécutions du pipeline.",
+  "text.config.roadarchitect.option.pipelineIntervalSeconds.@Tooltip": "Délai en secondes entre les exécutions du pipeline.",
   "text.config.roadarchitect.option.structureSelectors": "Sélecteurs de structures",
-  "text.config.roadarchitect.option.structureSelectors.tooltip": "Liste des sélecteurs de structures que les routes relieront."
-  ,"text.autoconfig.roadarchitect.title": "Configuration de Road Architect"
-  ,"text.autoconfig.roadarchitect.option.chunkGenerateScanRadius": "Rayon de balayage de génération de chunks"
-  ,"text.autoconfig.roadarchitect.option.chunkGenerateScanRadius.tooltip": "Rayon en chunks analysé lors de la génération de nouveaux chunks."
-  ,"text.autoconfig.roadarchitect.option.initScanRadius": "Rayon de balayage initial"
-  ,"text.autoconfig.roadarchitect.option.initScanRadius.tooltip": "Rayon en blocs pour rechercher des structures lors du premier chargement du monde."
-  ,"text.autoconfig.roadarchitect.option.maxConnectionDistance": "Distance maximale de connexion"
-  ,"text.autoconfig.roadarchitect.option.maxConnectionDistance.tooltip": "Distance maximale en blocs entre deux structures à relier."
-  ,"text.autoconfig.roadarchitect.option.pipelineIntervalSeconds": "Intervalle du pipeline (secondes)"
-  ,"text.autoconfig.roadarchitect.option.pipelineIntervalSeconds.tooltip": "Délai en secondes entre les exécutions du pipeline."
-  ,"text.autoconfig.roadarchitect.option.structureSelectors": "Sélecteurs de structures"
-  ,"text.autoconfig.roadarchitect.option.structureSelectors.tooltip": "Liste des sélecteurs de structures que les routes relieront."
+  "text.config.roadarchitect.option.structureSelectors.@Tooltip": "Liste des sélecteurs de structures que les routes relieront."
 }

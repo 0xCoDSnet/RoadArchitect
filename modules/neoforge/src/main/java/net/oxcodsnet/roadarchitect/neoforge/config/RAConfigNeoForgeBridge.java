@@ -50,4 +50,21 @@ public final class RAConfigNeoForgeBridge {
         RoadPipelineController.refreshStructureSelectorCache();
         LOG.info("[RoadArchitect] cloth-config bridge initialized");
     }
+
+    public static Object createScreen(Object parent) {
+        try {
+            Class<?> screenClass;
+            try {
+                screenClass = Class.forName("net.minecraft.client.gui.screens.Screen");
+            } catch (ClassNotFoundException ignored) {
+                screenClass = Class.forName("net.minecraft.client.gui.screen.Screen");
+            }
+            java.lang.reflect.Method method = AutoConfig.class
+                    .getMethod("getConfigScreen", Class.class, screenClass);
+            Object screen = method.invoke(null, RoadArchitectConfigData.class, parent);
+            return screen.getClass().getMethod("get").invoke(screen);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to create config screen", e);
+        }
+    }
 }
