@@ -115,14 +115,14 @@ public class RoadGraphDebugScreenVanilla extends Screen {
 
     // ---------- ввод ----------
 
-//    @Override
-//    protected void applyBlur(float delta) {
-//        // Отключаем блюр для этого экрана
-//    }
     @Override
-    protected void applyBlur(){
-
+    protected void applyBlur(DrawContext context) {
+        // Отключаем блюр для этого экрана
     }
+//    @Override
+//    protected void applyBlur(){
+//
+//    }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
