@@ -33,7 +33,6 @@
     "minecraft": "~${minecraft_version}",
     "java": ">=21",
     "fabric-api": "*",
-    "owo-lib": "${owo_version}",
     "cloth-config2": ">=${cloth_config_version}"
   },
   "suggests": {

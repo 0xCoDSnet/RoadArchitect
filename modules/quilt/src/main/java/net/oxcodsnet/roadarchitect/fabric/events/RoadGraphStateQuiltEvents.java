@@ -8,10 +8,10 @@ import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class RoadGraphStateFabricEvents {
+public final class RoadGraphStateQuiltEvents {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadGraphStateEvents");
 
-    private RoadGraphStateFabricEvents() {}
+    private RoadGraphStateQuiltEvents() {}
 
     public static void register() {
         // LOAD мира → ensure state инициализирован

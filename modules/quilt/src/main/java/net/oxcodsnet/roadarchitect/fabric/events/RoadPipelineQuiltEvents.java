@@ -12,8 +12,8 @@ import net.oxcodsnet.roadarchitect.handlers.RoadPipelineController;
  * Fabric-адаптер: подписывается на события Fabric и делегирует в common.
  * Семантика полностью соответствует прежнему register() в RoadPipelineController.
  */
-public final class RoadPipelineFabricEvents {
-    private RoadPipelineFabricEvents() {
+public final class RoadPipelineQuiltEvents {
+    private RoadPipelineQuiltEvents() {
     }
 
     public static void register() {

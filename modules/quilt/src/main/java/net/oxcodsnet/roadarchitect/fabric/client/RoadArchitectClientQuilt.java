@@ -9,7 +9,7 @@ import net.oxcodsnet.roadarchitect.fabric.client.hook.LoadingOverlayHook;
  * Клиентская сторона мода.
  * <p>Client side entry point of the mod.</p>
  */
-public class RoadArchitectClientFabric implements ClientModInitializer {
+public class RoadArchitectClientQuilt implements ClientModInitializer {
 
     private static KeyBinding debugKey;
 

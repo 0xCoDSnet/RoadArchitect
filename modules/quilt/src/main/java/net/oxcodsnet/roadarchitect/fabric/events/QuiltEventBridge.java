@@ -7,9 +7,9 @@ import net.oxcodsnet.roadarchitect.handlers.RoadGraphStateManager;
 import net.oxcodsnet.roadarchitect.handlers.RoadPostProcessor;
 import net.oxcodsnet.roadarchitect.util.CacheManager;
 
-public final class FabricEventBridge {
+public final class QuiltEventBridge {
 
-    private FabricEventBridge() {}
+    private QuiltEventBridge() {}
 
     public static void register() {
 

@@ -10,8 +10,8 @@ import net.oxcodsnet.roadarchitect.worldgen.RoadFeatureRegistry;
 /**
  * Fabric-бридж: регистрирует Feature и добавляет PlacedFeature во все биомы.
  */
-public final class RoadFeatureRegistryFabric {
-    private RoadFeatureRegistryFabric() {}
+public final class RoadFeatureRegistryQuilt {
+    private RoadFeatureRegistryQuilt() {}
 
     public static void register() {
         // 1) Регистрируем сам Feature (экземпляр) по ключу
