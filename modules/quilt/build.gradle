@@ -107,3 +107,38 @@ modrinth {
     // changelog     = rootProject.file("CHANGELOG.md").exists() ? rootProject.file("CHANGELOG.md").text : ""
     dependencies { required.project "cloth-config" }
 }
+
+// ====================== CurseForge ====================
+apply plugin: "net.darkhax.curseforgegradle"
+
+def curse_token = rootProject.ext.resolveCurseforgeToken()
+if (!curse_token) throw new GradleException("Set CURSEFORGE_TOKEN env or in .env/gradle.properties")
+
+
+def curse_project_id =
+        (findProperty("curseforge_project_fabric")
+                ?: System.getenv("CURSEFORGE_PROJECT_FABRIC")
+                ?: findProperty("curseforge_project")
+                ?: System.getenv("CURSEFORGE_PROJECT_ID")
+                ?: "1326434")
+
+tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    apiToken = curse_token
+
+    disableVersionDetection()
+
+    dependsOn remapJar
+    def mainFile = upload(curse_project_id as String, remapJar)
+
+    mainFile.displayName = "RoadArchitect v${project.version}+${rootProject.minecraft_version} [Quilt]"
+    mainFile.releaseType = "release"
+    mainFile.addModLoader("Quilt")
+    mainFile.addGameVersion("${rootProject.minecraft_version}")
+    mainFile.addJavaVersion("Java 21")
+    mainFile.addEnvironment("Client", "Server")
+
+    mainFile.changelog = rootProject.file("CHANGELOG.md");
+    mainFile.changelogType = "markdown"
+
+    mainFile.addRequirement("cloth-config")
+}
