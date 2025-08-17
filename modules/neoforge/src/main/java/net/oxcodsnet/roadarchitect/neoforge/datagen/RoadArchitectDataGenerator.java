@@ -6,7 +6,7 @@ import net.minecraft.registry.RegistryBuilder;
 import net.minecraft.registry.RegistryWrapper.WrapperLookup;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.oxcodsnet.roadarchitect.datagen.RACommonDatagen;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+//import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import java.util.concurrent.CompletableFuture;
 

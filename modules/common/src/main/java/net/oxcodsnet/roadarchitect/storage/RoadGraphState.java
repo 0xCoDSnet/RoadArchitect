@@ -6,6 +6,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateType;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.components.Node;
 import net.oxcodsnet.roadarchitect.util.GeometryUtils;
@@ -22,9 +23,13 @@ public class RoadGraphState extends PersistentState {
     private static final String EDGES_KEY = "edges";
     private static final String RADIUS_KEY = "radius";
 
-    public static final Type<RoadGraphState> TYPE = new Type<>(
-            () -> new RoadGraphState(RoadArchitect.CONFIG.maxConnectionDistance()),
-            RoadGraphState::fromNbt,
+    public static final PersistentStateType<RoadGraphState> TYPE = new PersistentStateType<>(
+            KEY,
+            ctx -> new RoadGraphState(RoadArchitect.CONFIG.maxConnectionDistance()),
+            ctx -> NbtCompound.CODEC.xmap(
+                    tag -> fromNbt(tag, ctx.world().getRegistryManager()),
+                    state -> state.writeNbt(new NbtCompound(), ctx.world().getRegistryManager())
+            ),
             DataFixTypes.SAVED_DATA_SCOREBOARD
     );
 
@@ -53,8 +58,8 @@ public class RoadGraphState extends PersistentState {
      * Получает или создает состояние графа для мира.
      * <p>Gets or creates the road graph state for the given world.</p>
      */
-    public static RoadGraphState get(ServerWorld world, double radius) {
-        return PersistentStateUtil.get(world, TYPE, KEY);
+    public static RoadGraphState get(ServerWorld world) {
+        return PersistentStateUtil.get(world, TYPE);
     }
 
     /*========== helpers ==========*/
@@ -64,9 +69,9 @@ public class RoadGraphState extends PersistentState {
      * <p>Restores the road graph state from NBT.</p>
      */
     public static RoadGraphState fromNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
-        double radius = tag.getDouble(RADIUS_KEY);
-        NodeStorage nodes = NodeStorage.fromNbt(tag.getList(NODES_KEY, NbtElement.COMPOUND_TYPE));
-        EdgeStorage edges = EdgeStorage.fromNbt(tag.getCompound(EDGES_KEY), radius);
+        double radius = tag.getDouble(RADIUS_KEY, 0.0);
+        NodeStorage nodes = NodeStorage.fromNbt(tag.getListOrEmpty(NODES_KEY));
+        EdgeStorage edges = EdgeStorage.fromNbt(tag.getCompoundOrEmpty(EDGES_KEY), radius);
         return new RoadGraphState(nodes, edges);
     }
 
@@ -148,7 +153,6 @@ public class RoadGraphState extends PersistentState {
      * Сохраняет состояние в NBT.
      * <p>Writes this state into an NBT compound.</p>
      */
-    @Override
     public NbtCompound writeNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         tag.putDouble(RADIUS_KEY, edgeStorage.radius());
         tag.put(NODES_KEY, nodeStorage.toNbt());
