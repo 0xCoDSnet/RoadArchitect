@@ -86,4 +86,24 @@ shadowJar {
 
 remapJar {
     inputFile.set shadowJar.archiveFile
+    // roadarchitect-{version}-{for_loader}+{mc_version}
+    archiveFileName.set("roadarchitect-${project.version}-fabric+${rootProject.minecraft_version}.jar")
+}
+
+// =========== Modrith =========
+apply plugin: "com.modrinth.minotaur"
+def modrinth_token = rootProject.ext.resolveModrinthToken()
+if (!modrinth_token) throw new GradleException("Set MODRINTH_TOKEN env or in .env")
+
+modrinth {
+    token = modrinth_token
+    projectId = "dLRvLyY3"
+    versionNumber = "${project.version}-fabric"
+    versionName   = "RoadArchitect v${project.version}+${rootProject.minecraft_version} [Fabric]"
+    versionType   = "release"                 // или "beta"/"alpha"
+    gameVersions  = [ rootProject.minecraft_version ]
+    loaders       = [ "fabric" ]
+    uploadFile    = remapJar                   // из Loom
+    // changelog     = rootProject.file("CHANGELOG.md").exists() ? rootProject.file("CHANGELOG.md").text : ""
+    dependencies { required.project "cloth-config" }
 }
