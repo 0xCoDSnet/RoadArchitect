@@ -3,31 +3,45 @@
 </p>
 
 <p align="center">
-  <img alt="Modrinth Downloads" src="https://img.shields.io/modrinth/dt/dLRvLyY3?style=flat&logo=modrinth&link=https%3A%2F%2Fmodrinth.com%2Fmod%2Froadarchitect">
-  <img alt="CurseForge Downloads" src="https://img.shields.io/curseforge/dt/1326434?style=flat&logo=curseforge&link=https%3A%2F%2Fwww.curseforge.com%2Fminecraft%2Fmc-mods%2Froadarchitect">
+  <a href="https://modrinth.com/mod/roadarchitect">
+    <img alt="Modrinth Downloads" src="https://img.shields.io/modrinth/dt/dLRvLyY3?style=flat&logo=modrinth">
+  </a>
+  <a href="https://www.curseforge.com/minecraft/mc-mods/roadarchitect">
+    <img alt="CurseForge Downloads" src="https://img.shields.io/curseforge/dt/1326434?style=flat&logo=curseforge">
+  </a>
 </p>
 
-<p align="center" style="display: flex; justify-content: center; margin: 6px;">
+<p align="center" style="display:flex;justify-content:center;gap:8px;margin:6px 0;">
     <a href="https://modrinth.com/mod/roadarchitect/versions?l=fabric">
-        <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/fabric_vector.svg" alt="Available on Fabric">
+        <img src="https://cdn.modrinth.com/data/cached_images/d8a8d9852fb6e55292d6f5ecc1842fd7bc8c3c9e.webp" alt="Available on Fabric">
     </a>
     <a href="https://modrinth.com/mod/roadarchitect/versions?l=quilt">
-        <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/quilt_vector.svg" alt="Available on Quilt">
+        <img src="https://cdn.modrinth.com/data/cached_images/77e67c2eae40b638430d5959e9a0d0ef60f76f41.webp" alt="Available on Quilt">
     </a>
+   <a href="https://modrinth.com/mod/roadarchitect/versions?l=neoforge">
+    <img src="https://cdn.modrinth.com/data/cached_images/ecbd0303728027761730760800f9354e14f38d31.webp" alt="Available on NeoForge">
+  </a>
 </p>
----
-#  RoadArchitect
 
-**RoadArchitect** is a **Fabric** / **Quilt** mod for **Minecraft 1.21.1-1.21.8** that automatically scans the world for villages and other structures, connecting them with roads to form a persistent travel network.  
+---
+
+# RoadArchitect
+
+**RoadArchitect** is a **Fabric / Quilt / NeoForge** mod for **Minecraft 1.21.1–1.21.8** that automatically scans the world for villages and other structures and connects them with roads to form a persistent travel network.  
 Roads adapt their style to the biome, and the network is saved between game sessions.
 
-## Features
+> **Current version:** `v1.2.0`
 
-- 🏘 **Automatic detection** of villages and other structures
-- 🎨 **Biome-oriented road styles** for better immersion
-- 🧭 **Smart pathfinding** using A* with terrain caching
-- 💾 **Persistent network** — roads remain between sessions
-- 🔄 **Fully automated**, minimal configuration required
+## ✨ Features
+
+- 🏘 **Automatic detection** of villages and other structures  
+- 🎨 **Biome-aware road styles** for better immersion  
+- 🧭 **Smart pathfinding** using A* with terrain caching  
+- 💾 **Persistent network** — roads remain between sessions  
+- 🔄 **Fully automated**, minimal setup  
+- 🧰 **Configurable** via **Cloth Config** *(required on Fabric / Quilt / NeoForge)*  
+- 🌐 **Localization** included: English, Russian, Spanish, French, German, Chinese  
+- 🛰 **Visual road-graph debugger** with pan/zoom, tooltips, and a color legend; in singleplayer, clicking a node teleports to it (default hotkey **H**)
 
 ---
 
@@ -47,9 +61,19 @@ Roads adapt their style to the biome, and the network is saved between game sess
   <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/827177b77f8dfdbdd7d066a0d5f810645b51f172.webp" width="512" height="512">
 </p>
 
+### Cherry grove
+<p align="left">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/45a4421507316e4a5c8a945f7689804dd054821a.webp" width="512" height="512">
+</p>
+
 ### Taiga
 <p align="left">
   <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/138dc531317fc291c44471533066d6d997d53af8.webp" width="512" height="512" alt="RoadArchitect icon">
+</p>
+
+### Swamp
+<p align="left">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/d794b96b28bf84884902ca2e05504617ee1f9800.webp" width="512" height="512">
 </p>
 
 ### Old growth spruce taiga
@@ -68,49 +92,80 @@ Roads adapt their style to the biome, and the network is saved between game sess
 </p>
 
 ---
-## 📥 Installation (for **Minecraft 1.21.1**)
-0. Install **[Fabric Loader](https://fabricmc.net/use/installer/)** `0.16.14`
-1. Install **[owo-lib](https://modrinth.com/mod/owo-lib)** `0.12.15.4+1.21`
-2. Download the mod:
-<p align="center" style="display: flex; justify-content: center; margin: 6px;">
-    <a href="https://modrinth.com/mod/roadarchitect">
-        <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/available/modrinth_vector.svg" alt="Available on Modrinth">
-    </a>
-    <a href="https://www.curseforge.com/minecraft/mc-mods/roadarchitect">
-        <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/available/curseforge_vector.svg" alt="Available on Curseforge">
-    </a>
-</p>
-3. Place the `.jar` file in your `mods` folder
+
+## 📥 Installation (Minecraft 1.21.x)
+
+**Loaders:** Fabric / Quilt / NeoForge
+
+1. Install a **loader** compatible with your game:
+   - **Fabric**
+   - **Quilt**
+   - **NeoForge**
+2. **Required dependency (all loaders):**  
+   - **Cloth Config** *(mandatory on Fabric / Quilt / NeoForge)*
+3. Download the mod:
+   <p align="center" style="display:flex;justify-content:center;gap:8px;margin:6px 0;">
+     <a href="https://modrinth.com/mod/roadarchitect">
+       <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/available/modrinth_vector.svg" alt="Available on Modrinth">
+     </a>
+     <a href="https://www.curseforge.com/minecraft/mc-mods/roadarchitect">
+       <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/available/curseforge_vector.svg" alt="Available on CurseForge">
+     </a>
+   </p>
+4. Place the `.jar` file in your `mods` folder.
+5. *(Optional)*
+   - **Mod Menu** (Fabric/Quilt) for quick access to settings.
+   - **Catalogue** by MrCrayfish (NeoForge)
+     > Settings are also available from the mods list
+     
+> **Note:** Starting with `v1.2.0`, **owo-lib is not required**.
+---
+
+## 🕹 Usage
+
+- The mod automatically scans the world and builds roads between detected structures.  
+- Open the **road-graph debug** window with **H** (rebindable in Controls).  
+- In **singleplayer**, clicking a node in the debug view teleports you to it.
 
 ---
 
-## 📜 Recent changes
+## 🗒️ Recent changes
 
 <details>
-<summary>v1.2.0 — <em>Vanilla loading, convenient settings, visual debug</em></summary>
-### ✨ Highlights
-- 🪄 **Progress screen**: dropped owo-lib and switched to vanilla rendering, showing the current pipeline stage (Fabric/Quilt and NeoForge).
-- 🧭 **Road-graph debug screen**: pan/zoom, tooltips, and a color legend; in singleplayer, clicking a node teleports to it. Opens with H.
-- 🧰 **Settings**:
-  - Fabric/Quilt: Cloth Config with ModMenu support.
-  - NeoForge: configurable from the mods list; supports Catalogue by MrCrayfish.
+<summary><strong>v1.2.0</strong> — <em>Vanilla loading, convenient settings, visual debug</em></summary>
+
+### Highlights
+- 🪄 **Progress screen**: dropped `owo-lib` and switched to vanilla rendering (Fabric/Quilt and NeoForge), showing the current pipeline stage.
+- 🧭 **Road-graph debug screen**: pan/zoom, tooltips, and a color legend; in singleplayer, clicking a node teleports to it. Opens with **H**.
+- 🧰 **Settings**: **Cloth Config** on all loaders; **Mod Menu** support (Fabric/Quilt); **Catalogue** support (NeoForge).
 - 🌐 **Localizations**: English, Russian, Spanish, French, German, Chinese.
-    
-**⚠ Compatibility:** No breaking changes; existing worlds remain compatible.
+
+**Compatibility:** No breaking changes; existing worlds remain compatible.
 </details>
 
 <details>
-<summary>v1.1.0 — <em>Smoother paths, smarter junctions, cleaner buoys</em></summary>
+<summary><strong>v1.1.0</strong> — <em>Smoother paths, smarter junctions, cleaner buoys</em></summary>
 
-### ✨ Highlights
-- ⚙️ Improved pathfinding (A* / ARA*): adjusted heuristic, removed early termination, expanded profiling.
-- 🏗️ Post-processing: added trimming of roads near nodes, improved junction merging and stabilization.
-- 🌊 Buoys: now placed only on “clean” water, spaced by real distance, with increased interval (12 → 18).
+### Highlights
+- ⚙️ Pathfinding (A* / ARA*): adjusted heuristic, removed early termination, expanded profiling.
+- 🏗️ Post-processing: trimming roads near nodes, improved junction merging and stabilization.
+- 🌊 Buoys: placed only on “clean” water, spaced by real distance, interval increased **12 → 18**.
 - 🔧 Fixed client ↔ server sync when registering command arguments.
 - 🐛 Fixed swamp style: uses `MOSSY_COBBLESTONE_WALL` instead of `MOSSY_COBBLESTONE`.
 - 📦 Reduced mod size.
 
-**⚠ Compatibility:** No breaking changes, worlds from 1.0.1 remain fully compatible.
+**Compatibility:** No breaking changes; worlds from `1.0.1` remain fully compatible.
+</details>
+
+---
+
+## ❓ FAQ
+
+<details>
+  <summary>Is this mod server side? or is it both server-client sided?</summary>
+  The mod is both server and client sided.
+  
+  To join a server, the mod must be installed on both the server and the client.
 </details>
 
 ---
@@ -121,4 +176,5 @@ This project is licensed under the **Apache License 2.0** — see the [LICENSE](
 You can also read the full license text here: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 ---
-<p style="text-align: center;">Crafted with ❤️ for the Minecraft community</p>
+
+<p align="center">Crafted with ❤️ for the Minecraft community</p>
