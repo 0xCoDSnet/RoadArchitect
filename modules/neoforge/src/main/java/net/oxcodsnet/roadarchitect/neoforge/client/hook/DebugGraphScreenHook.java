@@ -19,7 +19,6 @@ import java.util.List;
 import static net.oxcodsnet.roadarchitect.neoforge.client.RAKeybinds.OPEN;
 @EventBusSubscriber(
         modid = RoadArchitect.MOD_ID,
-        bus = EventBusSubscriber.Bus.GAME,
         value = Dist.CLIENT
 )
 public final class DebugGraphScreenHook {
