@@ -87,6 +87,19 @@ Roads adapt their style to the biome, and the network is saved between game sess
 ## 📜 Recent changes
 
 <details>
+<summary>v1.2.0 — <em>Vanilla loading, convenient settings, visual debug</em></summary>
+### ✨ Highlights
+- 🪄 **Progress screen**: dropped owo-lib and switched to vanilla rendering, showing the current pipeline stage (Fabric/Quilt and NeoForge).
+- 🧭 **Road-graph debug screen**: pan/zoom, tooltips, and a color legend; in singleplayer, clicking a node teleports to it. Opens with H.
+- 🧰 **Settings**:
+  - Fabric/Quilt: Cloth Config with ModMenu support.
+  - NeoForge: configurable from the mods list; supports Catalogue by MrCrayfish.
+- 🌐 **Localizations**: English, Russian, Spanish, French, German, Chinese.
+    
+**⚠ Compatibility:** No breaking changes; existing worlds remain compatible.
+</details>
+
+<details>
 <summary>v1.1.0 — <em>Smoother paths, smarter junctions, cleaner buoys</em></summary>
 
 ### ✨ Highlights
