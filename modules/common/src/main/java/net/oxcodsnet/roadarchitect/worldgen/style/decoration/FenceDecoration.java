@@ -96,11 +96,12 @@ public final class FenceDecoration implements Decoration {
         }
 
         // 2-й проход – пересчитываем формы (как раньше)
+        Random random = Random.create();
         for (BlockPos p : stripe) {
             BlockState st = world.getBlockState(p);
             for (Direction d : Direction.Type.HORIZONTAL) {
                 BlockPos n = p.offset(d);
-                st = st.getStateForNeighborUpdate(d, world.getBlockState(n), world, p, n);  // соединения забора
+                st = st.getStateForNeighborUpdate(world, world, p, d, n, world.getBlockState(n), random);
             }
             world.setBlockState(p, st, Block.NO_REDRAW);
         }

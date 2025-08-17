@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.StreamSupport;
 
 /**
  * Улучшенный локатор структур.
@@ -104,7 +105,7 @@ public final class StructureLocator {
      */
     private static List<Pair<BlockPos, String>> findStructures(ServerWorld world, BlockPos origin, int radius, List<String> structureSelectors) {
         List<Pair<BlockPos, String>> foundPositions = new ArrayList<>();
-        Registry<Structure> registry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
+        Registry<Structure> registry = world.getRegistryManager().getOrThrow(RegistryKeys.STRUCTURE);
 
         for (String selector : structureSelectors) {
             try {
@@ -142,6 +143,13 @@ public final class StructureLocator {
     }
 
     private static Optional<? extends RegistryEntryList<Structure>> getStructureList(RegistryPredicateArgumentType.RegistryPredicate<Structure> predicate, Registry<Structure> registry) {
-        return predicate.getKey().map(key -> registry.getEntry(key).map(RegistryEntryList::of), registry::getEntryList);
+        return predicate.getKey().map(
+                key -> registry.getEntry(key.getValue()).map(RegistryEntryList::of),
+                tag -> {
+                    List<RegistryEntry<Structure>> entries =
+                            StreamSupport.stream(registry.iterateEntries(tag).spliterator(), false).toList();
+                    return Optional.of(RegistryEntryList.of(entries));
+                }
+        );
     }
 }

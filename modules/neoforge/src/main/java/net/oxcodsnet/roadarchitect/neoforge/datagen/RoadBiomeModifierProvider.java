@@ -33,8 +33,8 @@ public final class RoadBiomeModifierProvider extends JsonCodecProvider<BiomeModi
     @Override
     protected void gather() {
         WrapperLookup lookup = registries.join();
-        RegistryEntryList.Named<Biome> overworldBiomes = lookup.getWrapperOrThrow(RegistryKeys.BIOME).getOrThrow(BiomeTags.IS_OVERWORLD);
-        RegistryEntryList.Direct<PlacedFeature> featureSet = RegistryEntryList.of(lookup.getWrapperOrThrow(RegistryKeys.PLACED_FEATURE).getOrThrow(RoadFeatureRegistry.ROAD_PLACED_FEATURE_KEY));
+        RegistryEntryList.Named<Biome> overworldBiomes = lookup.getOrThrow(RegistryKeys.BIOME).getOrThrow(BiomeTags.IS_OVERWORLD);
+        RegistryEntryList.Direct<PlacedFeature> featureSet = RegistryEntryList.of(lookup.getOrThrow(RegistryKeys.PLACED_FEATURE).getOrThrow(RoadFeatureRegistry.ROAD_PLACED_FEATURE_KEY));
         BiomeModifier modifier = new BiomeModifiers.AddFeaturesBiomeModifier(overworldBiomes, featureSet, GenerationStep.Feature.LOCAL_MODIFICATIONS);
         unconditional(Identifier.of(RoadArchitect.MOD_ID, "add_road_feature"), modifier);
     }

@@ -67,7 +67,7 @@ public class RoadGraphDebugScreenVanilla extends Screen {
 
     @Override
     public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        //this.renderBackground(ctx, mouseX, mouseY, delta); // затемнение фона
+        this.renderBackground(ctx, mouseX, mouseY, delta); // затемнение фона
         computeLayout();
 
         // панель + рамка
@@ -115,9 +115,13 @@ public class RoadGraphDebugScreenVanilla extends Screen {
 
     // ---------- ввод ----------
 
+//    @Override
+//    protected void applyBlur(float delta) {
+//        // Отключаем блюр для этого экрана
+//    }
     @Override
-    protected void applyBlur(float delta) {
-        // Отключаем блюр для этого экрана
+    protected void applyBlur(){
+
     }
 
     @Override
