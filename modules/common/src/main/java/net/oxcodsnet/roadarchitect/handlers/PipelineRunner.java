@@ -42,13 +42,13 @@ public final class PipelineRunner {
 
                 case INIT -> {
                     setStage(PipelineStage.SCANNING_STRUCTURES);
-                    StructureScanManager.scan(world, mode.reason(), center, RoadArchitect.CONFIG.initScanRadius());
-
                     //long start = System.nanoTime();
+                    StructureScanManager.scan(world, mode.reason(), center, RoadArchitect.CONFIG.initScanRadius());
+                    //double ms = (System.nanoTime() - start) / 1_000_000.0;
+                    //LOGGER.info("StructureScanManager finish: {}", ms);
+
                     setStage(PipelineStage.PATH_FINDING);
                     PathFinderManager.computePaths(world, 1000);
-                    //double ms = (System.nanoTime() - start) / 1_000_000.0;
-                    //LOGGER.debug("PathFinderManager finish: {}", ms);
 
                     setStage(PipelineStage.POST_PROCESSING);
                     RoadPostProcessor.processPending(world);
