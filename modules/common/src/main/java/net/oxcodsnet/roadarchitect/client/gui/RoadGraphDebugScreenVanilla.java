@@ -101,6 +101,8 @@ public class RoadGraphDebugScreenVanilla extends Screen {
             ctx.drawTooltip(font, Text.literal(hovered.pos().toShortString() + " • " + hovered.type()), mouseX, mouseY);
         }
 
+        drawPlayerMarker(ctx);
+
         // линейка масштаба + легенда
         drawScale(ctx);
         drawLegend(ctx);
@@ -359,6 +361,38 @@ public class RoadGraphDebugScreenVanilla extends Screen {
         }
         int ri = Math.round(r * 255), gi = Math.round(g * 255), bi = Math.round(b * 255);
         return (0xFF << 24) | (ri << 16) | (gi << 8) | bi;
+    }
+
+    private ScreenPos worldToScreen(double wx, double wz) {
+        int sx = PADDING + (int)((wx - minX) * baseScale * zoom + offsetX);
+        int sy = PADDING + (int)((wz - minZ) * baseScale * zoom + offsetY);
+        return new ScreenPos(sx, sy);
+    }
+
+    private void drawPlayerMarker(DrawContext ctx) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc == null || mc.player == null || nodes.isEmpty()) return;
+
+        double px = mc.player.getX();
+        double pz = mc.player.getZ();
+
+        ScreenPos p = worldToScreen(px, pz);
+
+        // Красная «точка» в стилистике: заливка + чёрный контур
+        final int r = RADIUS + 2;
+        final int fill = 0xFFE74C3C;     // насыщенно-красный
+        final int outline = 0xFF000000;  // чёрный
+
+        fillCircle(ctx, p.x, p.y, r, fill);
+        drawCircleOutline(ctx, p.x, p.y, r, outline);
+
+        // (опционально) маленькая «носик-стрелка» по направлению взгляда:
+        // В Minecraft yaw = 0 смотрит на +Z, углы по часовой, поэтому разворачиваем чуть-чуть.
+        float yaw = mc.player.getYaw();
+        double a = Math.toRadians(-yaw) + Math.PI / 2.0;
+        int tx = p.x + (int)Math.round(Math.cos(a) * (r + 3));
+        int ty = p.y + (int)Math.round(Math.sin(a) * (r + 3));
+        drawLine(ctx, p.x, p.y, tx, ty, 0xFFFFFFFF);
     }
 
 
