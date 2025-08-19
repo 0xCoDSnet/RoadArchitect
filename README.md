@@ -42,6 +42,7 @@ Roads adapt their style to the biome, and the network is saved between game sess
 - 🧰 **Configurable** via **Cloth Config** *(required on Fabric / Quilt / NeoForge)*  
 - 🌐 **Localization** included: English, Russian, Spanish, French, German, Chinese  
 - 🛰 **Visual road-graph debugger** with pan/zoom, tooltips, and a color legend; in singleplayer, clicking a node teleports to it (default hotkey **H**)
+- 🗺 **Terralith-ready** — works out of the box with the <a href="https://modrinth.com/datapack/terralith">Terralith</a> world-generation datapack
 
 ---
 
@@ -166,6 +167,11 @@ Roads adapt their style to the biome, and the network is saved between game sess
   The mod is both server and client sided.
   
   To join a server, the mod must be installed on both the server and the client.
+</details>
+
+<details>
+  <summary>Does it work with the Terralith world-generation datapack?</summary>
+  Yes — RoadArchitect is fully compatible with <a href="https://modrinth.com/datapack/terralith">Terralith</a>. Roads scan and connect structures in Terralith biomes out of the box.
 </details>
 
 ---
