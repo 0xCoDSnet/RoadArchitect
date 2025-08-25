@@ -174,6 +174,12 @@ Roads adapt their style to the biome, and the network is saved between game sess
   Yes — RoadArchitect is fully compatible with <a href="https://modrinth.com/datapack/terralith">Terralith</a>. Roads scan and connect structures in Terralith biomes out of the box.
 </details>
 
+<details>
+  <summary>Only villages are being connected?</summary>
+  
+  Not only! RoadArchitect can connect any structure discoverable via `/locate structure`. Add the structure IDs or a `#tag` in the config, then reload/restart the world to rescan.
+</details>
+
 ---
 
 ## 📜 License
