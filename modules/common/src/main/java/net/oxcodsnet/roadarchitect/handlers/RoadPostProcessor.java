@@ -38,7 +38,7 @@ public final class RoadPostProcessor {
     private static final int SMOOTH_PASSES = 2;              // число прогонов
     private static final int DESPIKE_DELTA = 2;              // чувствительность «иголки»
     private static final boolean LOG_GRAD_CLAMP = true;     // включить подробный лог клампа
-    private static final int BUOY_INTERVAL = 25;             // шаг размещения буёв
+    private static final int BUOY_INTERVAL = 1;             // шаг размещения буёв
     private static final int[][] OFFSETS_8 = {
             {-1, -1}, {0, -1}, {1, -1},
             {-1, 0}, {1, 0},
@@ -218,8 +218,7 @@ public final class RoadPostProcessor {
         return new WaterBuoyData(water, buoys);
     }
 
-    private static List<Integer> computeBuoyIndices(List<BlockPos> pts, boolean[] water,
-                                                    int from, int to, int interval) {
+    private static List<Integer> computeBuoyIndices(List<BlockPos> pts, boolean[] water, int from, int to, int interval) {
         int n = pts.size();
         double[] s = new double[n];
         for (int i = 1; i < n; i++) {
