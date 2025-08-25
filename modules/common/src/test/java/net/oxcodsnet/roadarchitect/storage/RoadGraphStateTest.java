@@ -21,16 +21,18 @@ class RoadGraphStateTest {
 
         state.connect(a, b);
         state.connect(c, d);
-        assertEquals(2, state.edges().all().size());
+        // Diagonal edge B-C to introduce a crossing with A-D later
+        state.connect(b, c);
+        assertEquals(3, state.edges().all().size());
 
         // Now try to add crossing edge A-D → should be denied
         state.connect(a, d);
-        assertEquals(2, state.edges().all().size(), "Crossing edge must not be added");
+        assertEquals(3, state.edges().all().size(), "Crossing edge must not be added");
 
         // Too far apart: A-(100,0) must be denied by radius
         Node far = state.nodes().add(new BlockPos(100, 64, 0), "village");
         state.connect(a, far);
-        assertEquals(2, state.edges().all().size(), "Edge beyond radius must not be added");
+        assertEquals(3, state.edges().all().size(), "Edge beyond radius must not be added");
     }
 
     @Test
