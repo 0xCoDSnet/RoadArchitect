@@ -39,7 +39,7 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadFeature");
 
     private static final BuoyDecoration BUOY = new BuoyDecoration();
-    private static final int BUOY_INTERVAL = 25;
+    private static final int BUOY_INTERVAL = 30;
 
     private static final int[][] OFFSETS_8 = {
             {-1, -1}, {0, -1}, {1, -1},
