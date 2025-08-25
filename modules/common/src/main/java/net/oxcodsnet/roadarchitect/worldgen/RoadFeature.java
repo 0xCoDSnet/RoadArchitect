@@ -39,6 +39,13 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadFeature");
 
     private static final BuoyDecoration BUOY = new BuoyDecoration();
+    private static final int BUOY_INTERVAL = 25;
+
+    private static final int[][] OFFSETS_8 = {
+            {-1, -1}, {0, -1}, {1, -1},
+            {-1, 0}, {1, 0},
+            {-1, 1}, {0, 1}, {1, 1}
+    };
 
     public RoadFeature(Codec<RoadFeatureConfig> codec) {
         super(codec);
@@ -120,10 +127,55 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
     }
 
 
+    private static boolean isWaterSegment(StructureWorldAccess world, BlockPos pos) {
+        if (isNotWaterBlock(world, pos)) {
+            return false;
+        }
+        for (int[] d : OFFSETS_8) {
+            BlockPos neighbor = pos.add(d[0], 0, d[1]);
+            if (isNotWaterBlock(world, neighbor)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static boolean isNotWaterBlock(StructureWorldAccess world, BlockPos pos) {
         int cx = pos.getX() >> 4, cz = pos.getZ() >> 4;
         if (!world.isChunkLoaded(cx, cz)) return true;
         return !world.getBlockState(pos).getFluidState().isIn(FluidTags.WATER);
+    }
+
+
+    /**
+     * Собираем точки суши из [from, to), но «съедаем» по 1 точке
+     * с начала и конца каждого сухого прогона (эрозия на 1).
+     */
+    private static List<BlockPos> collectLandPoints(
+            StructureWorldAccess world, List<BlockPos> pts, int from, int to
+    ) {
+        int n = pts.size();
+        // Расширяем окно на 1 с двух сторон, чтобы увидеть соседей за границей слайса
+        int extFrom = Math.max(0, from - 1);
+        int extTo   = Math.min(n, to + 1);
+
+        // Маска суши на расширенном окне
+        boolean[] landMask = new boolean[extTo - extFrom];
+        for (int i = extFrom; i < extTo; i++) {
+            landMask[i - extFrom] = isNotWaterBlock(world, pts.get(i));
+        }
+
+        // Собираем только «внутренние» сухие точки: у них и слева, и справа тоже суша
+        List<BlockPos> out = new ArrayList<>(Math.max(0, to - from));
+        for (int i = from; i < to; i++) {
+            int k = i - extFrom;                // индекс внутри landMask
+            if (!landMask[k]) continue;         // сама точка — вода
+            boolean leftLand  = (k - 1 >= 0) && landMask[k - 1];
+            boolean rightLand = (k + 1 < landMask.length) && landMask[k + 1];
+            if (!leftLand || !rightLand) continue; // край прогона — пропускаем
+            out.add(pts.get(i));
+        }
+        return out;
     }
 
     @Override
@@ -162,28 +214,81 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
             int from = Math.max(0, entry.start());
             int to = Math.min(pts.size(), entry.end());
 
-            /* ---------- ФАЗА 1: буйки ---------- */
-            List<BlockPos> buoys = paths.getBuoys(entry.pathKey());
-            if (!buoys.isEmpty()) {
-                for (BlockPos buoyPos : buoys) {
-                    int idx = pts.indexOf(buoyPos);
-                    if (idx >= from && idx < to) {
-                        BUOY.place(world, buoyPos, random);
-                    }
-                }
+            /* ---------- ФАЗА 1: вода / буйки ---------- */
+            for (int idx : computeBuoyIndices(world, pts, from, to, BUOY_INTERVAL)) {
+                BUOY.place(world, pts.get(idx), random);
             }
             /* ---------- ФАЗА 2: суша ---------- */
-            boolean[] waterMask = paths.getWaterMask(entry.pathKey());
-            List<BlockPos> landPts = new ArrayList<>(Math.max(0, to - from));
-            for (int i = from; i < to; i++) {
-                if (i >= waterMask.length || !waterMask[i]) {
-                    landPts.add(pts.get(i));
-                }
-            }
+            List<BlockPos> landPts = collectLandPoints(world, pts, from, to);
             buildRoadStripe(world, landPts, halfWidth, random);
             placedAny = true;
         }
         return placedAny;
     }
+
+    private static List<Integer> computeBuoyIndices(
+            StructureWorldAccess world, List<BlockPos> pts, int from, int to, int interval
+    ) {
+        int n = pts.size();
+
+        // 1) префиксные длины (как было)
+        double[] S = new double[n];
+        for (int i = 1; i < n; i++) {
+            BlockPos a = pts.get(i - 1), b = pts.get(i);
+            S[i] = S[i - 1] + Math.hypot(b.getX() - a.getX(), b.getZ() - a.getZ());
+        }
+
+        // 2) маска воды только для окна [from,to)
+        boolean[] water = new boolean[n];
+        for (int i = from; i < to; i++) {
+            water[i] = isWaterSegment(world, pts.get(i)); // теперь безопасно из-за isChunkLoaded-гарда
+        }
+
+        // 3) детерминированное размещение в пределах [from,to)
+        List<Integer> out = new ArrayList<>();
+        int i = from;
+
+        // определяем локальный старт водного прогона не заглядывая далеко влево
+        int runStart = -1;
+        if (i < to && water[i]) {
+            runStart = i;
+            while (runStart > from && water[runStart - 1]) runStart--;
+        }
+        double nextMark = -1.0;
+        if (runStart != -1) {
+            double base = S[runStart];
+            double progressed = S[i] - base;
+            long k = (long) Math.ceil(progressed / interval);
+            nextMark = base + k * interval;
+        }
+
+        while (i < to) {
+            if (!water[i]) {
+                runStart = -1;
+                nextMark = -1.0;
+                i++;
+                if (i < to && water[i]) {
+                    runStart = i;
+                    while (runStart > from && water[runStart - 1]) runStart--;
+                    double base = S[runStart];
+                    double progressed = S[i] - base;
+                    long k = (long) Math.ceil(progressed / interval);
+                    nextMark = base + k * interval;
+                }
+                continue;
+            }
+
+            if (nextMark >= 0.0 && S[i] >= nextMark) {
+                // water[i] уже известен, повторно мир не трогаем
+                out.add(i);
+                nextMark += interval;
+                continue;
+            }
+            i++;
+        }
+        return out;
+    }
+
+
 }
 

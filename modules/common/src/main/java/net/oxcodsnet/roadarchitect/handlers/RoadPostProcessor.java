@@ -1,6 +1,5 @@
 package net.oxcodsnet.roadarchitect.handlers;
 
-import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -38,12 +37,6 @@ public final class RoadPostProcessor {
     private static final int SMOOTH_PASSES = 2;              // число прогонов
     private static final int DESPIKE_DELTA = 2;              // чувствительность «иголки»
     private static final boolean LOG_GRAD_CLAMP = true;     // включить подробный лог клампа
-    private static final int BUOY_INTERVAL = 1;             // шаг размещения буёв
-    private static final int[][] OFFSETS_8 = {
-            {-1, -1}, {0, -1}, {1, -1},
-            {-1, 0}, {1, 0},
-            {-1, 1}, {0, 1}, {1, 1}
-    };
     private RoadPostProcessor() {
     }
 
@@ -158,7 +151,7 @@ public final class RoadPostProcessor {
                     clamps++;
                     if (LOG_GRAD_CLAMP) {
                         BlockPos p = refined.get(i);
-                        LOGGER.debug("[PostProcess] Clamp↑ at {}: {} -> {} (ref={})", p, old, clamped, y[i - 1]);
+                        LOGGER.info("[PostProcess] Clamp↑ at {}: {} -> {} (ref={})", p, old, clamped, y[i - 1]);
                     }
                     y[i] = clamped;
                 }
@@ -173,7 +166,7 @@ public final class RoadPostProcessor {
                     clamps++;
                     if (LOG_GRAD_CLAMP) {
                         BlockPos p = refined.get(i);
-                        LOGGER.debug("[PostProcess] Clamp↓ at {}: {} -> {} (ref={})", p, old, clamped, y[i + 1]);
+                        LOGGER.info("[PostProcess] Clamp↓ at {}: {} -> {} (ref={})", p, old, clamped, y[i + 1]);
                     }
                     y[i] = clamped;
                 }
@@ -202,87 +195,6 @@ public final class RoadPostProcessor {
             out.add(new BlockPos(p.getX(), y[i], p.getZ()));
         }
         return new NormalizeResult(out, spikes, clamps);
-    }
-
-    private static WaterBuoyData computeWaterData(ServerWorld world, List<BlockPos> pts) {
-        int n = pts.size();
-        boolean[] water = new boolean[n];
-        for (int i = 0; i < n; i++) {
-            water[i] = isWaterSegment(world, pts.get(i));
-        }
-        List<Integer> idx = computeBuoyIndices(pts, water, 0, n, BUOY_INTERVAL);
-        List<BlockPos> buoys = new ArrayList<>(idx.size());
-        for (int i : idx) {
-            buoys.add(pts.get(i));
-        }
-        return new WaterBuoyData(water, buoys);
-    }
-
-    private static List<Integer> computeBuoyIndices(List<BlockPos> pts, boolean[] water, int from, int to, int interval) {
-        int n = pts.size();
-        double[] s = new double[n];
-        for (int i = 1; i < n; i++) {
-            BlockPos a = pts.get(i - 1);
-            BlockPos b = pts.get(i);
-            s[i] = s[i - 1] + Math.hypot(b.getX() - a.getX(), b.getZ() - a.getZ());
-        }
-        List<Integer> out = new ArrayList<>();
-        int i = from;
-        int runStart = -1;
-        if (i < to && water[i]) {
-            runStart = i;
-            while (runStart > from && water[runStart - 1]) runStart--;
-        }
-        double nextMark = -1.0;
-        if (runStart != -1) {
-            double base = s[runStart];
-            double progressed = s[i] - base;
-            long k = (long) Math.ceil(progressed / interval);
-            nextMark = base + k * interval;
-        }
-        while (i < to) {
-            if (!water[i]) {
-                runStart = -1;
-                nextMark = -1.0;
-                i++;
-                if (i < to && water[i]) {
-                    runStart = i;
-                    while (runStart > from && water[runStart - 1]) runStart--;
-                    double base = s[runStart];
-                    double progressed = s[i] - base;
-                    long k = (long) Math.ceil(progressed / interval);
-                    nextMark = base + k * interval;
-                }
-                continue;
-            }
-            if (nextMark >= 0.0 && s[i] >= nextMark) {
-                out.add(i);
-                nextMark += interval;
-                continue;
-            }
-            i++;
-        }
-        return out;
-    }
-
-    private static boolean isWaterSegment(ServerWorld world, BlockPos pos) {
-        if (isNotWaterBlock(world, pos)) {
-            return false;
-        }
-        for (int[] d : OFFSETS_8) {
-            BlockPos neighbor = pos.add(d[0], 0, d[1]);
-            if (isNotWaterBlock(world, neighbor)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean isNotWaterBlock(ServerWorld world, BlockPos pos) {
-        int cx = pos.getX() >> 4;
-        int cz = pos.getZ() >> 4;
-        if (!world.isChunkLoaded(cx, cz)) return true;
-        return !world.getBlockState(pos).getFluidState().isIn(FluidTags.WATER);
     }
 
     // ====== Планирование как у тебя: по одному ключу ======
@@ -361,15 +273,14 @@ public final class RoadPostProcessor {
                     // 4.1) Ноги → refine → normalize → READY
                     for (Entry<String, List<BlockPos>> leg : br.legsRaw.entrySet()) {
                         List<BlockPos> refined = refine(world, leg.getValue());
-                        WaterBuoyData wb = computeWaterData(world, refined);
                         NormalizeResult nr = normalizeHeights(refined);
-                        storage.updatePath(leg.getKey(), nr.path(), wb.waterMask(), wb.buoys(), PathStorage.Status.READY);
+                        storage.updatePath(leg.getKey(), nr.path(), PathStorage.Status.READY);
                         toBuild.put(leg.getKey(), nr.path());
 
                         if (!nr.path().isEmpty()) {
                             BlockPos s = nr.path().getFirst();
                             BlockPos t = nr.path().getLast();
-                            LOGGER.debug(
+                            LOGGER.info(
                                     "[PostProcess] READY (leg) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
                                     leg.getKey(), nr.path().size(), nr.spikesCut(), nr.gradClamped(), s, t
                             );
@@ -379,15 +290,14 @@ public final class RoadPostProcessor {
 
                     // 4.2) Ствол (persist) → refine → normalize → READY
                     List<BlockPos> trunkRefined = refine(world, br.trunkRaw.path);
-                    WaterBuoyData trunkWb = computeWaterData(world, trunkRefined);
                     NormalizeResult trunkNR = normalizeHeights(trunkRefined);
-                    storage.updatePath(br.trunkRaw.key, trunkNR.path(), trunkWb.waterMask(), trunkWb.buoys(), PathStorage.Status.READY);
+                    storage.updatePath(br.trunkRaw.key, trunkNR.path(), PathStorage.Status.READY);
                     toBuild.put(br.trunkRaw.key, trunkNR.path());
 
                     if (!trunkNR.path().isEmpty()) {
                         BlockPos s = trunkNR.path().getFirst();
                         BlockPos t = trunkNR.path().getLast();
-                        LOGGER.debug(
+                        LOGGER.info(
                                 "[PostProcess] READY (trunk) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
                                 br.trunkRaw.key, trunkNR.path().size(), trunkNR.spikesCut(), trunkNR.gradClamped(), s, t
                         );
@@ -404,15 +314,14 @@ public final class RoadPostProcessor {
                 // Если ничего не объединили — просто дорисовываем исходный путь
                 if (toBuild.isEmpty()) {
                     List<BlockPos> refined = refine(world, activeRaw);
-                    WaterBuoyData wb = computeWaterData(world, refined);
                     NormalizeResult nr = normalizeHeights(refined);
-                    storage.updatePath(activeKey, nr.path(), wb.waterMask(), wb.buoys(), PathStorage.Status.READY);
+                    storage.updatePath(activeKey, nr.path(), PathStorage.Status.READY);
                     toBuild.put(activeKey, nr.path());
 
                     if (!nr.path().isEmpty()) {
                         BlockPos s = nr.path().getFirst();
                         BlockPos t = nr.path().getLast();
-                        LOGGER.debug(
+                        LOGGER.info(
                                 "[PostProcess] READY (single) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
                                 activeKey, nr.path().size(), nr.spikesCut(), nr.gradClamped(), s, t
                         );
@@ -597,9 +506,6 @@ public final class RoadPostProcessor {
 
     // ====== Нормализация высот с логированием ======
     private record NormalizeResult(List<BlockPos> path, int spikesCut, int gradClamped) {
-    }
-
-    private record WaterBuoyData(boolean[] waterMask, List<BlockPos> buoys) {
     }
 
     // ====== Вспомогательные структуры и математика ======

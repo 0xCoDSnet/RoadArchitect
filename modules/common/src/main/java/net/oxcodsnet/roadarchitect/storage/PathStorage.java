@@ -32,14 +32,10 @@ public class PathStorage extends PersistentState {
     private static final String TO_KEY = "to";
     private static final String POS_KEY = "pos";
     private static final String STATUS_KEY = "status";
-    private static final String WATER_KEY = "water";
-    private static final String BUOYS_KEY = "buoys";
 
     public static final Type<PathStorage> TYPE = new Type<>(PathStorage::new, PathStorage::fromNbt, DataFixTypes.SAVED_DATA_SCOREBOARD);
     private final Map<String, List<BlockPos>> paths = new ConcurrentHashMap<>();
     private final Map<String, Status> statuses = new ConcurrentHashMap<>();
-    private final Map<String, boolean[]> waterMasks = new ConcurrentHashMap<>();
-    private final Map<String, List<BlockPos>> buoyPositions = new ConcurrentHashMap<>();
 
     /**
      * Возвращает экземпляр хранилища путей для указанного мира.
@@ -70,22 +66,6 @@ public class PathStorage extends PersistentState {
                 positions.add(BlockPos.fromLong(((NbtLong) nbtElement).longValue()));
             }
             storage.paths.put(key, positions);
-            if (entry.contains(WATER_KEY, NbtElement.BYTE_ARRAY_TYPE)) {
-                byte[] arr = entry.getByteArray(WATER_KEY);
-                boolean[] mask = new boolean[arr.length];
-                for (int j = 0; j < arr.length; j++) {
-                    mask[j] = arr[j] != 0;
-                }
-                storage.waterMasks.put(key, mask);
-            }
-            if (entry.contains(BUOYS_KEY, NbtElement.LIST_TYPE)) {
-                NbtList bList = entry.getList(BUOYS_KEY, NbtElement.LONG_TYPE);
-                List<BlockPos> buoys = new ArrayList<>();
-                for (NbtElement nbtElement : bList) {
-                    buoys.add(BlockPos.fromLong(((NbtLong) nbtElement).longValue()));
-                }
-                storage.buoyPositions.put(key, buoys);
-            }
             Status status = Status.READY;
             if (entry.contains(STATUS_KEY, NbtElement.STRING_TYPE)) {
                 try {
@@ -107,8 +87,7 @@ public class PathStorage extends PersistentState {
     public NbtCompound writeNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         NbtList list = new NbtList();
         for (Map.Entry<String, List<BlockPos>> entry : paths.entrySet()) {
-            String key = entry.getKey();
-            String[] ids = key.split("\\|", 2);
+            String[] ids = entry.getKey().split("\\|", 2);
             if (ids.length != 2) continue;
             NbtCompound elem = new NbtCompound();
             elem.putString(FROM_KEY, ids[0]);
@@ -118,23 +97,7 @@ public class PathStorage extends PersistentState {
                 posList.add(NbtLong.of(pos.asLong()));
             }
             elem.put(POS_KEY, posList);
-            boolean[] mask = waterMasks.get(key);
-            if (mask != null) {
-                byte[] arr = new byte[mask.length];
-                for (int i = 0; i < mask.length; i++) {
-                    arr[i] = (byte) (mask[i] ? 1 : 0);
-                }
-                elem.putByteArray(WATER_KEY, arr);
-            }
-            List<BlockPos> buoys = buoyPositions.get(key);
-            if (buoys != null && !buoys.isEmpty()) {
-                NbtList bList = new NbtList();
-                for (BlockPos pos : buoys) {
-                    bList.add(NbtLong.of(pos.asLong()));
-                }
-                elem.put(BUOYS_KEY, bList);
-            }
-            Status st = statuses.getOrDefault(key, Status.PENDING);
+            Status st = statuses.getOrDefault(entry.getKey(), Status.PENDING);
             elem.putString(STATUS_KEY, st.name());
             list.add(elem);
         }
@@ -150,29 +113,12 @@ public class PathStorage extends PersistentState {
         String key = KeyUtil.pathKey(from, to);
         paths.put(key, List.copyOf(path));
         statuses.put(key, status);
-        waterMasks.remove(key);
-        buoyPositions.remove(key);
         markDirty();
     }
 
     public void updatePath(String key, List<BlockPos> path, Status status) {
-        updatePath(key, path, null, null, status);
-    }
-
-    public void updatePath(String key, List<BlockPos> path, boolean[] waterMask,
-                           List<BlockPos> buoys, Status status) {
         paths.put(key, List.copyOf(path));
         statuses.put(key, status);
-        if (waterMask != null) {
-            waterMasks.put(key, waterMask.clone());
-        } else {
-            waterMasks.remove(key);
-        }
-        if (buoys != null) {
-            buoyPositions.put(key, List.copyOf(buoys));
-        } else {
-            buoyPositions.remove(key);
-        }
         markDirty();
     }
 
@@ -186,15 +132,6 @@ public class PathStorage extends PersistentState {
 
     public List<BlockPos> getPath(String key) {
         return paths.getOrDefault(key, List.of());
-    }
-
-    public boolean[] getWaterMask(String key) {
-        boolean[] mask = waterMasks.get(key);
-        return mask == null ? new boolean[0] : mask.clone();
-    }
-
-    public List<BlockPos> getBuoys(String key) {
-        return buoyPositions.getOrDefault(key, List.of());
     }
 
     public Status getStatus(String key) {
