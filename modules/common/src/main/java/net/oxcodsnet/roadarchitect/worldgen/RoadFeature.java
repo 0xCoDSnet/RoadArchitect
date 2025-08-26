@@ -18,6 +18,8 @@ import net.minecraft.world.gen.feature.util.FeatureContext;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.storage.PathStorage;
 import net.oxcodsnet.roadarchitect.storage.RoadBuilderStorage;
+import net.oxcodsnet.roadarchitect.storage.PathDecorStorage;
+import net.oxcodsnet.roadarchitect.util.PathDecorUtil;
 import net.oxcodsnet.roadarchitect.worldgen.style.RoadStyle;
 import net.oxcodsnet.roadarchitect.worldgen.style.RoadStyles;
 import net.oxcodsnet.roadarchitect.worldgen.style.decoration.BuoyDecoration;
@@ -41,13 +43,8 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + RoadFeature.class.getSimpleName());
 
     private static final BuoyDecoration BUOY = new BuoyDecoration();
-    private static final int BUOY_INTERVAL = 30;
 
-    private static final int[][] OFFSETS_8 = {
-            {-1, -1}, {0, -1}, {1, -1},
-            {-1, 0}, {1, 0},
-            {-1, 1}, {0, 1}, {1, 1}
-    };
+    // OFFSETS_8 removed; water interior detection is handled in PathDecorUtil
 
     public RoadFeature(Codec<RoadFeatureConfig> codec) {
         super(codec);
@@ -86,12 +83,9 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
 
             RoadStyle style = RoadStyles.forBiome(world.getBiome(p));
             for (Decoration deco : style.decorations()) {
-                if (deco instanceof LampPostDecoration lamp) {
-                    int interval = RoadArchitect.CONFIG.lampInterval();
-                    if (interval > 0 && i % interval == 0 && isNotWaterBlock(world, p)) {
-                        placeLamp(world, p, nx, nz, halfWidth, lamp, random);
-                    }
-                } else if (random.nextInt(18) == 0) {
+                if (deco instanceof LampPostDecoration) {
+                    // handled via deterministic markers below
+                } else if (!RoadArchitect.CONFIG.deterministicDecorations() && random.nextInt(18) == 0) {
                     if (!isNotWaterBlock(world, p)) {continue;}
                     decorateSide(world, p, nx, nz, halfWidth, deco, random);
                 }
@@ -153,6 +147,56 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
         }
     }
 
+    private static void placeLampDet(StructureWorldAccess world, BlockPos center, double nx, double nz, int halfWidth,
+                                     LampPostDecoration base, boolean leftFirst, Random random) {
+        int sx = (int) Math.round(-nz);
+        int sz = (int) Math.round(nx);
+
+        BlockPos leftPos  = center.add( sx * (halfWidth + 1), 0,  sz * (halfWidth + 1));
+        BlockPos rightPos = center.add(-sx * (halfWidth + 1), 0, -sz * (halfWidth + 1));
+        Direction leftFace  = directionFrom(-sx, -sz);
+        Direction rightFace = directionFrom( sx,  sz);
+
+        BlockPos firstPos     = leftFirst ? leftPos   : rightPos;
+        Direction firstFacing = leftFirst ? leftFace  : rightFace;
+        BlockPos secondPos     = leftFirst ? rightPos  : leftPos;
+        Direction secondFacing = leftFirst ? rightFace : leftFace;
+
+        if (isNotWaterBlock(world, firstPos)) {
+            if (base.facing(firstFacing).tryPlace(world, firstPos, random)) {
+                return;
+            }
+        }
+        if (isNotWaterBlock(world, secondPos)) {
+            base.facing(secondFacing).tryPlace(world, secondPos, random);
+        }
+    }
+
+    private static void placeSideDet(StructureWorldAccess world, BlockPos center, double nx, double nz, int halfWidth,
+                                     Decoration deco, boolean leftSide, int length, Random detRandom) {
+        int sideMul = leftSide ? 1 : -1;
+        int sx = (int) Math.round(-nz * sideMul);
+        int sz = (int) Math.round(nx * sideMul);
+        int fx = (int) Math.round(nx);
+        int fz = (int) Math.round(nz);
+
+        if (deco instanceof FenceDecoration fence) {
+            List<BlockPos> stripe = new ArrayList<>();
+            for (int j = 0; j < length; j++) {
+                BlockPos dpos = center.add(sx * (halfWidth + 1) + fx * j, 0, sz * (halfWidth + 1) + fz * j);
+                if (!isNotWaterBlock(world, dpos)) { continue; }
+                stripe.add(dpos);
+            }
+            if (!stripe.isEmpty()) fence.placeFenceStripe(world, stripe);
+        } else {
+            for (int j = 0; j < length; j++) {
+                BlockPos dpos = center.add(sx * (halfWidth + 1) + fx * j, 0, sz * (halfWidth + 1) + fz * j);
+                if (!isNotWaterBlock(world, dpos)) { continue; }
+                deco.place(world, dpos, detRandom);
+            }
+        }
+    }
+
     /** Определяем горизонтальное направление по (dx, dz). */
     static Direction directionFrom(int dx, int dz) {
         if (dx > 0) return Direction.EAST;
@@ -167,19 +211,6 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
         //world.setBlockState(pos.up(), Blocks.AIR.getDefaultState(), Block.NOTIFY_NEIGHBORS);
     }
 
-
-    private static boolean isWaterSegment(StructureWorldAccess world, BlockPos pos) {
-        if (isNotWaterBlock(world, pos)) {
-            return false;
-        }
-        for (int[] d : OFFSETS_8) {
-            BlockPos neighbor = pos.add(d[0], 0, d[1]);
-            if (isNotWaterBlock(world, neighbor)) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     private static boolean isNotWaterBlock(StructureWorldAccess world, BlockPos pos) {
         int cx = pos.getX() >> 4, cz = pos.getZ() >> 4;
@@ -231,6 +262,7 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
 
         RoadBuilderStorage builder = RoadBuilderStorage.get(serverWorld);
         PathStorage paths = PathStorage.get(serverWorld);
+        PathDecorStorage decor = PathDecorStorage.get(serverWorld);
         List<RoadBuilderStorage.SegmentEntry> queue = new ArrayList<>(builder.getSegments(chunk));
         if (queue.isEmpty()) return false;
 
@@ -255,80 +287,111 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
             int from = Math.max(0, entry.start());
             int to = Math.min(pts.size(), entry.end());
 
-            /* ---------- ФАЗА 1: вода / буйки ---------- */
-            for (int idx : computeBuoyIndices(world, pts, from, to, BUOY_INTERVAL)) {
-                BUOY.place(world, pts.get(idx), random);
+            // Ensure prefix S and masks cache are up-to-date
+            String pathKey = entry.pathKey();
+            double[] S = PathDecorUtil.ensurePrefix(decor, pathKey, pts);
+
+            int erosion = Math.max(0, RoadArchitect.CONFIG.maskErosion());
+            int buoyInterval = Math.max(0, RoadArchitect.CONFIG.buoyInterval());
+            int lampInterval = Math.max(0, RoadArchitect.CONFIG.lampInterval());
+            int sideInterval = Math.max(0, RoadArchitect.CONFIG.sideDecorationInterval());
+            boolean det = RoadArchitect.CONFIG.deterministicDecorations();
+
+            // Masks updated for the current window only (avoids chunk loads)
+            PathDecorUtil.fillGroundMask(decor, pathKey, world, pts, from, to);
+            PathDecorUtil.fillWaterInteriorMask(decor, pathKey, world, pts, from, to);
+
+            /* ---------- ФАЗА 1: вода / буйки (детерминированно) ---------- */
+            if (det && buoyInterval > 0) {
+                int phase = PathDecorUtil.phaseFor(pathKey, buoyInterval);
+                List<PathDecorUtil.Marker> marks = PathDecorUtil.markersInWindow(S, from, to, buoyInterval, phase);
+                byte[] waterMask = decor.getWaterInteriorMask(pathKey);
+                for (PathDecorUtil.Marker m : marks) {
+                    int idx = m.index();
+                    if (PathDecorUtil.erodedAccept(waterMask, idx, erosion, PathDecorUtil.BOOL_TRUE)) {
+                        BUOY.place(world, pts.get(idx), random);
+                    }
+                }
             }
-            /* ---------- ФАЗА 2: суша ---------- */
+
+            /* ---------- ФАЗА 2: суша (дорога + фонари детерминированно) ---------- */
             List<BlockPos> landPts = collectLandPoints(world, pts, from, to);
             buildRoadStripe(world, landPts, halfWidth, random);
+
+            if (det && lampInterval > 0) {
+                int phase = PathDecorUtil.phaseFor(pathKey, lampInterval);
+                List<PathDecorUtil.Marker> marks = PathDecorUtil.markersInWindow(S, from, to, lampInterval, phase);
+                byte[] landMask = decor.getGroundMask(pathKey);
+
+                for (PathDecorUtil.Marker m : marks) {
+                    int i = m.index();
+                    BlockPos p = pts.get(i);
+                    if (!PathDecorUtil.erodedAccept(landMask, i, erosion, PathDecorUtil.BOOL_TRUE)) continue;
+
+                    int prevIdx = Math.max(0, i - 2);
+                    int nextIdx = Math.min(pts.size() - 1, i + 2);
+                    net.minecraft.util.math.Vec3d dir = new net.minecraft.util.math.Vec3d(
+                            pts.get(nextIdx).getX() - pts.get(prevIdx).getX(),
+                            0.0D,
+                            pts.get(nextIdx).getZ() - pts.get(prevIdx).getZ()
+                    ).normalize();
+                    double nx = dir.x;
+                    double nz = dir.z;
+
+                    // Seed left/right deterministically by (pathKey, ordinal)
+                    boolean leftFirst = PathDecorUtil.detBool(pathKey, m.k());
+                    LampPostDecoration lamp = null;
+                    for (Decoration deco : RoadStyles.forBiome(world.getBiome(p)).decorations()) {
+                        if (deco instanceof LampPostDecoration lp) { lamp = lp; break; }
+                    }
+                    if (lamp != null) {
+                        placeLampDet(world, p, nx, nz, halfWidth, lamp, leftFirst, random);
+                    }
+                }
+            }
+
+            /* ---------- ФАЗА 3: суша / боковые украшения (детерминированно) ---------- */
+            if (det && sideInterval > 0) {
+                int phase = PathDecorUtil.phaseFor(pathKey, sideInterval);
+                List<PathDecorUtil.Marker> marks = PathDecorUtil.markersInWindow(S, from, to, sideInterval, phase);
+                byte[] landMask = decor.getGroundMask(pathKey);
+
+                for (PathDecorUtil.Marker m : marks) {
+                    int i = m.index();
+                    if (!PathDecorUtil.erodedAccept(landMask, i, erosion, PathDecorUtil.BOOL_TRUE)) continue;
+
+                    BlockPos p = pts.get(i);
+                    // direction
+                    int prevIdx = Math.max(0, i - 2);
+                    int nextIdx = Math.min(pts.size() - 1, i + 2);
+                    Vec3d dir = new Vec3d(
+                            pts.get(nextIdx).getX() - pts.get(prevIdx).getX(),
+                            0.0D,
+                            pts.get(nextIdx).getZ() - pts.get(prevIdx).getZ()
+                    ).normalize();
+                    double nx = dir.x;
+                    double nz = dir.z;
+
+                    // collect non-lamp decos for this biome
+                    RoadStyle styleAtP = RoadStyles.forBiome(world.getBiome(p));
+                    java.util.ArrayList<Decoration> sideDecos = new java.util.ArrayList<>();
+                    for (Decoration d : styleAtP.decorations()) if (!(d instanceof LampPostDecoration)) sideDecos.add(d);
+                    if (sideDecos.isEmpty()) continue;
+
+                    int choice = PathDecorUtil.detInt(pathKey, m.k(), sideDecos.size());
+                    Decoration chosen = sideDecos.get(choice);
+                    boolean leftSide = PathDecorUtil.detBool(pathKey, m.k());
+                    int length = 1 + PathDecorUtil.detInt(pathKey, m.k() ^ 0x55AA55AAL, 3);
+
+                    placeSideDet(world, p, nx, nz, halfWidth, chosen, leftSide, length, net.minecraft.util.math.random.Random.create(m.k() ^ pathKey.hashCode()));
+                }
+            }
             placedAny = true;
         }
         return placedAny;
     }
 
-    private static List<Integer> computeBuoyIndices(
-            StructureWorldAccess world, List<BlockPos> pts, int from, int to, int interval
-    ) {
-        int n = pts.size();
-
-        // 1) префиксные длины (как было)
-        double[] S = new double[n];
-        for (int i = 1; i < n; i++) {
-            BlockPos a = pts.get(i - 1), b = pts.get(i);
-            S[i] = S[i - 1] + Math.hypot(b.getX() - a.getX(), b.getZ() - a.getZ());
-        }
-
-        // 2) маска воды только для окна [from,to)
-        boolean[] water = new boolean[n];
-        for (int i = from; i < to; i++) {
-            water[i] = isWaterSegment(world, pts.get(i)); // теперь безопасно из-за isChunkLoaded-гарда
-        }
-
-        // 3) детерминированное размещение в пределах [from,to)
-        List<Integer> out = new ArrayList<>();
-        int i = from;
-
-        // определяем локальный старт водного прогона не заглядывая далеко влево
-        int runStart = -1;
-        if (i < to && water[i]) {
-            runStart = i;
-            while (runStart > from && water[runStart - 1]) runStart--;
-        }
-        double nextMark = -1.0;
-        if (runStart != -1) {
-            double base = S[runStart];
-            double progressed = S[i] - base;
-            long k = (long) Math.ceil(progressed / interval);
-            nextMark = base + k * interval;
-        }
-
-        while (i < to) {
-            if (!water[i]) {
-                runStart = -1;
-                nextMark = -1.0;
-                i++;
-                if (i < to && water[i]) {
-                    runStart = i;
-                    while (runStart > from && water[runStart - 1]) runStart--;
-                    double base = S[runStart];
-                    double progressed = S[i] - base;
-                    long k = (long) Math.ceil(progressed / interval);
-                    nextMark = base + k * interval;
-                }
-                continue;
-            }
-
-            if (nextMark >= 0.0 && S[i] >= nextMark) {
-                // water[i] уже известен, повторно мир не трогаем
-                out.add(i);
-                nextMark += interval;
-                continue;
-            }
-            i++;
-        }
-        return out;
-    }
+    // computeBuoyIndices removed: unified deterministic marker grid is used for all decorations
 
 
 }

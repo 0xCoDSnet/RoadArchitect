@@ -3,7 +3,9 @@ package net.oxcodsnet.roadarchitect.worldgen.style.decoration;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.LanternBlock;
+import net.minecraft.block.enums.WallShape;
 import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -16,22 +18,27 @@ public final class LampPostDecoration implements Decoration {
     private static final int MAX_UP_SEARCH = 3;
     private static final int HEIGHT = 3;
 
-    private final BlockState postState; // fence/wall/etc.
+    private final BlockState baseState; // нижний блок-основание (стена)
+    private final BlockState postState; // вертикальные стойки/крюк (обычно забор)
     private final BlockState lampState;
     private final Direction facing; // куда вылетает «крюк»
 
-    public LampPostDecoration(BlockState postState, BlockState lampState) {
-        this(postState, lampState, Direction.NORTH);
+    /**
+     * Новый вариант: основание (чаще — стена) и стойки/крюк (чаще — деревянный забор) заданы отдельно.
+     */
+    public LampPostDecoration(BlockState baseState, BlockState postState, BlockState lampState) {
+        this(baseState, postState, lampState, Direction.NORTH);
     }
 
-    private LampPostDecoration(BlockState postState, BlockState lampState, Direction facing) {
+    private LampPostDecoration(BlockState baseState, BlockState postState, BlockState lampState, Direction facing) {
+        this.baseState = baseState;
         this.postState = postState;
         this.lampState = lampState;
         this.facing = facing;
     }
 
     public LampPostDecoration facing(Direction facing) {
-        return new LampPostDecoration(this.postState, this.lampState, facing);
+        return new LampPostDecoration(this.baseState, this.postState, this.lampState, facing);
     }
 
     @Override
@@ -83,29 +90,49 @@ public final class LampPostDecoration implements Decoration {
         return true;
     }
 
-    /** Проставляет для заборов BooleanProperty направления (N/E/S/W) = true. Для иных блоков возвращает исходное состояние. */
+    /** Для заборов включает BooleanProperty направления (N/E/S/W).
+     *  Для стен проставляет соответствующий EnumProperty<WallShape> (LOW/TALL).
+     *  Для иных блоков возвращает исходное состояние. */
     private static BlockState withFenceConnection(BlockState state, Direction dir) {
-        BooleanProperty prop = switch (dir) {
+        // 1) Заборы/решётки/панели — булевы свойства направлений
+        BooleanProperty fenceProp = switch (dir) {
             case NORTH -> Properties.NORTH;
             case SOUTH -> Properties.SOUTH;
             case EAST  -> Properties.EAST;
             case WEST  -> Properties.WEST;
             default    -> null;
         };
-        if (prop != null && state.contains(prop)) {
-            return state.with(prop, true);
+        if (fenceProp != null && state.contains(fenceProp)) {
+            return state.with(fenceProp, true);
         }
-        return state; // не забор или нет нужного свойства
+
+        // 2) Стены — EnumProperty<WallShape> по направлениям
+        EnumProperty<WallShape> wallProp = switch (dir) {
+            case NORTH -> Properties.NORTH_WALL_SHAPE;
+            case SOUTH -> Properties.SOUTH_WALL_SHAPE;
+            case EAST  -> Properties.EAST_WALL_SHAPE;
+            case WEST  -> Properties.WEST_WALL_SHAPE;
+            default    -> null;
+        };
+        if (wallProp != null && state.contains(wallProp)) {
+            // Можно выбрать LOW или TALL. Обычно LOW выглядит «горизонтальной» полкой,
+            // TALL даёт высокий упор. Поставим LOW как более универсальный вариант.
+            return state.with(wallProp, WallShape.LOW);
+        }
+
+        // 3) Иные блоки — без изменений
+        return state;
     }
 
     private void placeSupport(StructureWorldAccess world, BlockPos top) {
-        world.setBlockState(top, this.postState, PLACE_FLAGS);
+        // верх основания — стенка (или иной «тяжёлый» блок)
+        world.setBlockState(top, this.baseState, PLACE_FLAGS);
         BlockPos cur = top.down();
         int depth = 0;
         while (cur.getY() >= world.getBottomY()
                 && depth < MAX_SUPPORT_DEPTH
                 && !world.getBlockState(cur).isSolidBlock(world, cur)) {
-            world.setBlockState(cur, this.postState, PLACE_FLAGS);
+            world.setBlockState(cur, this.baseState, PLACE_FLAGS);
             cur = cur.down();
             depth++;
         }

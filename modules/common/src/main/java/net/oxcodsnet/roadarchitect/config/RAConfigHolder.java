@@ -62,7 +62,27 @@ public final class RAConfigHolder {
 
         @Override
         public int lampInterval() {
-            return 16;
+            return 30;
+        }
+
+        @Override
+        public int buoyInterval() {
+            return 18;
+        }
+
+        @Override
+        public int sideDecorationInterval() {
+            return 12;
+        }
+
+        @Override
+        public int maskErosion() {
+            return 1;
+        }
+
+        @Override
+        public boolean deterministicDecorations() {
+            return true;
         }
 
         @Override

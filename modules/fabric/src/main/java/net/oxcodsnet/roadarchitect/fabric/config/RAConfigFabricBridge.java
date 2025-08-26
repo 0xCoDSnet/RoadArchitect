@@ -19,7 +19,8 @@ public final class RAConfigFabricBridge {
     private static final Logger LOG = LoggerFactory.getLogger("RoadArchitect/ConfigBridge");
     private static ConfigHolder<RoadArchitectConfigData> holder;
 
-    private RAConfigFabricBridge() {}
+    private RAConfigFabricBridge() {
+    }
 
     public static void bootstrap() {
         holder = AutoConfig.register(RoadArchitectConfigData.class, GsonConfigSerializer::new);
@@ -47,6 +48,26 @@ public final class RAConfigFabricBridge {
             @Override
             public int lampInterval() {
                 return holder.getConfig().lampInterval;
+            }
+
+            @Override
+            public int sideDecorationInterval() {
+                return holder.getConfig().sideDecorationInterval;
+            }
+
+            @Override
+            public int buoyInterval() {
+                return holder.getConfig().buoyInterval;
+            }
+
+            @Override
+            public int maskErosion() {
+                return holder.getConfig().maskErosion;
+            }
+
+            @Override
+            public boolean deterministicDecorations() {
+                return holder.getConfig().deterministicDecorations;
             }
 
             @Override

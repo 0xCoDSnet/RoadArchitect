@@ -50,6 +50,22 @@ public final class RALanguage {
                 add.accept("text.autoconfig.roadarchitect.option.structureSelectors", "Structure Selectors");
                 add.accept("text.autoconfig.roadarchitect.option.structureSelectors.@Tooltip",
                         "List of structure selectors that roads will connect.");
+                // Deterministic decorations (AutoConfig)
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval", "Lamp Interval");
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval.@Tooltip",
+                        "Distance in blocks along the path between lamp posts.");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval", "Side Decoration Interval");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval.@Tooltip",
+                        "Distance in blocks between side decorations along the path.");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval", "Buoy Interval");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval.@Tooltip",
+                        "Distance in blocks along water path between buoys.");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion", "Mask Erosion");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion.@Tooltip",
+                        "Symmetric erosion near land/water transitions; excludes E points near edges.");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "Deterministic Decorations");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
+                        "Place lamps, buoys and sides using a global marker grid (chunk-agnostic).");
                 break;
             }
             case "ru_ru": {
@@ -99,6 +115,22 @@ public final class RALanguage {
                         "Селекторы структур");
                 add.accept("text.autoconfig.roadarchitect.option.structureSelectors.@Tooltip",
                         "Список селекторов структур, которые будут соединяться дорогами.");
+                // Детерминированные украшения (AutoConfig)
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval", "Интервал фонарей");
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval.@Tooltip",
+                        "Расстояние в блоках вдоль пути между фонарями.");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval", "Интервал боковых украшений");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval.@Tooltip",
+                        "Расстояние в блоках между боковыми украшениями вдоль пути.");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval", "Интервал буйков");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval.@Tooltip",
+                        "Расстояние в блоках вдоль водного участка между буйками.");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion", "Эрозия маски");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion.@Tooltip",
+                        "Симметрическая эрозия у переходов суша/вода; исключает E точек около границ.");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "Детерминированные украшения");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
+                        "Размещение по глобальной сетке маркеров (не зависит от чанков).");
                 break;
             }
             case "es_es": {
@@ -148,6 +180,22 @@ public final class RALanguage {
                         "Selectores de estructuras");
                 add.accept("text.autoconfig.roadarchitect.option.structureSelectors.@Tooltip",
                         "Lista de selectores de estructuras que se conectarán con carreteras.");
+                // Decoraciones deterministas (AutoConfig)
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval", "Intervalo de farolas");
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval.@Tooltip",
+                        "Distancia en bloques a lo largo del camino entre farolas.");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval", "Intervalo de decoraciones laterales");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval.@Tooltip",
+                        "Distancia en bloques entre decoraciones laterales a lo largo del camino.");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval", "Intervalo de boyas");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval.@Tooltip",
+                        "Distancia en bloques a lo largo del tramo acuático entre boyas.");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion", "Erosión de máscara");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion.@Tooltip",
+                        "Erosión simétrica cerca de transiciones tierra/agua; excluye E puntos cerca de bordes.");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "Decoraciones deterministas");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
+                        "Colocación mediante una cuadrícula global de marcadores (independiente de chunks).");
                 break;
             }
             case "fr_fr": {
@@ -197,6 +245,22 @@ public final class RALanguage {
                         "Sélecteurs de structures");
                 add.accept("text.autoconfig.roadarchitect.option.structureSelectors.@Tooltip",
                         "Liste des sélecteurs de structures que les routes relieront.");
+                // Décorations déterministes (AutoConfig)
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval", "Intervalle des lampadaires");
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval.@Tooltip",
+                        "Distance en blocs le long de la route entre les lampadaires.");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval", "Intervalle des décorations latérales");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval.@Tooltip",
+                        "Distance en blocs entre les décorations latérales le long de la route.");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval", "Intervalle des bouées");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval.@Tooltip",
+                        "Distance en blocs le long du parcours aquatique entre les bouées.");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion", "Érosion du masque");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion.@Tooltip",
+                        "Érosion symétrique près des transitions terre/eau; exclut E points près des bords.");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "Décorations déterministes");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
+                        "Placement via une grille de marqueurs globale (indépendante des chunks).");
                 break;
             }
             case "de_de": {
@@ -246,6 +310,22 @@ public final class RALanguage {
                         "Strukturauswahlen");
                 add.accept("text.autoconfig.roadarchitect.option.structureSelectors.@Tooltip",
                         "Liste von Strukturauswahlen, die Straßen verbinden.");
+                // Deterministische Dekorationen (AutoConfig)
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval", "Laternenintervall");
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval.@Tooltip",
+                        "Abstand in Blöcken entlang des Pfads zwischen Laternen.");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval", "Seiten-Dekor-Intervall");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval.@Tooltip",
+                        "Abstand in Blöcken zwischen seitlichen Dekorationen entlang des Pfads.");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval", "Bojenintervall");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval.@Tooltip",
+                        "Abstand in Blöcken entlang des Wasserpfads zwischen Bojen.");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion", "Maskenerosion");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion.@Tooltip",
+                        "Symmetrische Erosion nahe Land/Wasser-Übergängen; schließt E Punkte an den Rändern aus.");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "Deterministische Dekorationen");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
+                        "Platzierung über globales Markerraster (chunk-unabhängig).");
                 break;
             }
             case "zh_cn": {
@@ -287,6 +367,22 @@ public final class RALanguage {
                 add.accept("text.autoconfig.roadarchitect.option.structureSelectors", "结构选择器");
                 add.accept("text.autoconfig.roadarchitect.option.structureSelectors.@Tooltip",
                         "将被道路连接的结构选择器列表。");
+                // 确定性装饰 (AutoConfig)
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval", "灯间距");
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval.@Tooltip",
+                        "沿路径的灯之间的方块距离。");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval", "侧边装饰间距");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval.@Tooltip",
+                        "沿路径的侧边装饰之间的方块距离。");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval", "浮标间距");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval.@Tooltip",
+                        "沿水路的浮标之间的方块距离。");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion", "遮罩侵蚀");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion.@Tooltip",
+                        "在陆地/水域过渡附近的对称侵蚀；排除边缘附近的 E 个点。");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "确定性装饰");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
+                        "使用全局标记网格进行放置（与区块无关）。");
                 break;
             }
             default: {
