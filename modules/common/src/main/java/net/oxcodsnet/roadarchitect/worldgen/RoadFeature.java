@@ -131,17 +131,29 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
         int sx = (int) Math.round(-nz);
         int sz = (int) Math.round(nx);
 
-        BlockPos left = center.add(sx * (halfWidth + 1), 0, sz * (halfWidth + 1));
-        if (isNotWaterBlock(world, left)) {
-            base.facing(directionFrom(-sx, -sz)).place(world, left, random);
-        }
+        BlockPos leftPos  = center.add( sx * (halfWidth + 1), 0,  sz * (halfWidth + 1));
+        BlockPos rightPos = center.add(-sx * (halfWidth + 1), 0, -sz * (halfWidth + 1));
+        Direction leftFace  = directionFrom(-sx, -sz); // «смотрит» к дороге
+        Direction rightFace = directionFrom( sx,  sz);
 
-        BlockPos right = center.add(-sx * (halfWidth + 1), 0, -sz * (halfWidth + 1));
-        if (isNotWaterBlock(world, right)) {
-            base.facing(directionFrom(sx, sz)).place(world, right, random);
+        boolean leftFirst = random.nextBoolean();
+
+        BlockPos firstPos     = leftFirst ? leftPos   : rightPos;
+        Direction firstFacing = leftFirst ? leftFace  : rightFace;
+        BlockPos secondPos     = leftFirst ? rightPos  : leftPos;
+        Direction secondFacing = leftFirst ? rightFace : leftFace;
+
+        if (isNotWaterBlock(world, firstPos)) {
+            if (base.facing(firstFacing).tryPlace(world, firstPos, random)) {
+                return; // удалось — вторую сторону не трогаем
+            }
+        }
+        if (isNotWaterBlock(world, secondPos)) {
+            base.facing(secondFacing).tryPlace(world, secondPos, random);
         }
     }
 
+    /** Определяем горизонтальное направление по (dx, dz). */
     static Direction directionFrom(int dx, int dz) {
         if (dx > 0) return Direction.EAST;
         if (dx < 0) return Direction.WEST;
