@@ -2,7 +2,7 @@
   "category.roadarchitect": "Architecte routier",
   "key.roadarchitect.debug": "Débogage du graphe routier",
   "roadarchitect.stage.complete": "Terminé",
-  "roadarchitect.stage.intialisation": "Initialisation",
+  "roadarchitect.stage.initialisation": "Initialisation",
   "roadarchitect.stage.pathfinding": "Recherche de chemin",
   "roadarchitect.stage.postprocess": "Post-traitement",
   "roadarchitect.stage.scanning": "Analyse des structures",

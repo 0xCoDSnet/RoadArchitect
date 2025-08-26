@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * сохраняя точные кейсы из исходного register().
  */
 public final class RoadPipelineController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadPipelineController");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + RoadPipelineController.class.getSimpleName());
 
     /**
      * Миры, для которых уже отработал INIT по событию генерации спавн-чанка.

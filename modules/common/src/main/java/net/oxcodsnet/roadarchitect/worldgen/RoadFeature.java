@@ -38,7 +38,7 @@ import java.util.List;
  * «шахматных» дыр на диагоналях :contentReference[oaicite:2]{index=2}.
  */
 public final class RoadFeature extends Feature<RoadFeatureConfig> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadFeature");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + RoadFeature.class.getSimpleName());
 
     private static final BuoyDecoration BUOY = new BuoyDecoration();
     private static final int BUOY_INTERVAL = 30;
@@ -332,4 +332,3 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
 
 
 }
-

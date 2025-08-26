@@ -2,7 +2,7 @@
   "category.roadarchitect": "Road Architect",
   "key.roadarchitect.debug": "Road Graph Debug",
   "roadarchitect.stage.complete": "Complete",
-  "roadarchitect.stage.intialisation": "Initialising",
+  "roadarchitect.stage.initialisation": "Initialising",
   "roadarchitect.stage.pathfinding": "Path Finding",
   "roadarchitect.stage.postprocess": "Post Processing",
   "roadarchitect.stage.scanning": "Scanning Structures",

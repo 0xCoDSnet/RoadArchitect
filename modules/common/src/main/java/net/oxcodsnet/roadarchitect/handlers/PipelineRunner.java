@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Executes the road generation pipeline.
  */
 public final class PipelineRunner {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PipelineRunner");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + PipelineRunner.class.getSimpleName());
 
     private static final AtomicBoolean RUNNING = new AtomicBoolean(false);
     private static volatile PipelineStage currentStage = PipelineStage.SCANNING_STRUCTURES;

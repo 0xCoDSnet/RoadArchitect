@@ -14,7 +14,7 @@ public final class RALanguage {
             case "en_us": {
                 add.accept("key.roadarchitect.debug", "Road Graph Debug");
                 add.accept("category.roadarchitect", "Road Architect");
-                add.accept("roadarchitect.stage.intialisation", "Initialising");
+                add.accept("roadarchitect.stage.initialisation", "Initialising");
                 add.accept("roadarchitect.stage.scanning", "Scanning Structures");
                 add.accept("roadarchitect.stage.pathfinding", "Path Finding");
                 add.accept("roadarchitect.stage.postprocess", "Post Processing");
@@ -55,7 +55,7 @@ public final class RALanguage {
             case "ru_ru": {
                 add.accept("key.roadarchitect.debug", "Отладка графа дорог");
                 add.accept("category.roadarchitect", "Архитектор дорог");
-                add.accept("roadarchitect.stage.intialisation", "Инициализация");
+                add.accept("roadarchitect.stage.initialisation", "Инициализация");
                 add.accept("roadarchitect.stage.scanning", "Сканирование структур");
                 add.accept("roadarchitect.stage.pathfinding", "Поиск пути");
                 add.accept("roadarchitect.stage.postprocess", "Постобработка");
@@ -104,7 +104,7 @@ public final class RALanguage {
             case "es_es": {
                 add.accept("key.roadarchitect.debug", "Depuración del grafo de carreteras");
                 add.accept("category.roadarchitect", "Arquitecto de Carreteras");
-                add.accept("roadarchitect.stage.intialisation", "Inicialización");
+                add.accept("roadarchitect.stage.initialisation", "Inicialización");
                 add.accept("roadarchitect.stage.scanning", "Escaneando estructuras");
                 add.accept("roadarchitect.stage.pathfinding", "Búsqueda de rutas");
                 add.accept("roadarchitect.stage.postprocess", "Postprocesamiento");
@@ -153,7 +153,7 @@ public final class RALanguage {
             case "fr_fr": {
                 add.accept("key.roadarchitect.debug", "Débogage du graphe routier");
                 add.accept("category.roadarchitect", "Architecte routier");
-                add.accept("roadarchitect.stage.intialisation", "Initialisation");
+                add.accept("roadarchitect.stage.initialisation", "Initialisation");
                 add.accept("roadarchitect.stage.scanning", "Analyse des structures");
                 add.accept("roadarchitect.stage.pathfinding", "Recherche de chemin");
                 add.accept("roadarchitect.stage.postprocess", "Post-traitement");
@@ -202,7 +202,7 @@ public final class RALanguage {
             case "de_de": {
                 add.accept("key.roadarchitect.debug", "Straßengraph-Debug");
                 add.accept("category.roadarchitect", "Straßenarchitekt");
-                add.accept("roadarchitect.stage.intialisation", "Initialisierung");
+                add.accept("roadarchitect.stage.initialisation", "Initialisierung");
                 add.accept("roadarchitect.stage.scanning", "Strukturen scannen");
                 add.accept("roadarchitect.stage.pathfinding", "Wegfindung");
                 add.accept("roadarchitect.stage.postprocess", "Nachbearbeitung");
@@ -251,7 +251,7 @@ public final class RALanguage {
             case "zh_cn": {
                 add.accept("key.roadarchitect.debug", "道路网络调试");
                 add.accept("category.roadarchitect", "道路架构师");
-                add.accept("roadarchitect.stage.intialisation", "初始化");
+                add.accept("roadarchitect.stage.initialisation", "初始化");
                 add.accept("roadarchitect.stage.scanning", "扫描结构");
                 add.accept("roadarchitect.stage.pathfinding", "路径搜索");
                 add.accept("roadarchitect.stage.postprocess", "后期处理");

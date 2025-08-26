@@ -1,9 +1,10 @@
-v1.2.0</strong> — <em>Vanilla loading, convenient settings, visual debug</em>
+v1.3.0 — <em>Smarter structure scanning</em>
 
 ### Highlights
-- 🪄 **Progress screen**: dropped `owo-lib` and switched to vanilla rendering (Fabric/Quilt and NeoForge), showing the current pipeline stage.
-- 🧭 **Road-graph debug screen**: pan/zoom, tooltips, and a color legend; in singleplayer, clicking a node teleports to it. Opens with **H**.
-- 🧰 **Settings**: **Cloth Config** on all loaders; **Mod Menu** support (Fabric/Quilt); **Catalogue** support (NeoForge).
-- 🌐 **Localizations**: English, Russian, Spanish, French, German, Chinese.
+
+- 🧠 Smarter scanning: major performance boost for large-area scans and many structure types—smoother gameplay, cleaner road graphs, and more reliable structure detection.
+- 🚧 Fences now place correctly: posts automatically shift up to free space and extend down until they rest on solid ground—no more floating or sticking-out posts.
+- 🛟 Mini-patch: more accurate buoy placement.
+- 🧭 Debug map: shows your position and direction (red dot + arrow).
 
 **Compatibility:** No breaking changes; existing worlds remain compatible.

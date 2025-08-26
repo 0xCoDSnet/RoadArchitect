@@ -50,7 +50,7 @@ import java.util.stream.Stream;
  */
 public final class StructureLocator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + StructureLocator.class.getSimpleName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + StructureLocator.class.getSimpleName());
 
     private static final DynamicCommandExceptionType INVALID_STRUCTURE_EXCEPTION =
             new DynamicCommandExceptionType(id -> Text.translatable("commands.locate.structure.invalid", id));
@@ -333,7 +333,7 @@ public final class StructureLocator {
         if (found.isEmpty()) return;
         MinecraftServer server = world.getServer();
         server.execute(() -> {
-            RoadGraphState graph = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+            RoadGraphState graph = RoadGraphState.get(world);
             for (Pair<BlockPos, String> pair : found) {
                 Node node = graph.addNodeWithEdges(pair.getFirst(), pair.getSecond());
                 if (LOGGER.isDebugEnabled()) {

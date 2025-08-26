@@ -41,10 +41,10 @@ public final class CacheManager {
     }
 
     /**
-     * Registers world load/unload hooks.
-     */
-    /**
-     * Был ServerWorldEvents.LOAD: world loaded on server side.
+     * Called by platform hooks when a server world loads (server side).
+     * Ensures the cache state is allocated and attached to the world.
+     *
+     * @param world server world
      */
     public static void onWorldLoad(ServerWorld world) {
         if (world.isClient()) return;
@@ -52,7 +52,10 @@ public final class CacheManager {
     }
 
     /**
-     * Был ServerWorldEvents.UNLOAD: world about to unload.
+     * Called by platform hooks when a server world unloads.
+     * Flushes and detaches the cache state from the internal map.
+     *
+     * @param world server world
      */
     public static void onWorldUnload(ServerWorld world) {
         if (world.isClient()) return;
@@ -60,7 +63,10 @@ public final class CacheManager {
     }
 
     /**
-     * Был ServerLifecycleEvents.SERVER_STOPPING: persist all states.
+     * Called by platform hooks when the server is stopping.
+     * Flushes all cached states for all worlds.
+     *
+     * @param server minecraft server
      */
     public static void onServerStopping(MinecraftServer server) {
         for (ServerWorld world : server.getWorlds()) {
@@ -87,7 +93,13 @@ public final class CacheManager {
     }
 
     /**
-     * Prefills height and biome caches asynchronously over the given area.
+     * Prefills height and biome caches asynchronously over the given XZ area.
+     *
+     * @param world server world
+     * @param minX  min X (blocks)
+     * @param minZ  min Z (blocks)
+     * @param maxX  max X (blocks)
+     * @param maxZ  max Z (blocks)
      */
     public static void prefill(ServerWorld world, int minX, int minZ, int maxX, int maxZ) {
         int step = PathFinder.GRID_STEP;
@@ -118,10 +130,20 @@ public final class CacheManager {
         });
     }
 
+    /**
+     * Gets or computes world surface height for the cached key.
+     *
+     * @param world  server world
+     * @param key    cache key (hash of x,z)
+     * @param loader fallback loader if value missing
+     */
     public static int getHeight(ServerWorld world, long key, IntSupplier loader) {
         return state(world).heights().computeIfAbsent(key, k -> loader.getAsInt());
     }
 
+    /**
+     * Gets or computes world surface height at block coordinates.
+     */
     public static int getHeight(ServerWorld world, int x, int z) {
         ChunkGenerator gen = world.getChunkManager().getChunkGenerator();
         NoiseConfig cfg = world.getChunkManager().getNoiseConfig();
@@ -129,18 +151,30 @@ public final class CacheManager {
         return getHeight(world, key, () -> gen.getHeight(x, z, Heightmap.Type.WORLD_SURFACE_WG, world, cfg));
     }
 
+    /**
+     * Gets or computes terrain stability metric for the key.
+     */
     public static double getStability(ServerWorld world, long key, DoubleSupplier loader) {
         return state(world).stabilities().computeIfAbsent(key, k -> loader.getAsDouble());
     }
 
+    /**
+     * Gets or computes biome entry for the key.
+     */
     public static RegistryEntry<Biome> getBiome(ServerWorld world, long key, Supplier<RegistryEntry<Biome>> loader) {
         return state(world).biomes().computeIfAbsent(key, k -> loader.get());
     }
 
+    /**
+     * Packs X and Z into a single long key.
+     */
     public static long hash(int x, int z) {
         return ((long) x << 32) | (z & 0xFFFF_FFFFL);
     }
 
+    /**
+     * Unpacks X and Z from a long key into {@link BlockPos} (Y=0).
+     */
     public static BlockPos keyToPos(long k) {
         return new BlockPos((int) (k >> 32), 0, (int) k);
     }
