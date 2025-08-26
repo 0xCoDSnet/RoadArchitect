@@ -29,6 +29,11 @@ public final class RoadArchitect {
         }
 
         @Override
+        public int lampInterval() {
+            return RAConfigHolder.get().lampInterval();
+        }
+
+        @Override
         public java.util.List<String> structureSelectors() {
             return RAConfigHolder.get().structureSelectors();
         }

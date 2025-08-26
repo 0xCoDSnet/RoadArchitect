@@ -43,6 +43,11 @@ public final class RAConfigNeoForgeBridge {
             }
 
             @Override
+            public int lampInterval() {
+                return holder.getConfig().lampInterval;
+            }
+
+            @Override
             public java.util.List<String> structureSelectors() {
                 return holder.getConfig().structureSelectors;
             }

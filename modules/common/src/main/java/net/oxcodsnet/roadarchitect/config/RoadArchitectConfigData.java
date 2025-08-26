@@ -26,6 +26,10 @@ public final class RoadArchitectConfigData implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public int pipelineIntervalSeconds = 120;
 
+    @ConfigEntry.BoundedDiscrete(min = 1, max = 128)
+    @ConfigEntry.Gui.Tooltip
+    public int lampInterval = 16;
+
     @ConfigEntry.Gui.Tooltip
     public List<String> structureSelectors = List.of("#minecraft:village");
 }

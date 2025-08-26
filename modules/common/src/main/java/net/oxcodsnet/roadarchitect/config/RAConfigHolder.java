@@ -61,6 +61,11 @@ public final class RAConfigHolder {
         }
 
         @Override
+        public int lampInterval() {
+            return 16;
+        }
+
+        @Override
         public List<String> structureSelectors() {
             return List.of("#minecraft:village");
         }

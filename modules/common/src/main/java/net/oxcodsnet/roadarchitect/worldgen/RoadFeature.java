@@ -12,6 +12,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.util.FeatureContext;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
@@ -22,6 +23,7 @@ import net.oxcodsnet.roadarchitect.worldgen.style.RoadStyles;
 import net.oxcodsnet.roadarchitect.worldgen.style.decoration.BuoyDecoration;
 import net.oxcodsnet.roadarchitect.worldgen.style.decoration.Decoration;
 import net.oxcodsnet.roadarchitect.worldgen.style.decoration.FenceDecoration;
+import net.oxcodsnet.roadarchitect.worldgen.style.decoration.LampPostDecoration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,9 +84,17 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
                 }
             }
 
-            if (random.nextInt(18) == 0) {
-                if (!isNotWaterBlock(world, p)) {continue;}
-                decorateSide(world, p, nx, nz, halfWidth, random);
+            RoadStyle style = RoadStyles.forBiome(world.getBiome(p));
+            for (Decoration deco : style.decorations()) {
+                if (deco instanceof LampPostDecoration lamp) {
+                    int interval = RoadArchitect.CONFIG.lampInterval();
+                    if (interval > 0 && i % interval == 0 && isNotWaterBlock(world, p)) {
+                        placeLamp(world, p, nx, nz, halfWidth, lamp, random);
+                    }
+                } else if (random.nextInt(18) == 0) {
+                    if (!isNotWaterBlock(world, p)) {continue;}
+                    decorateSide(world, p, nx, nz, halfWidth, deco, random);
+                }
             }
         }
     }
@@ -92,17 +102,14 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
     /* ============================================================= */
     /* ======================  ВСПОМОГАТЕЛЬНОЕ  ==================== */
 
-    private static void decorateSide(StructureWorldAccess world, BlockPos center, double nx, double nz, int halfWidth, Random random) {
+    private static void decorateSide(StructureWorldAccess world, BlockPos center, double nx, double nz, int halfWidth, Decoration deco, Random random) {
         int side = random.nextBoolean() ? 1 : -1;
         int sx = (int) Math.round(-nz * side);
         int sz = (int) Math.round(nx * side);
         int fx = (int) Math.round(nx);
         int fz = (int) Math.round(nz);
-        RegistryEntry<Biome> biome = world.getBiome(center);
-        RoadStyle style = RoadStyles.forBiome(biome);
         int length = 1 + random.nextInt(3);
 
-        Decoration deco = style.decoration();
         if (deco instanceof FenceDecoration fence) {
             List<BlockPos> stripe = new ArrayList<>();
             for (int j = 0; j < length; j++) {
@@ -118,6 +125,28 @@ public final class RoadFeature extends Feature<RoadFeatureConfig> {
                 deco.place(world, dpos, random);
             }
         }
+    }
+
+    private static void placeLamp(StructureWorldAccess world, BlockPos center, double nx, double nz, int halfWidth, LampPostDecoration base, Random random) {
+        int sx = (int) Math.round(-nz);
+        int sz = (int) Math.round(nx);
+
+        BlockPos left = center.add(sx * (halfWidth + 1), 0, sz * (halfWidth + 1));
+        if (isNotWaterBlock(world, left)) {
+            base.facing(directionFrom(-sx, -sz)).place(world, left, random);
+        }
+
+        BlockPos right = center.add(-sx * (halfWidth + 1), 0, -sz * (halfWidth + 1));
+        if (isNotWaterBlock(world, right)) {
+            base.facing(directionFrom(sx, sz)).place(world, right, random);
+        }
+    }
+
+    static Direction directionFrom(int dx, int dz) {
+        if (dx > 0) return Direction.EAST;
+        if (dx < 0) return Direction.WEST;
+        if (dz > 0) return Direction.SOUTH;
+        return Direction.NORTH;
     }
 
     private static void placeRoad(StructureWorldAccess world, BlockPos pos, BlockState stateRoad) {

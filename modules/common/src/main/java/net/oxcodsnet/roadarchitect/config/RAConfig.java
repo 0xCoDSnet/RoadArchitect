@@ -16,5 +16,7 @@ public interface RAConfig {
 
     int pipelineIntervalSeconds();
 
+    int lampInterval();
+
     List<String> structureSelectors();
 }

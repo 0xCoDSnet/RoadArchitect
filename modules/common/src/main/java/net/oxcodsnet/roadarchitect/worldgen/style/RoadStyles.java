@@ -5,7 +5,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
-import net.oxcodsnet.roadarchitect.worldgen.style.decoration.Decoration;
+import net.oxcodsnet.roadarchitect.worldgen.style.decoration.LampPostDecoration;
 import net.oxcodsnet.roadarchitect.worldgen.style.decoration.FenceDecoration;
 
 import java.util.Map;
@@ -21,8 +21,7 @@ public final class RoadStyles {
                     .add(Blocks.COBBLESTONE.getDefaultState(), 2)
                     .add(Blocks.MOSSY_COBBLESTONE.getDefaultState(), 1)
                     .add(Blocks.GRAVEL.getDefaultState(), 1)
-                    .build(),
-            Decoration.NONE);
+                    .build());
 
     private static final Map<RegistryKey<Biome>, RoadStyle> STYLES = Map.ofEntries(
 
@@ -31,8 +30,7 @@ public final class RoadStyles {
                             .add(Blocks.GRASS_BLOCK.getDefaultState(), 1)
                             .add(Blocks.SAND.getDefaultState(), 1)
                             .add(Blocks.GRAVEL.getDefaultState(), 1)
-                            .build(),
-                    Decoration.NONE)
+                            .build())
             ),
 
             Map.entry(BiomeKeys.STONY_SHORE, new RoadStyle(
@@ -42,7 +40,7 @@ public final class RoadStyles {
                             .add(Blocks.MOSSY_COBBLESTONE.getDefaultState(), 1)
                             .add(Blocks.GRAVEL.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.OAK_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.OAK_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
             Map.entry(BiomeKeys.BEACH, new RoadStyle(
                     BlockPalette.builder()
@@ -51,7 +49,7 @@ public final class RoadStyles {
                             .add(Blocks.MOSSY_COBBLESTONE.getDefaultState(), 1)
                             .add(Blocks.GRAVEL.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.OAK_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.OAK_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
             Map.entry(BiomeKeys.OLD_GROWTH_PINE_TAIGA, new RoadStyle(
                     BlockPalette.builder()
@@ -62,7 +60,7 @@ public final class RoadStyles {
                             .add(Blocks.TUFF.getDefaultState(), 1)
                             .add(Blocks.ANDESITE.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.SPRUCE_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.SPRUCE_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
             Map.entry(BiomeKeys.OLD_GROWTH_SPRUCE_TAIGA, new RoadStyle(
                     BlockPalette.builder()
@@ -73,7 +71,7 @@ public final class RoadStyles {
                             .add(Blocks.TUFF.getDefaultState(), 1)
                             .add(Blocks.ANDESITE.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.SPRUCE_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.SPRUCE_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
             Map.entry(BiomeKeys.TAIGA, new RoadStyle(
                     BlockPalette.builder()
@@ -85,7 +83,7 @@ public final class RoadStyles {
                             .add(Blocks.STONE.getDefaultState(), 1)
                             .add(Blocks.COBBLESTONE.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.SPRUCE_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.SPRUCE_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
 
             Map.entry(BiomeKeys.SNOWY_TAIGA, new RoadStyle(
@@ -98,7 +96,7 @@ public final class RoadStyles {
                             .add(Blocks.STONE.getDefaultState(), 1)
                             .add(Blocks.COBBLESTONE.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.SPRUCE_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.SPRUCE_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
 
             Map.entry(BiomeKeys.SNOWY_BEACH, new RoadStyle(
@@ -111,7 +109,7 @@ public final class RoadStyles {
                             .add(Blocks.STONE.getDefaultState(), 1)
                             .add(Blocks.COBBLESTONE.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.SPRUCE_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.SPRUCE_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
 
             Map.entry(BiomeKeys.SNOWY_PLAINS, new RoadStyle(
@@ -124,7 +122,7 @@ public final class RoadStyles {
                             .add(Blocks.STONE.getDefaultState(), 1)
                             .add(Blocks.COBBLESTONE.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.SPRUCE_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.SPRUCE_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
 
             Map.entry(BiomeKeys.SNOWY_SLOPES, new RoadStyle(
@@ -137,7 +135,7 @@ public final class RoadStyles {
                             .add(Blocks.STONE.getDefaultState(), 1)
                             .add(Blocks.COBBLESTONE.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.SPRUCE_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.SPRUCE_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
 
 
@@ -150,7 +148,7 @@ public final class RoadStyles {
                             .add(Blocks.CRACKED_STONE_BRICKS.getDefaultState(), 1)
                             .add(Blocks.MOSS_BLOCK.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.MOSSY_COBBLESTONE_WALL.getDefaultState()))
+                    new LampPostDecoration(Blocks.MOSSY_COBBLESTONE_WALL.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
 
             Map.entry(BiomeKeys.MANGROVE_SWAMP, new RoadStyle(
@@ -162,7 +160,7 @@ public final class RoadStyles {
                             .add(Blocks.CRACKED_STONE_BRICKS.getDefaultState(), 1)
                             .add(Blocks.MOSS_BLOCK.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.MOSSY_COBBLESTONE.getDefaultState()))
+                    new LampPostDecoration(Blocks.MOSSY_COBBLESTONE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
 
             Map.entry(BiomeKeys.PLAINS, new RoadStyle(
@@ -174,6 +172,7 @@ public final class RoadStyles {
                             .add(Blocks.MOSSY_COBBLESTONE.getDefaultState(), 1)
                             .add(Blocks.MOSSY_STONE_BRICKS.getDefaultState(), 1)
                             .build(),
+                    new LampPostDecoration(Blocks.OAK_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()),
                     new FenceDecoration(Blocks.OAK_FENCE.getDefaultState()))
             ),
 
@@ -186,7 +185,7 @@ public final class RoadStyles {
                             .add(Blocks.MOSSY_COBBLESTONE.getDefaultState(), 1)
                             .add(Blocks.MOSSY_STONE_BRICKS.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.CHERRY_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.CHERRY_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
 
             Map.entry(BiomeKeys.DARK_FOREST, new RoadStyle(
@@ -197,7 +196,7 @@ public final class RoadStyles {
                             .add(Blocks.STONE.getDefaultState(), 1)
                             .add(Blocks.COBBLESTONE.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.DARK_OAK_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.DARK_OAK_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
             Map.entry(BiomeKeys.SAVANNA, new RoadStyle(
                     BlockPalette.builder()
@@ -206,7 +205,7 @@ public final class RoadStyles {
                             .add(Blocks.ANDESITE.getDefaultState(), 1)
                             .add(Blocks.GRAVEL.getDefaultState(), 1)
                             .build(),
-                    new FenceDecoration(Blocks.ACACIA_FENCE.getDefaultState()))
+                    new LampPostDecoration(Blocks.ACACIA_FENCE.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
             Map.entry(BiomeKeys.DESERT, new RoadStyle(
                     BlockPalette.builder()
@@ -214,7 +213,7 @@ public final class RoadStyles {
                             .add(Blocks.SUSPICIOUS_SAND.getDefaultState(), 2)
                             .add(Blocks.PACKED_MUD.getDefaultState(), 2)
                             .build(),
-                    new FenceDecoration(Blocks.SANDSTONE_WALL.getDefaultState()))
+                    new LampPostDecoration(Blocks.SANDSTONE_WALL.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
             Map.entry(BiomeKeys.BADLANDS, new RoadStyle(
                     BlockPalette.builder()
@@ -222,7 +221,7 @@ public final class RoadStyles {
                             .add(Blocks.RED_SAND.getDefaultState(), 2)
                             .add(Blocks.PACKED_MUD.getDefaultState(), 2)
                             .build(),
-                    new FenceDecoration(Blocks.RED_SANDSTONE_WALL.getDefaultState()))
+                    new LampPostDecoration(Blocks.RED_SANDSTONE_WALL.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
             Map.entry(BiomeKeys.WOODED_BADLANDS, new RoadStyle(
                     BlockPalette.builder()
@@ -230,7 +229,7 @@ public final class RoadStyles {
                             .add(Blocks.RED_SAND.getDefaultState(), 2)
                             .add(Blocks.PACKED_MUD.getDefaultState(), 2)
                             .build(),
-                    new FenceDecoration(Blocks.RED_SANDSTONE_WALL.getDefaultState()))
+                    new LampPostDecoration(Blocks.RED_SANDSTONE_WALL.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             ),
             Map.entry(BiomeKeys.ERODED_BADLANDS, new RoadStyle(
                     BlockPalette.builder()
@@ -238,7 +237,7 @@ public final class RoadStyles {
                             .add(Blocks.RED_SAND.getDefaultState(), 2)
                             .add(Blocks.PACKED_MUD.getDefaultState(), 2)
                             .build(),
-                    new FenceDecoration(Blocks.RED_SANDSTONE_WALL.getDefaultState()))
+                    new LampPostDecoration(Blocks.RED_SANDSTONE_WALL.getDefaultState(), Blocks.LANTERN.getDefaultState()))
             )
     );
 
