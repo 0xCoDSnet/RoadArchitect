@@ -38,7 +38,7 @@ public final class DebugGraphScreenHook {
                 ServerWorld world = mc.getServer() == null ? null : mc.getServer().getOverworld();
                 if (world == null) continue;
 
-                RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+                RoadGraphState state = RoadGraphState.get(world);
 
                 List<Node> nodes  = new ArrayList<>(state.nodes().all().values());
                 Collection<EdgeStorage.Edge> edges = state.edges().all().values();

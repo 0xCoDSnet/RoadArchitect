@@ -26,7 +26,7 @@ public final class RoadGraphStateNeoForgeEvents {
     @SubscribeEvent
     public static void onLevelLoad(LevelEvent.Load event) {
         if (event.getLevel() instanceof ServerWorld world) {
-            RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+            RoadGraphState.get(world);
             LOGGER.debug("RoadGraphState loaded for world {}", world.getRegistryKey().getValue());
         }
     }
@@ -34,7 +34,7 @@ public final class RoadGraphStateNeoForgeEvents {
     @SubscribeEvent
     public static void onLevelUnload(LevelEvent.Unload event) {
         if (event.getLevel() instanceof ServerWorld world) {
-            RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+            RoadGraphState state = RoadGraphState.get(world);
             state.markDirty();
             LOGGER.debug("Saved RoadGraphState for world {} on unload", world.getRegistryKey().getValue());
         }
@@ -43,7 +43,7 @@ public final class RoadGraphStateNeoForgeEvents {
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         for (ServerWorld world : event.getServer().getWorlds()) {
-            RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+            RoadGraphState state = RoadGraphState.get(world);
             state.markDirty();
         }
         LOGGER.debug("Server stopping, all RoadGraphStates marked dirty");
