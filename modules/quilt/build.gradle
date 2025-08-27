@@ -104,7 +104,7 @@ modrinth {
     gameVersions  = [ rootProject.minecraft_version ]
     loaders       = [ "quilt" ]
     uploadFile    = remapJar                   // из Loom
-    // changelog     = rootProject.file("CHANGELOG.md").exists() ? rootProject.file("CHANGELOG.md").text : ""
+    changelog     = rootProject.file("CHANGELOG.md").exists() ? rootProject.file("CHANGELOG.md").text : ""
     dependencies { required.project "cloth-config" }
 }
 

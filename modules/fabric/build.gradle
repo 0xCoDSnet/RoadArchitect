@@ -104,7 +104,7 @@ modrinth {
     gameVersions  = [ rootProject.minecraft_version ]
     loaders       = [ "fabric" ]
     uploadFile    = remapJar                   // из Loom
-    // changelog     = rootProject.file("CHANGELOG.md").exists() ? rootProject.file("CHANGELOG.md").text : ""
+    changelog     = rootProject.file("CHANGELOG.md").exists() ? rootProject.file("CHANGELOG.md").text : ""
     dependencies { required.project "cloth-config" }
 }
 // ====================================================
@@ -139,16 +139,6 @@ tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge)
     mainFile.addGameVersion("${rootProject.minecraft_version}")
     mainFile.addJavaVersion("Java 21")
     mainFile.addEnvironment("Client", "Server")
-
-    // changelog: сначала берём из модуля, затем — из корня
-//    if (file("CHANGELOG.md").exists()) {
-//        mainFile.changelog = file("CHANGELOG.md"); mainFile.changelogType = "markdown"
-//    } else if (rootProject.file("CHANGELOG.md").exists()) {
-//        mainFile.changelog = rootProject.file("CHANGELOG.md"); mainFile.changelogType = "markdown"
-//    }
-
-    // зависимости (SLUG'и проектов на CurseForge)
+    mainFile.changelog = rootProject.file("CHANGELOG.md"); mainFile.changelogType = "markdown"
     mainFile.addRequirement("cloth-config")
-    //mainFile.addRequirement("fabric-api")
-    // mainFile.addOptional("some-optional-lib")
 }
