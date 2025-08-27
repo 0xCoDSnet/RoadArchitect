@@ -7,6 +7,7 @@ import net.oxcodsnet.roadarchitect.storage.EdgeStorage;
 import net.oxcodsnet.roadarchitect.storage.PathStorage;
 import net.oxcodsnet.roadarchitect.storage.RoadGraphState;
 import net.oxcodsnet.roadarchitect.util.AsyncExecutor;
+import net.oxcodsnet.roadarchitect.util.KeyUtil;
 import net.oxcodsnet.roadarchitect.util.PathFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,13 @@ public class PathFinderManager {
             RoadArchitect.MOD_ID + "/PathFinderManager"
     );
 
+    /**
+     * Computes paths for all NEW edges and saves them into {@link net.oxcodsnet.roadarchitect.storage.PathStorage}.
+     *
+     * @param world            server world
+     * @param preFillCacheZone half-size of the prefill square area in blocks (unused by default)
+     * @param maxSteps         A* global step limit for this run
+     */
     public static void computePaths(ServerWorld world, int preFillCacheZone, int maxSteps) {
         RoadGraphState graph = RoadGraphState.get(world);
         PathStorage storage = PathStorage.get(world);
@@ -38,7 +46,7 @@ public class PathFinderManager {
         for (Map.Entry<String, EdgeStorage.Status> entry : graph.edges().allWithStatus().entrySet()) {
             if (entry.getValue() != EdgeStorage.Status.NEW) continue;
             String edgeId = entry.getKey();
-            String[] nodes = edgeId.split("\\+", 2);
+            String[] nodes = KeyUtil.parseEdgeKey(edgeId);
             if (nodes.length != 2) {
                 LOGGER.debug("Invalid edge id: {}", edgeId);
                 continue;
@@ -88,13 +96,20 @@ public class PathFinderManager {
     }
 
     // overloads for backwards compatibility
+    /**
+     * Backward-compat shortcut with default parameters.
+     */
     public static void computePaths(ServerWorld world) {
         computePaths(world, 50, 10480);
     }
 
-    public static void computePaths(
-            ServerWorld world, int preFillCacheZone
-    ) {
+    /**
+     * Backward-compat shortcut with default {@code maxSteps}.
+     *
+     * @param world            server world
+     * @param preFillCacheZone half-size of the prefill square area in blocks (unused by default)
+     */
+    public static void computePaths(ServerWorld world, int preFillCacheZone) {
         computePaths(world, preFillCacheZone, 10480);
     }
 

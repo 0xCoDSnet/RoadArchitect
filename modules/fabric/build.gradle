@@ -90,7 +90,7 @@ remapJar {
     archiveFileName.set("roadarchitect-${project.version}-fabric+${rootProject.minecraft_version}.jar")
 }
 
-// =========== Modrith =========
+// ====================== Modrinth ====================
 apply plugin: "com.modrinth.minotaur"
 def modrinth_token = rootProject.ext.resolveModrinthToken()
 if (!modrinth_token) throw new GradleException("Set MODRINTH_TOKEN env or in .env")
@@ -104,7 +104,7 @@ modrinth {
     gameVersions  = [ rootProject.minecraft_version ]
     loaders       = [ "fabric" ]
     uploadFile    = remapJar                   // из Loom
-    // changelog     = rootProject.file("CHANGELOG.md").exists() ? rootProject.file("CHANGELOG.md").text : ""
+    changelog     = rootProject.file("CHANGELOG.md").exists() ? rootProject.file("CHANGELOG.md").text : ""
     dependencies { required.project "cloth-config" }
 }
 // ====================================================
@@ -139,9 +139,6 @@ tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge)
     mainFile.addGameVersion("${rootProject.minecraft_version}")
     mainFile.addJavaVersion("Java 21")
     mainFile.addEnvironment("Client", "Server")
-
-    mainFile.changelog = rootProject.file("CHANGELOG.md");
-    mainFile.changelogType = "markdown"
-
+    mainFile.changelog = rootProject.file("CHANGELOG.md"); mainFile.changelogType = "markdown"
     mainFile.addRequirement("cloth-config")
 }

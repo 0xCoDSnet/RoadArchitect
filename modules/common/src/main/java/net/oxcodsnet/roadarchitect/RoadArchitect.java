@@ -29,6 +29,32 @@ public final class RoadArchitect {
         }
 
         @Override
+        public int lampInterval() {
+            return RAConfigHolder.get().lampInterval();
+        }
+
+        @Override
+        public int buoyInterval() {
+            return RAConfigHolder.get().buoyInterval();
+        }
+
+        @Override
+        public int sideDecorationInterval() {
+            return RAConfigHolder.get().sideDecorationInterval();
+        }
+
+        @Override
+        public int maskErosion() {
+            return RAConfigHolder.get().maskErosion();
+        }
+
+        @Override
+        public boolean deterministicDecorations() {
+            return RAConfigHolder.get().deterministicDecorations();
+        }
+
+
+        @Override
         public java.util.List<String> structureSelectors() {
             return RAConfigHolder.get().structureSelectors();
         }

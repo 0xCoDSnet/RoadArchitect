@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class RoadGraphStateManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadGraphStateManager");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + RoadGraphStateManager.class.getSimpleName());
 
     private RoadGraphStateManager() {
     }
