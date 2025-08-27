@@ -151,7 +151,7 @@ public final class RoadPostProcessor {
                     clamps++;
                     if (LOG_GRAD_CLAMP) {
                         BlockPos p = refined.get(i);
-                        LOGGER.info("[PostProcess] Clamp↑ at {}: {} -> {} (ref={})", p, old, clamped, y[i - 1]);
+                        LOGGER.debug("[PostProcess] Clamp↑ at {}: {} -> {} (ref={})", p, old, clamped, y[i - 1]);
                     }
                     y[i] = clamped;
                 }
@@ -166,7 +166,7 @@ public final class RoadPostProcessor {
                     clamps++;
                     if (LOG_GRAD_CLAMP) {
                         BlockPos p = refined.get(i);
-                        LOGGER.info("[PostProcess] Clamp↓ at {}: {} -> {} (ref={})", p, old, clamped, y[i + 1]);
+                        LOGGER.debug("[PostProcess] Clamp↓ at {}: {} -> {} (ref={})", p, old, clamped, y[i + 1]);
                     }
                     y[i] = clamped;
                 }
@@ -280,7 +280,7 @@ public final class RoadPostProcessor {
                         if (!nr.path().isEmpty()) {
                             BlockPos s = nr.path().getFirst();
                             BlockPos t = nr.path().getLast();
-                            LOGGER.info(
+                            LOGGER.debug(
                                     "[PostProcess] READY (leg) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
                                     leg.getKey(), nr.path().size(), nr.spikesCut(), nr.gradClamped(), s, t
                             );
@@ -297,7 +297,7 @@ public final class RoadPostProcessor {
                     if (!trunkNR.path().isEmpty()) {
                         BlockPos s = trunkNR.path().getFirst();
                         BlockPos t = trunkNR.path().getLast();
-                        LOGGER.info(
+                        LOGGER.debug(
                                 "[PostProcess] READY (trunk) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
                                 br.trunkRaw.key, trunkNR.path().size(), trunkNR.spikesCut(), trunkNR.gradClamped(), s, t
                         );
@@ -321,7 +321,7 @@ public final class RoadPostProcessor {
                     if (!nr.path().isEmpty()) {
                         BlockPos s = nr.path().getFirst();
                         BlockPos t = nr.path().getLast();
-                        LOGGER.info(
+                        LOGGER.debug(
                                 "[PostProcess] READY (single) key={} points={}, spikesCut={}, gradClamped={}, start={}, end={}",
                                 activeKey, nr.path().size(), nr.spikesCut(), nr.gradClamped(), s, t
                         );
