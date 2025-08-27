@@ -2,14 +2,13 @@ package net.oxcodsnet.roadarchitect.storage;
 
 import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateType;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
-import net.oxcodsnet.roadarchitect.util.KeyUtil;
 import net.oxcodsnet.roadarchitect.util.PersistentStateUtil;
+import net.oxcodsnet.roadarchitect.util.NbtUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,15 @@ public final class PathDecorStorage extends PersistentState {
     private static final String GROUND_KEY = "G";
     private static final String WATER_INNER_KEY = "W";
 
-    public static final Type<PathDecorStorage> TYPE = new Type<>(PathDecorStorage::new, PathDecorStorage::fromNbt, DataFixTypes.SAVED_DATA_SCOREBOARD);
+    public static final PersistentStateType<PathDecorStorage> TYPE = new PersistentStateType<>(
+            KEY,
+            ctx -> new PathDecorStorage(),
+            ctx -> NbtCompound.CODEC.xmap(
+                    tag -> fromNbt(tag, ctx.world().getRegistryManager()),
+                    storage -> storage.writeNbt(new NbtCompound(), ctx.world().getRegistryManager())
+            ),
+            DataFixTypes.SAVED_DATA_SCOREBOARD
+    );
 
     private final ConcurrentMap<String, double[]> prefix = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, byte[]> groundMask = new ConcurrentHashMap<>();
@@ -45,35 +52,30 @@ public final class PathDecorStorage extends PersistentState {
     private final ConcurrentMap<String, Long> checksums = new ConcurrentHashMap<>();
 
     public static PathDecorStorage get(ServerWorld world) {
-        return PersistentStateUtil.get(world, TYPE, KEY);
+        return PersistentStateUtil.get(world, TYPE);
     }
 
     public static PathDecorStorage fromNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         PathDecorStorage storage = new PathDecorStorage();
-        NbtList list = tag.getList(ENTRIES_KEY, NbtElement.COMPOUND_TYPE);
+        NbtList list = tag.getListOrEmpty(ENTRIES_KEY);
         for (int i = 0; i < list.size(); i++) {
-            NbtCompound e = list.getCompound(i);
-            String key = e.getString(PATH_KEY);
-            long sum = e.getLong(CHECKSUM_KEY);
+            NbtCompound e = list.getCompoundOrEmpty(i);
+            String key = e.getString(PATH_KEY, "");
+            if (key.isEmpty()) continue;
+            long sum = e.getLong(CHECKSUM_KEY, 0L);
             storage.checksums.put(key, sum);
 
             // doubles
-            NbtList sList = e.getList(PREFIX_KEY, NbtElement.STRING_TYPE);
-            double[] S = new double[sList.size()];
-            for (int j = 0; j < sList.size(); j++) {
-                // use string to avoid double precision issues with NBT lacking double arrays in older APIs
-                S[j] = Double.parseDouble(sList.getString(j));
-            }
+            double[] S = NbtUtils.readDoubleList(e.getListOrEmpty(PREFIX_KEY));
             storage.prefix.put(key, S);
 
             // masks
-            storage.groundMask.put(key, getByteArray(e, GROUND_KEY));
-            storage.waterInteriorMask.put(key, getByteArray(e, WATER_INNER_KEY));
+            storage.groundMask.put(key, NbtUtils.readByteList(e.getListOrEmpty(GROUND_KEY)));
+            storage.waterInteriorMask.put(key, NbtUtils.readByteList(e.getListOrEmpty(WATER_INNER_KEY)));
         }
         return storage;
     }
 
-    @Override
     public NbtCompound writeNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         NbtList out = new NbtList();
         for (Map.Entry<String, double[]> e : prefix.entrySet()) {
@@ -82,15 +84,9 @@ public final class PathDecorStorage extends PersistentState {
             obj.putString(PATH_KEY, key);
             obj.putLong(CHECKSUM_KEY, checksums.getOrDefault(key, 0L));
 
-            NbtList sList = new NbtList();
-            double[] S = e.getValue();
-            for (double v : S) {
-                sList.add(NbtString.of(Double.toString(v)));
-            }
-            obj.put(PREFIX_KEY, sList);
-
-            putByteArray(obj, GROUND_KEY, groundMask.get(key));
-            putByteArray(obj, WATER_INNER_KEY, waterInteriorMask.get(key));
+            obj.put(PREFIX_KEY, NbtUtils.toDoubleList(e.getValue()));
+            obj.put(GROUND_KEY, NbtUtils.toByteList(groundMask.get(key)));
+            obj.put(WATER_INNER_KEY, NbtUtils.toByteList(waterInteriorMask.get(key)));
             out.add(obj);
         }
         tag.put(ENTRIES_KEY, out);
@@ -146,23 +142,5 @@ public final class PathDecorStorage extends PersistentState {
     /** Exposes dirty mark as public for helpers. */
     public void touch() {
         markDirty();
-    }
-
-    private static byte[] getByteArray(NbtCompound obj, String key) {
-        // store as list of numbers in string form to keep it simple without custom codecs
-        NbtList list = obj.getList(key, NbtElement.STRING_TYPE);
-        byte[] arr = new byte[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            arr[i] = Byte.parseByte(list.getString(i));
-        }
-        return arr;
-    }
-
-    private static void putByteArray(NbtCompound obj, String key, byte[] arr) {
-        NbtList list = new NbtList();
-        if (arr != null) {
-            for (byte b : arr) list.add(NbtString.of(Byte.toString(b)));
-        }
-        obj.put(key, list);
     }
 }

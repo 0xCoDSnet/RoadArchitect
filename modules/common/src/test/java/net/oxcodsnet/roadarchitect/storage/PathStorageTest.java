@@ -32,11 +32,10 @@ class PathStorageTest {
 
         NbtCompound tag = new NbtCompound();
         NbtCompound out = s.writeNbt(tag, null);
-        assertTrue(out.contains("paths", NbtElement.LIST_TYPE));
+        assertTrue(out.contains("paths"));
 
         PathStorage restored = PathStorage.fromNbt(out, null);
         assertEquals(s.getPath("a", "b"), restored.getPath("a", "b"));
         assertEquals(s.allStatuses(), restored.allStatuses());
     }
 }
-
