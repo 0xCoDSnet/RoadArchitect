@@ -49,49 +49,60 @@ Roads adapt their style to the biome, and the network is saved between game sess
 ---
 
 ## 📷 Screenshots
-### Savanna
-<p align="left">
-  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/4b3da6120c5ff2e47f76a8c30fc501b09f19fdff.webp" width="512" height="512">
-</p>
 
-### Desert
+### Plains (with lamp decorations)
 <p align="left">
-  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/295ab7327a26e0178f709c9ea4ea4e884607b5fe.webp" width="512" height="512">
-</p>
-
-### Forest
-<p align="left">
-  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/827177b77f8dfdbdd7d066a0d5f810645b51f172.webp" width="512" height="512">
-</p>
-
-### Cherry grove
-<p align="left">
-  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/45a4421507316e4a5c8a945f7689804dd054821a.webp" width="512" height="512">
-</p>
-
-### Taiga
-<p align="left">
-  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/138dc531317fc291c44471533066d6d997d53af8.webp" width="512" height="512" alt="RoadArchitect icon">
-</p>
-
-### Swamp
-<p align="left">
-  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/d794b96b28bf84884902ca2e05504617ee1f9800.webp" width="512" height="512">
-</p>
-
-### Old growth spruce taiga
-<p align="left">
-  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/a228fa4f9649aea42ae66d9269442686df6521a9.webp" width="512" height="512">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/6396ec0041c37f3a716514a5622a438c7d5aa838.webp" height="512">
 </p>
 
 ### Plains
 <p align="left">
-  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/36c5f56757f8d448dc00cffddbd3ac129cb2bb91.webp" width="512" height="512">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/36c5f56757f8d448dc00cffddbd3ac129cb2bb91.webp" height="512">
+</p>
+
+### Savanna
+<p align="left">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/4b3da6120c5ff2e47f76a8c30fc501b09f19fdff.webp" height="512">
+</p>
+
+### Desert
+<p align="left">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/295ab7327a26e0178f709c9ea4ea4e884607b5fe.webp" height="512">
+</p>
+
+### Forest
+<p align="left">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/827177b77f8dfdbdd7d066a0d5f810645b51f172.webp" height="512">
+</p>
+
+### Cherry grove
+<p align="left">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/45a4421507316e4a5c8a945f7689804dd054821a.webp" height="512">
+</p>
+
+### Cherry grove (with lamp decorations)
+<p align="left">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/ad851b4b32f62f165b6e37b3c26fffaf36129ff8.webp" height="512">
+</p>
+
+### Taiga
+<p align="left">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/138dc531317fc291c44471533066d6d997d53af8.webp" height="512">
+</p>
+
+### Swamp
+<p align="left">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/d794b96b28bf84884902ca2e05504617ee1f9800.webp" height="512">
+</p>
+
+### Old growth spruce taiga
+<p align="left">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/a228fa4f9649aea42ae66d9269442686df6521a9.webp" height="512">
 </p>
 
 ### River
 <p align="left">
-  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/c99e8d83bce571228c71efa6a3f6522551af16d9.webp" width="512" height="512">
+  <img src="https://cdn.modrinth.com/data/dLRvLyY3/images/c99e8d83bce571228c71efa6a3f6522551af16d9.webp" height="512">
 </p>
 
 ---
