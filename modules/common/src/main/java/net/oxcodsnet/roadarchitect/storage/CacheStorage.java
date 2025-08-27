@@ -18,6 +18,7 @@ import net.oxcodsnet.roadarchitect.util.PersistentStateUtil;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import net.oxcodsnet.roadarchitect.util.NbtUtils;
 
 public class CacheStorage extends PersistentState {
     private static final String KEY = "road_cache";
@@ -48,64 +49,39 @@ public class CacheStorage extends PersistentState {
     public static CacheStorage fromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         CacheStorage storage = new CacheStorage();
         NbtList hList = tag.getListOrEmpty(HEIGHTS_KEY);
-        for (int i = 0; i < hList.size(); i++) {
-            NbtCompound entry = hList.getCompoundOrEmpty(i);
-            long k = entry.getLong(ENTRY_KEY, 0L);
-            int v = entry.getInt(ENTRY_VALUE, 0);
-            storage.heights.put(k, v);
-        }
+        net.oxcodsnet.roadarchitect.util.NbtUtils.fillLongIntMap(hList, storage.heights);
+
         NbtList sList = tag.getListOrEmpty(STABILITIES_KEY);
-        for (int i = 0; i < sList.size(); i++) {
-            NbtCompound entry = sList.getCompoundOrEmpty(i);
-            long k = entry.getLong(ENTRY_KEY, 0L);
-            double v = entry.getDouble(ENTRY_VALUE, 0.0);
-            storage.stabilities.put(k, v);
-        }
+        net.oxcodsnet.roadarchitect.util.NbtUtils.fillLongDoubleMap(sList, storage.stabilities);
+
         NbtList bList = tag.getListOrEmpty(BIOMES_KEY);
+        java.util.HashMap<Long, String> biomeIds = new java.util.HashMap<>(bList.size());
+        net.oxcodsnet.roadarchitect.util.NbtUtils.fillLongStringMap(bList, biomeIds);
         RegistryWrapper.Impl<Biome> registry = lookup == null ? null : lookup.getOrThrow(RegistryKeys.BIOME);
-        for (int i = 0; i < bList.size(); i++) {
-            NbtCompound entry = bList.getCompoundOrEmpty(i);
-            Identifier id = Identifier.tryParse(entry.getString(ENTRY_VALUE, ""));
-            if (id == null || registry == null) {
-                continue;
+        if (registry != null) {
+            for (java.util.Map.Entry<Long, String> entry : biomeIds.entrySet()) {
+                Identifier id = Identifier.tryParse(entry.getValue());
+                if (id == null) continue;
+                RegistryKey<Biome> key = RegistryKey.of(RegistryKeys.BIOME, id);
+                registry.getOptional(key).ifPresent(regEntry -> storage.biomes.put(entry.getKey(), regEntry));
             }
-            RegistryKey<Biome> key = RegistryKey.of(RegistryKeys.BIOME, id);
-            registry.getOptional(key).ifPresent(e -> storage.biomes.put(entry.getLong(ENTRY_KEY, 0L), e));
         }
         return storage;
     }
 
     public NbtCompound writeNbt(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
-        NbtList hList = new NbtList();
-        for (Map.Entry<Long, Integer> entry : heights.entrySet()) {
-            NbtCompound elem = new NbtCompound();
-            elem.putLong(ENTRY_KEY, entry.getKey());
-            elem.putInt(ENTRY_VALUE, entry.getValue());
-            hList.add(elem);
-        }
-        tag.put(HEIGHTS_KEY, hList);
+        tag.put(HEIGHTS_KEY, NbtUtils.toLongIntList(heights));
 
-        NbtList sList = new NbtList();
-        for (Map.Entry<Long, Double> entry : stabilities.entrySet()) {
-            NbtCompound elem = new NbtCompound();
-            elem.putLong(ENTRY_KEY, entry.getKey());
-            elem.putDouble(ENTRY_VALUE, entry.getValue());
-            sList.add(elem);
-        }
-        tag.put(STABILITIES_KEY, sList);
+        tag.put(STABILITIES_KEY, NbtUtils.toLongDoubleList(stabilities));
 
-        NbtList bList = new NbtList();
+        java.util.HashMap<Long, String> biomeIds = new java.util.HashMap<>(biomes.size());
         for (Map.Entry<Long, RegistryEntry<Biome>> entry : biomes.entrySet()) {
             Identifier id = entry.getValue().getKey().map(RegistryKey::getValue).orElse(null);
-            if (id == null) {
-                continue;
+            if (id != null) {
+                biomeIds.put(entry.getKey(), id.toString());
             }
-            NbtCompound elem = new NbtCompound();
-            elem.putLong(ENTRY_KEY, entry.getKey());
-            elem.putString(ENTRY_VALUE, id.toString());
-            bList.add(elem);
         }
-        tag.put(BIOMES_KEY, bList);
+        tag.put(BIOMES_KEY, NbtUtils.toLongStringList(biomeIds));
         return tag;
     }
 
@@ -121,4 +97,3 @@ public class CacheStorage extends PersistentState {
         return biomes;
     }
 }
-

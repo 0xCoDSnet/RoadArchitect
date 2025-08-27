@@ -46,6 +46,8 @@ public final class RoadFeatureRegistry {
 
     /**
      * Bootstrap for configured features used during data generation.
+     *
+     * @param ctx registerable context for configured features
      */
     public static void bootstrapConfigured(Registerable<ConfiguredFeature<?, ?>> ctx) {
         ctx.register(ROAD_CONFIGURED_FEATURE_KEY, new ConfiguredFeature<>(ROAD_FEATURE, new RoadFeatureConfig(3, 1)));
@@ -53,6 +55,8 @@ public final class RoadFeatureRegistry {
 
     /**
      * Bootstrap for placed features used during data generation.
+     *
+     * @param ctx registerable context for placed features
      */
     public static void bootstrapPlaced(net.minecraft.registry.Registerable<PlacedFeature> ctx) {
         RegistryEntryLookup<ConfiguredFeature<?, ?>> lookup = ctx.getRegistryLookup(RegistryKeys.CONFIGURED_FEATURE);

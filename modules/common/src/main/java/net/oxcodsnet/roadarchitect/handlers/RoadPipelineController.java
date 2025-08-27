@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * сохраняя точные кейсы из исходного register().
  */
 public final class RoadPipelineController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadPipelineController");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + RoadPipelineController.class.getSimpleName());
 
     /**
      * Миры, для которых уже отработал INIT по событию генерации спавн-чанка.
@@ -156,23 +156,18 @@ public final class RoadPipelineController {
     }
 
     private static boolean containsTargetStructure(ServerWorld world, Chunk chunk) {
-        if (!chunk.hasStructureReferences()) {
-            return false;
-        }
+        if (!chunk.hasStructureReferences()) return false;
 
         Registry<Structure> registry = world.getRegistryManager().getOrThrow(RegistryKeys.STRUCTURE);
         for (StructureStart start : chunk.getStructureStarts().values()) {
             Structure structure = start.getStructure();
             Identifier id = registry.getId(structure);
-            if (id != null && TARGET_IDS.contains(id)) {
-                return true;
-            }
+            if (id != null && TARGET_IDS.contains(id)) return true;
+
             RegistryEntry<Structure> entry = registry.getEntry(structure);
             if (entry != null) {
                 for (TagKey<Structure> tag : TARGET_TAGS) {
-                    if (entry.isIn(tag)) {
-                        return true;
-                    }
+                    if (entry.isIn(tag)) return true;
                 }
             }
         }

@@ -15,12 +15,27 @@ import java.util.List;
  * <p>Manager responsible for initiating structure scans.</p>
  */
 public class StructureScanManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + StructureScanManager.class.getSimpleName());
 
+    /**
+     * Triggers a structure scan around the given position with default radius.
+     *
+     * @param world    server world
+     * @param approach label of the caller/context used in logs
+     * @param center   scan center position
+     */
     static void scan(ServerWorld world, String approach, BlockPos center) {
         scan(world, approach, center, 1);
     }
 
+    /**
+     * Triggers a structure scan around the given position.
+     *
+     * @param world          server world
+     * @param approach       label of the caller/context used in logs
+     * @param center         scan center position
+     * @param overallRadius  grid half-size in chunks for planning pass
+     */
     static void scan(ServerWorld world, String approach, BlockPos center, int overallRadius) {
         int scanRadius = 1;
         List<String> selectors = RoadArchitect.CONFIG.structureSelectors();

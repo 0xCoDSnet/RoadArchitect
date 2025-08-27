@@ -5,6 +5,8 @@ import net.oxcodsnet.roadarchitect.storage.components.Node;
 import net.oxcodsnet.roadarchitect.util.KeyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.oxcodsnet.roadarchitect.RoadArchitect;
+import net.oxcodsnet.roadarchitect.util.NbtUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * с полями <code>a</code>, <code>b</code> и <code>status</code>.
  */
 public class EdgeStorage {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EdgeStorage.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + EdgeStorage.class.getSimpleName());
 
     /**
      * Радиус, внутри которого допускается соединение узлов.
@@ -42,8 +44,8 @@ public class EdgeStorage {
             NbtCompound entry = tag.getCompoundOrEmpty(edgeId);
             String a = entry.getString("a", "");
             String b = entry.getString("b", "");
-            String s = entry.getString("status", Status.NEW.name());
-            Status status = Status.valueOf(s);
+            if (a.isEmpty() || b.isEmpty()) continue;
+            Status status = NbtUtils.getEnumOrDefault(entry, "status", Status.class, Status.NEW);
             storage.edges.put(edgeId, new Edge(a, b, status));
         }
         return storage;

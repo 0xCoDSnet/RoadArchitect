@@ -1,9 +1,18 @@
-v1.2.0</strong> — <em>Vanilla loading, convenient settings, visual debug</em>
+v1.3.0 — <em>Smarter scans & deterministic decorations</em>
 
 ### Highlights
-- 🪄 **Progress screen**: dropped `owo-lib` and switched to vanilla rendering (Fabric/Quilt and NeoForge), showing the current pipeline stage.
-- 🧭 **Road-graph debug screen**: pan/zoom, tooltips, and a color legend; in singleplayer, clicking a node teleports to it. Opens with **H**.
-- 🧰 **Settings**: **Cloth Config** on all loaders; **Mod Menu** support (Fabric/Quilt); **Catalogue** support (NeoForge).
-- 🌐 **Localizations**: English, Russian, Spanish, French, German, Chinese.
+
+- 🧠 Smarter scanning: major performance boost for large-area scans and many structure types—smoother gameplay, cleaner road graphs, and more reliable structure detection.
+- 🌲 Deterministic decorations: consistent, per-path placement of decorations (lamps, buoys, side pieces) across chunk loads—less pop-in and cleaner chunk borders. Also fixes common issues like floating fence posts or off-grid buoys.
+- 💡 New Lamp decorations: fresh styles and better fence integration where appropriate.
+- 🧭 Debug map: shows your position and direction (red dot + arrow).
+- ⚙️ New settings (all loaders):
+    - Lamp interval
+    - Side decoration interval
+    - Buoy interval
+    - Mask erosion near land/water transitions
+    - Toggle for deterministic decorations
+- 🛤️ Smoother road profiles: post-processing reduces spikes and clamps extreme slopes for cleaner elevation transitions.
+- 🌐 Localization & UI: updated strings (EN/RU/ES/FR/DE/ZH) and a small progress-stage label fix (“initialisation”).
 
 **Compatibility:** No breaking changes; existing worlds remain compatible.

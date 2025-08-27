@@ -51,7 +51,7 @@ public class PathFinder {
      */
     public static final double HEURISTIC_SCALE = 95.0;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathFinder");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + PathFinder.class.getSimpleName());
     private static final int[][] OFFSETS = generateOffsets();
 
     private static final Map<TagKey<Biome>, Double> BIOME_COSTS = Map.of(

@@ -9,14 +9,11 @@ import net.minecraft.world.StructureWorldAccess;
 
 import java.util.List;
 
-/**
- * Decoration that places a fence post. If the target position is occupied, the
- * post is shifted upwards until free space is found. After placement the fence
- * is extended downwards until it rests on a solid block, ensuring there are no
- * floating posts.
- */
 public final class FenceDecoration implements Decoration {
-    private static final int MAX_SUPPORT_DEPTH = 3;   // макс. «воздуха» под столбом
+    private static final int MAX_SUPPORT_DEPTH = 3;   // максимум «воздуха» под столбом
+    private static final int MAX_UP_SEARCH     = 3;   // максимум поиска свободного места вверх
+    private static final int PLACE_FLAGS       = Block.NOTIFY_ALL | Block.NO_REDRAW;
+
     private final BlockState fenceState;
 
     public FenceDecoration(BlockState fenceState) {
@@ -25,89 +22,108 @@ public final class FenceDecoration implements Decoration {
 
     @Override
     public void place(StructureWorldAccess world, BlockPos basePos, Random random) {
-        /* ─────────────────────────────────────────────────────
-         * 1. Найти свободное место выше дорожного блока
-         * ───────────────────────────────────────────────────── */
-        BlockPos top = basePos.up();
-        int worldTop = world.getBottomY() + world.getHeight() - 1;
-        while (!world.isAir(top) && top.getY() < worldTop) {
-            top = top.up();
-        }
-        if (!world.isAir(top)) {
-            return; // свободного места нет
-        }
-
-        /* ─────────────────────────────────────────────────────
-         * 2. Проверить глубину до твёрдого основания (≤ 3)
-         * ───────────────────────────────────────────────────── */
-        int depth = 0;
-        BlockPos probe = top.down();
-        while (probe.getY() >= world.getBottomY() && !world.getBlockState(probe).isSolidBlock(world, probe)) {
-            depth++;
-            if (depth > MAX_SUPPORT_DEPTH) {
-                return; // слишком глубоко – прерываем размещение
-            }
-            probe = probe.down();
-        }
-
-        /* ─────────────────────────────────────────────────────
-         * 3. Поставить основной столб и вытянуть вниз до опоры
-         * ───────────────────────────────────────────────────── */
-        setFenceSmart(world, top);
-
-        BlockPos current = top.down();
-        while (current.getY() >= world.getBottomY() && !world.getBlockState(current).isSolidBlock(world, current)) {
-            setFenceSmart(world, current);
-            current = current.down();
-        }
+        BlockPos top = computeTop(world, basePos);
+        if (top == null) return;
+        placeFromTopDown(world, top);
     }
 
     /**
-     * Ставит забор, не заменяя твёрдые блоки и не оставляя его в воздухе.
-     *
-     * @param world StructureWorldAccess (во время world-гена) :contentReference[oaicite:4]{index=4}
-     * @param pos   «базовая» точка, от которой считаем ±3 блока
+     * Считает «верх» столба по правилам:
+     * - если стартовый блок НЕ твёрдый → ищем опору вниз ≤ 3 и ставим над ней;
+     * - если стартовый блок твёрдый → поднимаем позицию вверх и ищем свободный слот ≤ 3.
+     * Возвращает null, если условия не выполнены.
      */
-    private void setFenceSmart(StructureWorldAccess world, BlockPos pos) {
+    private BlockPos computeTop(StructureWorldAccess world, BlockPos base) {
+        int bottomY = world.getBottomY();
 
-        // ── ШАГ 1. ищем первый заменяемый блок ↑ до +3 ──
-        BlockPos head = pos;
-        for (int i = 0; i < 3 && !world.getBlockState(head).isReplaceable(); i++) {
-            head = head.up();
-        }
+        BlockState baseState = world.getBlockState(base);
+        boolean baseSolid = baseState.isSolidBlock(world, base); // твёрдый ли стартовый блок
 
-        if (!world.getBlockState(head).isReplaceable()) return;
+        if (!baseSolid) {
+            // Ищем опору вниз не дальше чем на 3 блока
+            BlockPos probe = base.down();
+            int depth = 0;
+            while (probe.getY() >= bottomY
+                    && depth < MAX_SUPPORT_DEPTH
+                    && !world.getBlockState(probe).isSolidBlock(world, probe)) {
+                probe = probe.down();
+                depth++;
+            }
+            if (!world.getBlockState(probe).isSolidBlock(world, probe)) {
+                return null; // опоры нет в пределах 3
+            }
 
-        // ── ШАГ 2. ставим «верхушку» ──
-        world.setBlockState(head, this.fenceState, Block.NO_REDRAW);
+            // Ставим верх столба над найденной опорой
+            BlockPos top = probe.up();
+            if (!world.getBlockState(top).isReplaceable()) {
+                return null; // место занято чем-то незаменяемым
+            }
+            return top;
+        } else {
+            // Стартовый блок твёрдый — ищем свободный слот вверх не дальше 3
+            BlockPos top = base.up();
+            int rise = 0;
+            while (rise < MAX_UP_SEARCH && !world.getBlockState(top).isReplaceable()) {
+                top = top.up();
+                rise++;
+            }
+            if (!world.getBlockState(top).isReplaceable()) {
+                return null; // свободного места в пределах 3 нет
+            }
 
-        // ── ШАГ 3. тянем ножку вниз до первого твёрдого или −3 ──
-        BlockPos leg = head.down();
-        for (int i = 0; i < 3 && world.getBlockState(leg).isReplaceable(); i++, leg = leg.down()) {
-            world.setBlockState(leg, this.fenceState, Block.NO_REDRAW);
+            // Доп. валидация: под top должна быть опора не дальше 3
+            int depth = 0;
+            BlockPos probe = top.down();
+            while (probe.getY() >= bottomY
+                    && depth < MAX_SUPPORT_DEPTH
+                    && !world.getBlockState(probe).isSolidBlock(world, probe)) {
+                probe = probe.down();
+                depth++;
+            }
+            if (!world.getBlockState(probe).isSolidBlock(world, probe)) {
+                return null; // «висим» в воздухе глубже чем на 3
+            }
+            return top;
         }
     }
 
-    public void placeFenceStripe(StructureWorldAccess world, List<BlockPos> stripe) {
+    /** Ставит забор в точке top и тянет вниз до опоры, но не глубже 3. */
+    private void placeFromTopDown(StructureWorldAccess world, BlockPos top) {
+        world.setBlockState(top, this.fenceState, PLACE_FLAGS);
 
-        // 1-й проход – «сырые» столбики, но уже с вертикальной логикой
-        for (BlockPos p : stripe) {
-            setFenceSmart(world, p);
+        BlockPos cur = top.down();
+        int depth = 0;
+        while (cur.getY() >= world.getBottomY()
+                && depth < MAX_SUPPORT_DEPTH
+                && !world.getBlockState(cur).isSolidBlock(world, cur)) {
+            world.setBlockState(cur, this.fenceState, PLACE_FLAGS);
+            cur = cur.down();
+            depth++;
+        }
+    }
+
+    /** Линейка столбов с той же вертикальной логикой. */
+    public void placeFenceStripe(StructureWorldAccess world, List<BlockPos> stripe) {
+        for (BlockPos base : stripe) {
+            BlockPos top = computeTop(world, base);
+            if (top != null) {
+                placeFromTopDown(world, top);
+            }
         }
 
-        // 2-й проход – пересчитываем формы (как раньше)
-        Random random = Random.create();
-        for (BlockPos p : stripe) {
-            BlockState st = world.getBlockState(p);
-            for (Direction d : Direction.Type.HORIZONTAL) {
-                BlockPos n = p.offset(d);
-                st = st.getStateForNeighborUpdate(world, world, p, d, n, world.getBlockState(n), random);
+        // Доп. проход: перерасчёт форм (если хочешь руками подтолкнуть коннекты)
+        for (BlockPos base : stripe) {
+            for (int dy = 0; dy <= MAX_SUPPORT_DEPTH; dy++) {
+                BlockPos p = base.up(dy);                // на случай, если верх ушёл выше base
+                BlockState st = world.getBlockState(p);
+                if (!st.isOf(fenceState.getBlock())) continue;
+
+                for (Direction d : Direction.Type.HORIZONTAL) {
+                    BlockPos n = p.offset(d);
+                    st = st.getStateForNeighborUpdate(world, world, p, d, n, world.getBlockState(n), Random.create());
+                }
+                world.setBlockState(p, st, PLACE_FLAGS);
             }
-            world.setBlockState(p, st, Block.NO_REDRAW);
         }
     }
 }
-
-
-
-

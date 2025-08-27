@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Stores computed paths between nodes as a {@link PersistentState}.</p>
  */
 public class PathStorage extends PersistentState {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/PathStorage");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + PathStorage.class.getSimpleName());
     private static final String KEY = "road_paths";
     private static final String PATHS_KEY = "paths";
     private static final String FROM_KEY = "from";
@@ -78,13 +78,7 @@ public class PathStorage extends PersistentState {
                 }
             }
             storage.paths.put(key, positions);
-            String statusStr = entry.getString(STATUS_KEY, Status.READY.name());
-            Status status;
-            try {
-                status = Status.valueOf(statusStr);
-            } catch (IllegalArgumentException ignore) {
-                status = Status.READY;
-            }
+            Status status = net.oxcodsnet.roadarchitect.util.NbtUtils.getEnumOrDefault(entry, STATUS_KEY, Status.class, Status.READY);
             storage.statuses.put(key, status);
         }
         return storage;
@@ -97,7 +91,7 @@ public class PathStorage extends PersistentState {
     public NbtCompound writeNbt(NbtCompound tag, net.minecraft.registry.RegistryWrapper.WrapperLookup lookup) {
         NbtList list = new NbtList();
         for (Map.Entry<String, List<BlockPos>> entry : paths.entrySet()) {
-            String[] ids = entry.getKey().split("\\|", 2);
+            String[] ids = KeyUtil.parsePathKey(entry.getKey());
             if (ids.length != 2) continue;
             NbtCompound elem = new NbtCompound();
             elem.putString(FROM_KEY, ids[0]);
