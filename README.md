@@ -30,7 +30,7 @@
 **RoadArchitect** is a **Fabric / Quilt / NeoForge** mod for **Minecraft 1.21.1–1.21.8** that automatically scans the world for villages and other structures and connects them with roads to form a persistent travel network.  
 Roads adapt their style to the biome, and the network is saved between game sessions.
 
-> **Current version:** `v1.2.0`
+> **Current version:** `v1.3.0`
 
 ## ✨ Features
 
@@ -131,6 +131,26 @@ Roads adapt their style to the biome, and the network is saved between game sess
 ---
 
 ## 🗒️ Recent changes
+
+<details>
+<summary><strong>v1.3.0</strong> — <em>Smarter scans & deterministic decorations</em></summary>
+
+### Highlights
+- 🧠 Smarter scanning: major performance boost for large-area scans and many structure types—smoother gameplay, cleaner road graphs, and more reliable structure detection.
+- 🌲 Deterministic decorations: consistent, per-path placement of decorations (lamps, buoys, side pieces) across chunk loads—less pop-in and cleaner chunk borders. Also fixes common issues like floating fence posts or off-grid buoys.
+- 💡 New Lamp decorations: fresh styles and better fence integration where appropriate.
+- 🧭 Debug map: shows your position and direction (red dot + arrow).
+- ⚙️ New settings (all loaders):
+    - Lamp interval
+    - Side decoration interval
+    - Buoy interval
+    - Mask erosion near land/water transitions
+    - Toggle for deterministic decorations
+- 🛤️ Smoother road profiles: post-processing reduces spikes and clamps extreme slopes for cleaner elevation transitions.
+- 🌐 Localization & UI: updated strings (EN/RU/ES/FR/DE/ZH) and a small progress-stage label fix (“initialisation”).
+
+**Compatibility:** No breaking changes; existing worlds remain compatible.
+</details>
 
 <details>
 <summary><strong>v1.2.0</strong> — <em>Vanilla loading, convenient settings, visual debug</em></summary>
