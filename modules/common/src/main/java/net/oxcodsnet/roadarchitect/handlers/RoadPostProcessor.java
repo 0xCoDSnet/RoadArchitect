@@ -21,7 +21,7 @@ import java.util.Map.Entry;
  * Дополнительно: нормализация высот + подробное логирование мест «иголок».
  */
 public final class RoadPostProcessor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadPostProcessor");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + RoadPostProcessor.class.getSimpleName());
     // ====== ПАРАМЕТРЫ (можно вынести в конфиг позже) ======
     private static final int TOLERANCE_BLOCKS = 45;          // близость, блоки
     private static final int ANGLE_THRESHOLD_DEG = 35;       // почти параллельные

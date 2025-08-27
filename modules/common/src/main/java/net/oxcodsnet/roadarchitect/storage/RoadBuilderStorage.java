@@ -89,6 +89,11 @@ public class RoadBuilderStorage extends PersistentState {
     /**
      * Добавляет новый сегмент для строительства в указанном чанке.
      * <p>Adds a new segment to be built within the given chunk.</p>
+     *
+     * @param chunk целевой чанк / target chunk
+     * @param key   ключ пути / path key
+     * @param start индекс начала включительно / inclusive start index
+     * @param end   индекс конца исключительно / exclusive end index
      */
     public void addSegment(ChunkPos chunk, String key, int start, int end) {
         segments.computeIfAbsent(chunk, c -> new CopyOnWriteArrayList<>())
@@ -99,6 +104,8 @@ public class RoadBuilderStorage extends PersistentState {
     /**
      * Возвращает список сегментов, ожидающих постройки в чанке.
      * <p>Returns the list of queued segments for the chunk.</p>
+     *
+     * @param chunk чанк / chunk position
      */
     public List<SegmentEntry> getSegments(ChunkPos chunk) {
         return segments.getOrDefault(chunk, List.of());
@@ -107,6 +114,9 @@ public class RoadBuilderStorage extends PersistentState {
     /**
      * Удаляет указанный сегмент из очереди чанка.
      * <p>Removes the given segment from the chunk queue.</p>
+     *
+     * @param chunk чанк / chunk position
+     * @param entry сегмент / segment entry to remove
      */
     public void removeSegment(ChunkPos chunk, SegmentEntry entry) {
         List<SegmentEntry> list = segments.get(chunk);

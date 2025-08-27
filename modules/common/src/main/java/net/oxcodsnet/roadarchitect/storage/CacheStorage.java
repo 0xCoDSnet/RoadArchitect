@@ -18,6 +18,7 @@ import net.oxcodsnet.roadarchitect.util.PersistentStateUtil;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import net.oxcodsnet.roadarchitect.util.NbtUtils;
 
 public class CacheStorage extends PersistentState {
     private static final String KEY = "road_cache";
@@ -76,36 +77,18 @@ public class CacheStorage extends PersistentState {
     }
 
     public NbtCompound writeNbt(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
-        NbtList hList = new NbtList();
-        for (Map.Entry<Long, Integer> entry : heights.entrySet()) {
-            NbtCompound elem = new NbtCompound();
-            elem.putLong(ENTRY_KEY, entry.getKey());
-            elem.putInt(ENTRY_VALUE, entry.getValue());
-            hList.add(elem);
-        }
-        tag.put(HEIGHTS_KEY, hList);
+        tag.put(HEIGHTS_KEY, NbtUtils.toLongIntList(heights));
 
-        NbtList sList = new NbtList();
-        for (Map.Entry<Long, Double> entry : stabilities.entrySet()) {
-            NbtCompound elem = new NbtCompound();
-            elem.putLong(ENTRY_KEY, entry.getKey());
-            elem.putDouble(ENTRY_VALUE, entry.getValue());
-            sList.add(elem);
-        }
-        tag.put(STABILITIES_KEY, sList);
+        tag.put(STABILITIES_KEY, NbtUtils.toLongDoubleList(stabilities));
 
-        NbtList bList = new NbtList();
+        java.util.HashMap<Long, String> biomeIds = new java.util.HashMap<>(biomes.size());
         for (Map.Entry<Long, RegistryEntry<Biome>> entry : biomes.entrySet()) {
             Identifier id = entry.getValue().getKey().map(RegistryKey::getValue).orElse(null);
-            if (id == null) {
-                continue;
+            if (id != null) {
+                biomeIds.put(entry.getKey(), id.toString());
             }
-            NbtCompound elem = new NbtCompound();
-            elem.putLong(ENTRY_KEY, entry.getKey());
-            elem.putString(ENTRY_VALUE, id.toString());
-            bList.add(elem);
         }
-        tag.put(BIOMES_KEY, bList);
+        tag.put(BIOMES_KEY, NbtUtils.toLongStringList(biomeIds));
         return tag;
     }
 
