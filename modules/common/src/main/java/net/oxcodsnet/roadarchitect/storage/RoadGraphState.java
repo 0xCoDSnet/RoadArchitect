@@ -111,17 +111,19 @@ public class RoadGraphState extends PersistentState {
     /**
      * Пытается соединить два узла, запрещая «крестовые» рёбра.
      */
-    public void connect(Node NodeA, Node NodeB) {
-
-        String idNodeA = NodeA.id();
-        String idNodeB = NodeB.id();
-        if (NodeA == null || NodeB == null || idNodeA.equals(idNodeB)) {
+    public void connect(Node nodeA, Node nodeB) {
+        if (nodeA == null || nodeB == null) {
+            return;
+        }
+        String idNodeA = nodeA.id();
+        String idNodeB = nodeB.id();
+        if (idNodeA.equals(idNodeB)) {
             return;
         }
 
         // 1) проверяем радиус
-        double dx = NodeA.pos().getX() - NodeB.pos().getX();
-        double dz = NodeA.pos().getZ() - NodeB.pos().getZ();
+        double dx = nodeA.pos().getX() - nodeB.pos().getX();
+        double dz = nodeA.pos().getZ() - nodeB.pos().getZ();
         double max = edgeStorage.radius() * 2.0;
         if (dx * dx + dz * dz > max * max) {
             return;
@@ -139,13 +141,13 @@ public class RoadGraphState extends PersistentState {
             Node n2 = nodeStorage.all().get(e.nodeB());
             if (n1 == null || n2 == null) continue;
 
-            if (GeometryUtils.segmentsIntersect2D(NodeA.pos(), NodeB.pos(), n1.pos(), n2.pos())) {
+            if (GeometryUtils.segmentsIntersect2D(nodeA.pos(), nodeB.pos(), n1.pos(), n2.pos())) {
                 return;
             }
         }
 
         // 4) всё чисто — делегируем фактическое создание
-        boolean added = edgeStorage.add(NodeA, NodeB);
+        boolean added = edgeStorage.add(nodeA, nodeB);
         if (added) this.markDirty();
     }
 
