@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public class RoadBuilderManager {
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadBuilderManager");
+            LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + RoadBuilderManager.class.getSimpleName());
 
     /**
      * Формирует задачи на строительство для переданных путей.

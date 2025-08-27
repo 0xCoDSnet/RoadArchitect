@@ -136,10 +136,6 @@ tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge)
     mainFile.addGameVersion("${rootProject.minecraft_version}")
     mainFile.addJavaVersion("Java 21")
     mainFile.addEnvironment("Client", "Server")
-
-//    if (rootProject.file("CHANGELOG.md").exists()) {
-//        mainFile.changelog = rootProject.file("CHANGELOG.md"); mainFile.changelogType = "markdown"
-//    }
-    // зависимости по необходимости
+    mainFile.changelog = rootProject.file("CHANGELOG.md"); mainFile.changelogType = "markdown"
     mainFile.addRequirement("cloth-config")
 }

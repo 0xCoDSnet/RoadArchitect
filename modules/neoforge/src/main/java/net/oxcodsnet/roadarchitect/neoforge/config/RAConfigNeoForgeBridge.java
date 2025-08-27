@@ -43,6 +43,32 @@ public final class RAConfigNeoForgeBridge {
             }
 
             @Override
+            public int lampInterval() {
+                return holder.getConfig().lampInterval;
+            }
+
+            @Override
+            public int buoyInterval() {
+                return holder.getConfig().buoyInterval;
+            }
+
+            @Override
+            public int sideDecorationInterval() {
+                return holder.getConfig().sideDecorationInterval;
+            }
+
+            @Override
+            public int maskErosion() {
+                return holder.getConfig().maskErosion;
+            }
+
+            @Override
+            public boolean deterministicDecorations() {
+                return holder.getConfig().deterministicDecorations;
+            }
+
+
+            @Override
             public java.util.List<String> structureSelectors() {
                 return holder.getConfig().structureSelectors;
             }
