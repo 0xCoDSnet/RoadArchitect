@@ -32,6 +32,8 @@ Roads adapt their style to the biome, and the network is saved between game sess
 
 > **Current version:** `v1.3.0`
 
+> **Wiki:** <a href="https://github.com/0xCoDSnet/RoadArchitect/wiki">RoadArchitect Wiki</a>
+
 ## ✨ Features
 
 - 🏘 **Automatic detection** of villages and other structures  
