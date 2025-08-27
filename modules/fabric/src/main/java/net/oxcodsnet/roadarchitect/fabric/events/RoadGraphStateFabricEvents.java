@@ -17,7 +17,7 @@ public final class RoadGraphStateFabricEvents {
         // LOAD мира → ensure state инициализирован
         ServerWorldEvents.LOAD.register((server, world) -> {
             if (!world.isClient()) {
-                RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+                RoadGraphState.get(world);
                 LOGGER.debug("RoadGraphState loaded for world {}", world.getRegistryKey().getValue());
             }
         });
@@ -25,7 +25,7 @@ public final class RoadGraphStateFabricEvents {
         // UNLOAD мира → markDirty
         ServerWorldEvents.UNLOAD.register((server, world) -> {
             if (!world.isClient()) {
-                RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+                RoadGraphState state = RoadGraphState.get(world);
                 state.markDirty();
                 LOGGER.debug("Saved RoadGraphState for world {} on unload", world.getRegistryKey().getValue());
             }
@@ -34,7 +34,7 @@ public final class RoadGraphStateFabricEvents {
         // Остановка сервера → markDirty для всех миров
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             for (ServerWorld world : server.getWorlds()) {
-                RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+                RoadGraphState state = RoadGraphState.get(world);
                 state.markDirty();
             }
             LOGGER.debug("Server stopping, all RoadGraphStates marked dirty");

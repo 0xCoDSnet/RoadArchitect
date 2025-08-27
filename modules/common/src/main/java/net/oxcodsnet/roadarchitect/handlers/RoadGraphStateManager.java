@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class RoadGraphStateManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/RoadGraphStateManager");
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/" + RoadGraphStateManager.class.getSimpleName());
 
     private RoadGraphStateManager() {
     }
@@ -23,7 +23,7 @@ public final class RoadGraphStateManager {
      */
     public static void onWorldLoad(ServerWorld world) {
         // Гарантируем, что стейт создан/поднят
-        RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+        RoadGraphState.get(world);
         LOGGER.debug("RoadGraphState loaded for world {}", world.getRegistryKey().getValue());
     }
 
@@ -31,7 +31,7 @@ public final class RoadGraphStateManager {
      * Вызывается платформой при выгрузке ServerWorld.
      */
     public static void onWorldUnload(ServerWorld world) {
-        RoadGraphState state = RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance());
+        RoadGraphState state = RoadGraphState.get(world);
         state.markDirty();
         LOGGER.debug("Saved RoadGraphState for world {} on unload", world.getRegistryKey().getValue());
     }
@@ -41,7 +41,7 @@ public final class RoadGraphStateManager {
      */
     public static void onServerStopping(MinecraftServer server) {
         for (ServerWorld world : server.getWorlds()) {
-            RoadGraphState.get(world, RoadArchitect.CONFIG.maxConnectionDistance()).markDirty();
+            RoadGraphState.get(world).markDirty();
         }
         LOGGER.debug("Server stopping, all RoadGraphStates marked dirty");
     }
