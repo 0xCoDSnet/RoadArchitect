@@ -21,7 +21,7 @@ public final class RoadPipelineQuiltEvents {
         RoadPipelineController.init();
 
         // 1) Первая генерация спавн-чанка (и вообще генерация чанка)
-        ServerChunkEvents.CHUNK_GENERATE.register((ServerWorld world, WorldChunk chunk) -> {
+        ServerChunkEvents.CHUNK_LOAD.register((ServerWorld world, WorldChunk chunk) -> {
             RoadPipelineController.onSpawnChunkGenerated(world, chunk);
             RoadPipelineController.onChunkGenerated(world, chunk);
         });
