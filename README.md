@@ -11,7 +11,7 @@
   </a>
 </p>
 
-<p align="center" style="display:flex;justify-content:center;gap:8px;margin:6px 0;">
+<p align="center" style="display: flex; justify-content: center; gap: 6px;">
     <a href="https://modrinth.com/mod/roadarchitect/versions?l=fabric">
         <img src="https://cdn.modrinth.com/data/cached_images/d8a8d9852fb6e55292d6f5ecc1842fd7bc8c3c9e.webp" alt="Available on Fabric">
     </a>
@@ -22,16 +22,15 @@
     <img src="https://cdn.modrinth.com/data/cached_images/ecbd0303728027761730760800f9354e14f38d31.webp" alt="Available on NeoForge">
   </a>
 </p>
+<p align="center" style="display:flex;justify-content:center;gap:8px;margin:6px 0;">
+  <a href="https://boosty.to/0xcodsnet" target="_blank" rel="noopener">
+    <img alt="Boosty — Support" src="https://img.shields.io/badge/Boosty-Support-F15F2C?style=for-the-badge&logo=boosty&logoColor=white">
+  </a>
+     
 
----
-   <p align="center" style="display:flex;justify-content:center;gap:8px;margin:6px 0;">
-<a href="https://boosty.to/0xcodsnet" target="_blank" rel="noopener">
-  <img alt="Boosty — Support" src="https://img.shields.io/badge/Boosty-Support-F15F2C?style=for-the-badge&logo=boosty&logoColor=white">
-</a>
-
-<a href="https://www.donationalerts.com/r/0xcodsnet" target="_blank" rel="noopener">
-  <img alt="DonationAlerts — Donate" src="https://img.shields.io/badge/DonationAlerts-Donate-F57D07?style=for-the-badge&logo=data:image/webp;base64,UklGRq4DAABXRUJQVlA4WAoAAAAQAAAARAAATwAAQUxQSCYDAAANoHbb2iFJ3tAp25VvRHNs27Zt27Zt27Zt27Y9GRHZdhc/ZMTzvG+8GRETQOomZy9WR377Pjn6Y2yuczi5rl/u3BM+tnE0eW9+5IhfLSyVO3pv32Oiqqonfyx0/g59mh58XGOnAzWBF+w18jyF8YNzfrpXFnhSdeu9b4iMJ9Tfd8rPFYCee3cvCQJvmPvSnWZnGdk3p3023V7vVmc0y1h1n72Hrfy0Ny7HPfH2Yw0ydlro9IxQdCWO37jrjioZp5ZuSiuIPnXFg9+do+CaJ14va0UcOeO87oMUdQ+f/g1gRMPj3HH4JhvIaL93HyAQTUJZt2d32cTbBiUDO526hIw59wOMKNFsvy7lXY++ImHqjjeNlrGpKtbMTfpM5P/t/0C7rB0IXYQZRQVfn/ZIvagEGFGiCTJiDW8+dYUoUcWWZvapuGHFpTRBDiL0wx+sLIldjUgrWmCwRhI5aqpJi2yESBOoa3EQkh7bCDQGceJHDIFoOsogI3KVgBHF+alvFsUQuAgdBEgHJzsKclICjCixFTuKVbGliThKVInGpMU2TJ4+Wa5s6FEbgSoURZpd7i+zO0IUQVWPKNa4DEQJdCMuaRZZuGzSa0MWjCYQ9U1XzPs45Z333KNrGqExogQN6dVDut0Rx45GZBRRr72pLIFQFGlGZvyv2uQgxJOAgijRhBmRZscdkEdA4KI7bdY0xT5rofwQMKJYc0F7HTD8BvIjF0E59WogFEWab2/sR39CiHLyDgBGlGhsVl2MdtIO6IacVV+HtrQd5S2Il/jKUe3taIs7kRrITrz7fyeN96L9Z1fSjcy8fPcnM6zVLXI42t/3JDOUUThxuWZrFn/an2yjyPUPhyAMvPniCKTGl89ORBx48u7pyI0fb12IMvDihavRGh+evQ11nQcPPIz+h4Vyd+drWDzp7Lqc3fApNl8/7bAl69MaRyqG/rQw/OvtWP7k8i/70ta4XTZw4BsWcmkQz9gRTwuiiTtQAYo74a0R/LYnFeDTw/C4kPHGufhs0p68mQpww6t43VxVdtFf+F0Aho/FdwN9e1IBpu+M/4WJO1ABZ62Dv1ZQOCBiAAAAEAYAnQEqRQBQAD4lDIVCIYa3wwAGAJEtIAK4A+gAGzaYsNUS4BO15pLqewI1FXlcuDx70E3vvqj4AP7+3Xx1i3///SD3v/t/bV/7f2AALb/t/Yy/+JrDR/7f3Nf9gdwAAAA=">
-</a>
+  <a href="https://www.donationalerts.com/r/0xcodsnet" target="_blank" rel="noopener">
+    <img alt="DonationAlerts — Donate" src="https://img.shields.io/badge/DonationAlerts-Donate-F57D07?style=for-the-badge&logo=data:image/webp;base64,UklGRq4DAABXRUJQVlA4WAoAAAAQAAAARAAATwAAQUxQSCYDAAANoHbb2iFJ3tAp25VvRHNs27Zt27Zt27Zt27Y9GRHZdhc/ZMTzvG+8GRETQOomZy9WR377Pjn6Y2yuczi5rl/u3BM+tnE0eW9+5IhfLSyVO3pv32Oiqqonfyx0/g59mh58XGOnAzWBF+w18jyF8YNzfrpXFnhSdeu9b4iMJ9Tfd8rPFYCee3cvCQJvmPvSnWZnGdk3p3023V7vVmc0y1h1n72Hrfy0Ny7HPfH2Yw0ydlro9IxQdCWO37jrjioZp5ZuSiuIPnXFg9+do+CaJ14va0UcOeO87oMUdQ+f/g1gRMPj3HH4JhvIaL93HyAQTUJZt2d32cTbBiUDO526hIw59wOMKNFsvy7lXY++ImHqjjeNlrGpKtbMTfpM5P/t/0C7rB0IXYQZRQVfn/ZIvagEGFGiCTJiDW8+dYUoUcWWZvapuGHFpTRBDiL0wx+sLIldjUgrWmCwRhI5aqpJi2yESBOoa3EQkh7bCDQGceJHDIFoOsogI3KVgBHF+alvFsUQuAgdBEgHJzsKclICjCixFTuKVbGliThKVInGpMU2TJ4+Wa5s6FEbgSoURZpd7i+zO0IUQVWPKNa4DEQJdCMuaRZZuGzSa0MWjCYQ9U1XzPs45Z333KNrGqExogQN6dVDut0Rx45GZBRRr72pLIFQFGlGZvyv2uQgxJOAgijRhBmRZscdkEdA4KI7bdY0xT5rofwQMKJYc0F7HTD8BvIjF0E59WogFEWab2/sR39CiHLyDgBGlGhsVl2MdtIO6IacVV+HtrQd5S2Il/jKUe3taIs7kRrITrz7fyeN96L9Z1fSjcy8fPcnM6zVLXI42t/3JDOUUThxuWZrFn/an2yjyPUPhyAMvPniCKTGl89ORBx48u7pyI0fb12IMvDihavRGh+evQ11nQcPPIz+h4Vyd+drWDzp7Lqc3fApNl8/7bAl69MaRyqG/rQw/OvtWP7k8i/70ta4XTZw4BsWcmkQz9gRTwuiiTtQAYo74a0R/LYnFeDTw/C4kPHGufhs0p68mQpww6t43VxVdtFf+F0Aho/FdwN9e1IBpu+M/4WJO1ABZ62Dv1ZQOCBiAAAAEAYAnQEqRQBQAD4lDIVCIYa3wwAGAJEtIAK4A+gAGzaYsNUS4BO15pLqewI1FXlcuDx70E3vvqj4AP7+3Xx1i3///SD3v/t/bV/7f2AALb/t/Yy/+JrDR/7f3Nf9gdwAAAA=">
+  </a>
 </p>
 
 # RoadArchitect
