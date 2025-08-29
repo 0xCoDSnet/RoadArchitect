@@ -90,6 +90,16 @@ remapJar {
     archiveFileName.set("roadarchitect-${project.version}-fabric+${rootProject.minecraft_version}.jar")
 }
 
+// Publish dev-shadow to mavenLocal alongside the main artifact
+//publishing {
+//    publications {
+//        devShadow(MavenPublication) {
+//            artifactId = base.archivesName.get()
+//            artifact shadowJar
+//        }
+//    }
+//}
+
 // ====================== Modrinth ====================
 apply plugin: "com.modrinth.minotaur"
 def modrinth_token = rootProject.ext.resolveModrinthToken()

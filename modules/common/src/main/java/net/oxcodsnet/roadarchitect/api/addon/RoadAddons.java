@@ -2,19 +2,20 @@ package net.oxcodsnet.roadarchitect.api.addon;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
-import net.oxcodsnet.roadarchitect.storage.TriggerStorage;
+import net.oxcodsnet.roadarchitect.api.storage.PersistentStore;
+import net.oxcodsnet.roadarchitect.api.storage.AddonPersistentStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Core addon API entry and trigger service facade exposed to other mods.
@@ -22,7 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class RoadAddons {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/addons");
 
-    private static final Map<Identifier, TriggerType> TRIGGER_TYPES = new ConcurrentHashMap<>();
     private static final List<RoadAddon> ADDONS = new ArrayList<>();
 
     private RoadAddons() {}
@@ -33,39 +33,11 @@ public final class RoadAddons {
     public static void registerAddon(RoadAddon addon) {
         try {
             ADDONS.add(addon);
-            addon.onRegister();
+            addon.onRegister(new ContextImpl(addon.id()));
             LOGGER.debug("Registered addon {}", addon.id());
         } catch (Throwable t) {
             LOGGER.error("Addon registration failed: {}", addon.id(), t);
         }
-    }
-
-    /**
-     * Registers a trigger type. Addons should call this from {@link RoadAddon#onRegister()}.
-     */
-    public static void registerTriggerType(TriggerType type) {
-        TRIGGER_TYPES.put(type.id(), type);
-        LOGGER.debug("Registered trigger type {} (r={})", type.id(), type.radius());
-    }
-
-    /**
-     * Places a trigger marker in the world. Stored in persistent state until triggered or removed.
-     *
-     * @param world  server world
-     * @param pos    marker position
-     * @param typeId trigger type id
-     * @param data   optional data (nullable)
-     */
-    public static void placeMarker(ServerWorld world, BlockPos pos, Identifier typeId, NbtCompound data) {
-        TriggerType type = TRIGGER_TYPES.get(typeId);
-        if (type == null) {
-            LOGGER.warn("Attempt to place marker with unknown type {} at {}", typeId, pos);
-            return;
-        }
-        TriggerStorage storage = TriggerStorage.get(world);
-        storage.addMarker(pos, typeId, type.radius(), data == null ? new NbtCompound() : data.copy());
-        storage.markDirty();
-        LOGGER.debug("Placed marker {} at {} (r={})", typeId, pos, type.radius());
     }
 
     // ===== Pipeline hooks (invoked by common when path becomes READY) =====
@@ -83,50 +55,28 @@ public final class RoadAddons {
     // ===== Runtime hooks driven by platform event bridges =====
 
     /**
-     * Called from platform events each server tick. Checks proximity and fires markers.
+     * Called from platform events each server tick. Forwards to addons.
      */
     public static void onServerTick(MinecraftServer server) {
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            World w = player.getWorld();
-            if (!(w instanceof ServerWorld sw)) continue;
-            processPlayer(sw, player);
+        for (RoadAddon addon : ADDONS) {
+            try {
+                addon.onServerTick(server);
+            } catch (Throwable t) {
+                LOGGER.error("Addon {} onServerTick failure", addon.id(), t);
+            }
         }
     }
 
     /**
-     * Called from platform events on chunk load.
+     * Called from platform events on chunk load. Forwards to addons.
      */
     public static void onChunkLoad(ServerWorld world, ChunkPos pos) {
-        // Optional quick pass: pre-filter to this chunk markers.
-        // Full proximity check still happens on ticks.
-        TriggerStorage storage = TriggerStorage.get(world);
-        if (storage.hasMarkersInChunk(pos)) {
-            LOGGER.debug("Chunk {} loaded with {} markers", pos, storage.markersInChunk(pos));
-        }
-    }
-
-    private static void processPlayer(ServerWorld world, ServerPlayerEntity player) {
-        TriggerStorage storage = TriggerStorage.get(world);
-        List<TriggerStorage.Marker> nearby = storage.findMarkersNear(player.getBlockPos());
-        if (nearby.isEmpty()) return;
-
-        List<UUID> toRemove = new ArrayList<>();
-        for (TriggerStorage.Marker m : nearby) {
-            TriggerType type = TRIGGER_TYPES.get(m.type());
-            if (type == null) continue; // stale type, skip
-            if (!world.isChunkLoaded(m.pos().getX() >> 4, m.pos().getZ() >> 4)) continue; // ensure generated/loaded
-
+        for (RoadAddon addon : ADDONS) {
             try {
-                type.handler().onTrigger(world, m.pos(), player, m.data());
-                toRemove.add(m.id());
-                LOGGER.debug("Fired marker {} at {} for {}", m.type(), m.pos(), player.getName().getString());
+                addon.onChunkLoad(world, pos);
             } catch (Throwable t) {
-                LOGGER.error("Trigger handler {} failed at {}", m.type(), m.pos(), t);
+                LOGGER.error("Addon {} onChunkLoad failure at {}", addon.id(), pos, t);
             }
-        }
-        if (!toRemove.isEmpty()) {
-            storage.removeAll(toRemove);
-            storage.markDirty();
         }
     }
 
@@ -135,5 +85,61 @@ public final class RoadAddons {
      */
     public static void initBuiltins() {
         // no built-ins; external addons should register themselves
+    }
+
+    // ===== Addon-scoped persistent storage =====
+
+    /**
+     * Returns the persistent store for the given addon in the given world.
+     */
+    public static PersistentStore persistent(Identifier addonId, ServerWorld world) {
+        AddonPersistentStorage state = AddonPersistentStorage.get(world, addonId);
+        return new StoreView(state);
+    }
+
+    private record ContextImpl(Identifier addonId) implements AddonContext {
+        private static Logger makeLogger(Identifier id) {
+            return LoggerFactory.getLogger(RoadArchitect.MOD_ID + "/addons/" + id);
+        }
+
+        @Override
+        public PersistentStore persistent(ServerWorld world) {
+            return RoadAddons.persistent(addonId, world);
+        }
+
+        @Override
+        public Logger logger() {
+            return makeLogger(addonId);
+        }
+    }
+
+    private static final class StoreView implements PersistentStore {
+        private final AddonPersistentStorage state;
+
+        private StoreView(AddonPersistentStorage state) {
+            this.state = state;
+        }
+
+        @Override
+        public Optional<NbtCompound> get(Identifier key) {
+            return state.get(key);
+        }
+
+        @Override
+        public void put(Identifier key, NbtCompound value) {
+            state.put(key, value);
+            state.markDirty();
+        }
+
+        @Override
+        public void remove(Identifier key) {
+            state.remove(key);
+            state.markDirty();
+        }
+
+        @Override
+        public Set<Identifier> keys() {
+            return state.keys();
+        }
     }
 }

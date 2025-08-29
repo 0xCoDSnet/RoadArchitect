@@ -17,15 +17,20 @@ public interface RoadAddon {
     Identifier id();
 
     /**
-     * Called once during addon bootstrap to register trigger types and perform setup.
-     * Use {@link RoadAddons#registerTriggerType(TriggerType)} to expose triggers.
+     * Called once during addon bootstrap to perform setup.
      */
     void onRegister();
 
     /**
+     * New registration callback with context. Default delegates to legacy {@link #onRegister()} for
+     * backwards compatibility. Addons can override this to access persistent storage and services.
+     */
+    default void onRegister(AddonContext ctx) {
+        onRegister();
+    }
+
+    /**
      * Called when a road path is finalized and marked READY by the post-processor.
-     * Addons can inspect the path and place markers using {@link RoadAddons#placeMarker}.
-     *
      * @param world server world
      * @param pathKey key used by PathStorage
      * @param refinedPath final refined path points
@@ -33,5 +38,18 @@ public interface RoadAddon {
     default void onPathReady(ServerWorld world, String pathKey, List<BlockPos> refinedPath) {
         // optional
     }
-}
 
+    /**
+     * Called each server tick from the platform event bridge.
+     */
+    default void onServerTick(net.minecraft.server.MinecraftServer server) {
+        // optional
+    }
+
+    /**
+     * Called when a chunk is loaded.
+     */
+    default void onChunkLoad(ServerWorld world, net.minecraft.util.math.ChunkPos pos) {
+        // optional
+    }
+}

@@ -90,6 +90,15 @@ remapJar {
     archiveFileName.set("roadarchitect-${project.version}-quilt+${rootProject.minecraft_version}.jar")
 }
 
+//publishing {
+//    publications {
+//        devShadow(MavenPublication) {
+//            artifactId = base.archivesName.get()
+//            artifact shadowJar
+//        }
+//    }
+//}
+
 // =========== Modrith =========
 apply plugin: "com.modrinth.minotaur"
 def modrinth_token = rootProject.ext.resolveModrinthToken()
