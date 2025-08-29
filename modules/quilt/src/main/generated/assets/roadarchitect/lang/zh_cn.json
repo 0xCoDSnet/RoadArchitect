@@ -1,6 +1,7 @@
 {
   "category.roadarchitect": "道路架构师",
   "key.roadarchitect.debug": "道路网络调试",
+  "modmenu.descriptionTranslation.roadarchitect": "畅游无障碍的世界：RoadArchitect 会自动扫描你的世界，找到村庄和其他结构，然后在它们之间铺设道路网络。",
   "roadarchitect.stage.complete": "完成",
   "roadarchitect.stage.initialisation": "初始化",
   "roadarchitect.stage.pathfinding": "路径搜索",

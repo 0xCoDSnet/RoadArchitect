@@ -31,6 +31,7 @@ public final class RoadPipelineNeoForgeEvents {
         Chunk chunk = event.getChunk();
         RoadPipelineController.onSpawnChunkGenerated(world, chunk);
         RoadPipelineController.onChunkGenerated(world, chunk);
+        net.oxcodsnet.roadarchitect.api.addon.RoadAddons.onChunkLoad(world, chunk.getPos());
     }
 
     @SubscribeEvent
@@ -42,6 +43,7 @@ public final class RoadPipelineNeoForgeEvents {
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Pre event) {
         RoadPipelineController.onServerTick(event.getServer());
+        net.oxcodsnet.roadarchitect.api.addon.RoadAddons.onServerTick(event.getServer());
     }
 
     @SubscribeEvent

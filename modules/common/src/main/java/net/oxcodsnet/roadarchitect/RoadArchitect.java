@@ -64,6 +64,7 @@ public final class RoadArchitect {
     }
 
     public static void init() {
-        // Write common init code here.
+        // Common init: bootstrap built-in addons
+        net.oxcodsnet.roadarchitect.api.addon.RoadAddons.initBuiltins();
     }
 }
