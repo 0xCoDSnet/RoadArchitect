@@ -18,6 +18,7 @@ public final class RoadArchitectQuilt implements ModInitializer {
     public void onInitialize() {
         // 1) Поднять мост конфига (Cloth Config → common)
         RAConfigQuiltBridge.bootstrap();
+        RoadArchitect.init();
         RoadFeatureRegistryQuilt.register();
         // 2) Зарегистрировать события Fabric → хуки common
         QuiltEventBridge.register();

@@ -66,6 +66,8 @@ public final class RALanguage {
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "Deterministic Decorations");
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
                         "Place lamps, buoys and sides using a global marker grid (chunk-agnostic).");
+                add.accept("modmenu.descriptionTranslation.roadarchitect",
+                        "Travel around the world without barriers: RoadArchitect automatically scans your world, finds villages, and other structures, and then lays a network of roads between them.");
                 break;
             }
             case "ru_ru": {
@@ -131,6 +133,8 @@ public final class RALanguage {
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "Детерминированные украшения");
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
                         "Размещение по глобальной сетке маркеров (не зависит от чанков).");
+                add.accept("modmenu.descriptionTranslation.roadarchitect",
+                        "Путешествуйте по миру без барьеров: RoadArchitect автоматически сканирует ваш мир, находит деревни и другие структуры, а затем прокладывает между ними сеть дорог.");
                 break;
             }
             case "es_es": {
@@ -196,6 +200,8 @@ public final class RALanguage {
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "Decoraciones deterministas");
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
                         "Colocación mediante una cuadrícula global de marcadores (independiente de chunks).");
+                add.accept("modmenu.descriptionTranslation.roadarchitect",
+                        "Viaja por el mundo sin barreras: RoadArchitect escanea automáticamente tu mundo, encuentra aldeas y otras estructuras, y luego tiende una red de carreteras entre ellas.");
                 break;
             }
             case "fr_fr": {
@@ -261,6 +267,8 @@ public final class RALanguage {
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "Décorations déterministes");
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
                         "Placement via une grille de marqueurs globale (indépendante des chunks).");
+                add.accept("modmenu.descriptionTranslation.roadarchitect",
+                        "Voyagez dans le monde sans barrières : RoadArchitect analyse automatiquement votre monde, trouve les villages et autres structures, puis trace un réseau de routes entre eux.");
                 break;
             }
             case "de_de": {
@@ -326,6 +334,8 @@ public final class RALanguage {
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "Deterministische Dekorationen");
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
                         "Platzierung über globales Markerraster (chunk-unabhängig).");
+                add.accept("modmenu.descriptionTranslation.roadarchitect",
+                        "Reisen Sie barrierefrei durch die Welt: RoadArchitect scannt automatisch Ihre Welt, findet Dörfer und andere Strukturen und legt anschließend ein Straßennetz zwischen ihnen an.");
                 break;
             }
             case "zh_cn": {
@@ -383,6 +393,67 @@ public final class RALanguage {
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "确定性装饰");
                 add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
                         "使用全局标记网格进行放置（与区块无关）。");
+                add.accept("modmenu.descriptionTranslation.roadarchitect",
+                        "畅游无障碍的世界：RoadArchitect 会自动扫描你的世界，找到村庄和其他结构，然后在它们之间铺设道路网络。");
+                break;
+            }
+            case "uk_ua": {
+                add.accept("key.roadarchitect.debug", "Налагодження графіка доріг");
+                add.accept("category.roadarchitect", "Road Architect");
+                add.accept("roadarchitect.stage.initialisation", "Ініціалізація…");
+                add.accept("roadarchitect.stage.scanning", "Сканування структур…");
+                add.accept("roadarchitect.stage.pathfinding", "Пошук шляху…");
+                add.accept("roadarchitect.stage.postprocess", "Постобробка…");
+                add.accept("roadarchitect.stage.complete", "Завершення…");
+                add.accept("text.config.roadarchitect.option.initScanRadius", "Початковий радіус сканування");
+                add.accept("text.config.roadarchitect.option.initScanRadius.@Tooltip",
+                        "Радіус у блоках для пошуку структур під час першого завантаження світу.");
+                add.accept("text.config.roadarchitect.option.chunkGenerateScanRadius", "Радіус сканування генерації чанків");
+                add.accept("text.config.roadarchitect.option.chunkGenerateScanRadius.@Tooltip",
+                        "Радіус у чанках, який сканується під час генерації нових чанків.");
+                add.accept("text.config.roadarchitect.option.maxConnectionDistance", "Максимальна відстань з’єднання");
+                add.accept("text.config.roadarchitect.option.maxConnectionDistance.@Tooltip",
+                        "Максимальна відстань у блоках між двома структурами для їх з’єднання.");
+                add.accept("text.config.roadarchitect.option.pipelineIntervalSeconds", "Секунди інтервалу конвеєра");
+                add.accept("text.config.roadarchitect.option.pipelineIntervalSeconds.@Tooltip",
+                        "Затримка в секундах між запусками конвеєра.");
+                add.accept("text.config.roadarchitect.option.structureSelectors", "Селектори структур");
+                add.accept("text.config.roadarchitect.option.structureSelectors.@Tooltip",
+                        "Список селекторів структур, які з'єднуватимуть дороги.");
+                add.accept("text.autoconfig.roadarchitect.title", "Налаштування Road Architect");
+                add.accept("text.autoconfig.roadarchitect.option.initScanRadius", "Початковий радіус сканування");
+                add.accept("text.autoconfig.roadarchitect.option.initScanRadius.@Tooltip",
+                        "Радіус у блоках для пошуку структур під час першого завантаження світу.");
+                add.accept("text.autoconfig.roadarchitect.option.chunkGenerateScanRadius", "Радіус сканування генерації чанків");
+                add.accept("text.autoconfig.roadarchitect.option.chunkGenerateScanRadius.@Tooltip",
+                        "Радіус у чанках, який сканується під час генерації нових чанків.");
+                add.accept("text.autoconfig.roadarchitect.option.maxConnectionDistance", "Максимальна відстань з’єднання");
+                add.accept("text.autoconfig.roadarchitect.option.maxConnectionDistance.@Tooltip",
+                        "Максимальна відстань у блоках між двома структурами для їх з’єднання.");
+                add.accept("text.autoconfig.roadarchitect.option.pipelineIntervalSeconds", "Секунди інтервалу конвеєра");
+                add.accept("text.autoconfig.roadarchitect.option.pipelineIntervalSeconds.@Tooltip",
+                        "Затримка в секундах між запусками конвеєра.");
+                add.accept("text.autoconfig.roadarchitect.option.structureSelectors", "Селектори структур");
+                add.accept("text.autoconfig.roadarchitect.option.structureSelectors.@Tooltip",
+                        "Список селекторів структур, які з'єднуватимуть дороги.");
+                // Детерміновані прикраси (AutoConfig)
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval", "Інтервал ліхтарів");
+                add.accept("text.autoconfig.roadarchitect.option.lampInterval.@Tooltip",
+                        "Відстань у блоках уздовж дороги між ліхтарними стовпами.");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval", "Інтервал декорацій парканів");
+                add.accept("text.autoconfig.roadarchitect.option.sideDecorationInterval.@Tooltip",
+                        "Відстань у блоках між прикрасами парканів вздовж дороги.");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval", "Інтервал буйків");
+                add.accept("text.autoconfig.roadarchitect.option.buoyInterval.@Tooltip",
+                        "Відстань у блоках між буйками на воді.");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion", "Ерозія маски");
+                add.accept("text.autoconfig.roadarchitect.option.maskErosion.@Tooltip",
+                        "Симетрична ерозія біля переходів землі/води; виключає точки Е біля країв.");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations", "Детерміновані прикраси");
+                add.accept("text.autoconfig.roadarchitect.option.deterministicDecorations.@Tooltip",
+                        "Розміщує ліхтарі, буйки та паркани, використовуючи глобальну сітку маркерів (незалежно від чанків).");
+                add.accept("modmenu.descriptionTranslation.roadarchitect",
+                        "Подорожуйте навколо світу без бар'єрів: RoadArchitect автоматично сканує ваш світ, знаходить села та інші структури, а потім прокладає мережу доріг між ними");
                 break;
             }
             default: {
