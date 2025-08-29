@@ -8,6 +8,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.oxcodsnet.roadarchitect.RoadArchitect;
 import net.oxcodsnet.roadarchitect.api.storage.PersistentStore;
+import net.oxcodsnet.roadarchitect.api.core.CoreApi;
+import net.oxcodsnet.roadarchitect.api.core.CoreApiImpl;
 import net.oxcodsnet.roadarchitect.api.storage.AddonPersistentStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,6 +112,11 @@ public final class RoadAddons {
         @Override
         public Logger logger() {
             return makeLogger(addonId);
+        }
+
+        @Override
+        public CoreApi core() {
+            return CoreApiImpl.INSTANCE;
         }
     }
 
