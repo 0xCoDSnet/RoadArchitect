@@ -1,6 +1,7 @@
 {
   "category.roadarchitect": "Arquitecto de Carreteras",
   "key.roadarchitect.debug": "Depuración del grafo de carreteras",
+  "modmenu.descriptionTranslation.roadarchitect": "Viaja por el mundo sin barreras: RoadArchitect escanea automáticamente tu mundo, encuentra aldeas y otras estructuras, y luego tiende una red de carreteras entre ellas.",
   "roadarchitect.stage.complete": "Completado",
   "roadarchitect.stage.initialisation": "Inicialización",
   "roadarchitect.stage.pathfinding": "Búsqueda de rutas",
