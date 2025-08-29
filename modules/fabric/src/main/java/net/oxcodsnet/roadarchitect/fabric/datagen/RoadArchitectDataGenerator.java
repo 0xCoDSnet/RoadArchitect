@@ -39,5 +39,8 @@ public class RoadArchitectDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider((FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registries) ->
                         new RoadLanguageProvider(output, registries, "zh_cn")
         );
+        pack.addProvider((FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registries) ->
+                        new RoadLanguageProvider(output, registries, "uk_ua")
+        );
     }
 }

@@ -1,6 +1,7 @@
 {
   "category.roadarchitect": "Straßenarchitekt",
   "key.roadarchitect.debug": "Straßengraph-Debug",
+  "modmenu.descriptionTranslation.roadarchitect": "Reisen Sie barrierefrei durch die Welt: RoadArchitect scannt automatisch Ihre Welt, findet Dörfer und andere Strukturen und legt anschließend ein Straßennetz zwischen ihnen an.",
   "roadarchitect.stage.complete": "Abgeschlossen",
   "roadarchitect.stage.initialisation": "Initialisierung",
   "roadarchitect.stage.pathfinding": "Wegfindung",

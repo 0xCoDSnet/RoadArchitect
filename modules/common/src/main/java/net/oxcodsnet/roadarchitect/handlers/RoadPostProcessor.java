@@ -275,6 +275,7 @@ public final class RoadPostProcessor {
                         List<BlockPos> refined = refine(world, leg.getValue());
                         NormalizeResult nr = normalizeHeights(refined);
                         storage.updatePath(leg.getKey(), nr.path(), PathStorage.Status.READY);
+                        net.oxcodsnet.roadarchitect.api.addon.RoadAddons.onPathReady(world, leg.getKey(), nr.path());
                         toBuild.put(leg.getKey(), nr.path());
 
                         if (!nr.path().isEmpty()) {
@@ -292,6 +293,7 @@ public final class RoadPostProcessor {
                     List<BlockPos> trunkRefined = refine(world, br.trunkRaw.path);
                     NormalizeResult trunkNR = normalizeHeights(trunkRefined);
                     storage.updatePath(br.trunkRaw.key, trunkNR.path(), PathStorage.Status.READY);
+                    net.oxcodsnet.roadarchitect.api.addon.RoadAddons.onPathReady(world, br.trunkRaw.key, trunkNR.path());
                     toBuild.put(br.trunkRaw.key, trunkNR.path());
 
                     if (!trunkNR.path().isEmpty()) {
@@ -316,6 +318,7 @@ public final class RoadPostProcessor {
                     List<BlockPos> refined = refine(world, activeRaw);
                     NormalizeResult nr = normalizeHeights(refined);
                     storage.updatePath(activeKey, nr.path(), PathStorage.Status.READY);
+                    net.oxcodsnet.roadarchitect.api.addon.RoadAddons.onPathReady(world, activeKey, nr.path());
                     toBuild.put(activeKey, nr.path());
 
                     if (!nr.path().isEmpty()) {
