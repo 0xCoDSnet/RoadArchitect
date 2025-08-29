@@ -45,7 +45,7 @@ Roads adapt their style to the biome, and the network is saved between game sess
 - 💾 **Persistent network** — roads remain between sessions  
 - 🔄 **Fully automated**, minimal setup  
 - 🧰 **Configurable** via **Cloth Config** *(required on Fabric / Quilt / NeoForge)*  
-- 🌐 **Localization** included: English, Russian, Spanish, French, German, Chinese  
+- 🌐 **Localization** included: English, Russian, Ukrainian, Spanish, French, German, Chinese  
 - 🛰 **Visual road-graph debugger** with pan/zoom, tooltips, and a color legend; in singleplayer, clicking a node teleports to it (default hotkey **H**)
 - 🗺 **Terralith-ready** — works out of the box with the <a href="https://modrinth.com/datapack/terralith">Terralith</a> world-generation datapack
 
