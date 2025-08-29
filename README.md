@@ -33,7 +33,7 @@
 **RoadArchitect** is a **Fabric / Quilt / NeoForge** mod for **Minecraft 1.21–1.21.8** that automatically scans the world for villages and other structures and connects them with roads to form a persistent travel network.  
 Roads adapt their style to the biome, and the network is saved between game sessions.
 
-> **Current version:** `v1.3.0`
+> **Current version:** `v1.4.0`
 
 > **Wiki:** <a href="https://github.com/0xCoDSnet/RoadArchitect/wiki">RoadArchitect Wiki</a>
 
@@ -147,6 +147,18 @@ Roads adapt their style to the biome, and the network is saved between game sess
 ---
 
 ## 🗒️ Recent changes
+
+<details>
+<summary><strong>v1.4.0</strong> — <em>Add-ons support</em></summary>
+
+### Highlights
+
+- 🧩 Add-ons support: official API so other mods can extend Road Architect (events, read-only core views, and per-world storage);
+- 📴 No changes out of the box: there are no built-in add-ons; gameplay stays the same unless you install one.;
+
+**Compatibility:** No visible gameplay changes by default; add-ons are optional.;
+</details>
+
 
 <details>
 <summary><strong>v1.3.0</strong> — <em>Smarter scans & deterministic decorations</em></summary>
