@@ -1,6 +1,7 @@
 {
   "category.roadarchitect": "Архитектор дорог",
   "key.roadarchitect.debug": "Отладка графа дорог",
+  "modmenu.descriptionTranslation.roadarchitect": "Путешествуйте по миру без барьеров: RoadArchitect автоматически сканирует ваш мир, находит деревни и другие структуры, а затем прокладывает между ними сеть дорог.",
   "roadarchitect.stage.complete": "Завершено",
   "roadarchitect.stage.initialisation": "Инициализация",
   "roadarchitect.stage.pathfinding": "Поиск пути",
